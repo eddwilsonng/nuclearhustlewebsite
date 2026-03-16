@@ -1,0 +1,86 @@
+{
+  "companies": [
+    {
+      "id": "constellation",
+      "name": "Constellation Energy",
+      "careers_url": "https://jobs.constellationenergy.com/careers-home/",
+      "scraper_type": "custom",
+      "last_scraped": null,
+      "description": "America's largest producer of clean, carbon-free energy, operating the nation's largest fleet of nuclear power plants across 12 states."
+    },
+    {
+      "id": "duke",
+      "name": "Duke Energy",
+      "careers_url": "https://dukeenergy.wd1.myworkdayjobs.com/search",
+      "scraper_type": "workday",
+      "last_scraped": null,
+      "description": "One of the largest energy holding companies in the U.S., serving 8 million customers across the Southeast and Midwest with a fleet of nuclear, natural gas, and renewable assets."
+    },
+    {
+      "id": "dominion",
+      "name": "Dominion Energy",
+      "careers_url": "https://careers.dominionenergy.com/",
+      "scraper_type": "custom",
+      "last_scraped": null,
+      "description": "A leading provider of electricity and natural gas, operating nuclear plants in Virginia and Connecticut and serving approximately 7 million customers across multiple states."
+    },
+    {
+      "id": "entergy",
+      "name": "Entergy",
+      "careers_url": "https://jobs.entergy.com/",
+      "scraper_type": "custom",
+      "last_scraped": null,
+      "description": "An integrated energy company delivering electricity to 3 million customers across Arkansas, Louisiana, Mississippi, and Texas, with a significant nuclear generation portfolio."
+    },
+    {
+      "id": "nextera",
+      "name": "NextEra Energy",
+      "careers_url": "https://www.nexteraenergy.com/careers/search-jobs.html",
+      "scraper_type": "custom",
+      "last_scraped": null,
+      "description": "The world's largest producer of wind and solar energy, also operating nuclear plants through its subsidiary Florida Power & Light and serving over 12 million people."
+    },
+    {
+      "id": "tva",
+      "name": "Tennessee Valley Authority",
+      "careers_url": "https://www.tva.com/careers",
+      "scraper_type": "custom",
+      "last_scraped": null,
+      "description": "A federally owned corporation and the nation's largest public power provider, operating three nuclear plants across the Tennessee Valley region serving 10 million people."
+    }
+  ],
+  "plants": [
+    { "id": "braidwood", "company_id": "constellation", "name": "Braidwood", "region": "Midwest" },
+    { "id": "byron", "company_id": "constellation", "name": "Byron", "region": "Midwest" },
+    { "id": "calvert-cliffs", "company_id": "constellation", "name": "Calvert Cliffs", "region": "Northeast" },
+    { "id": "clinton", "company_id": "constellation", "name": "Clinton", "region": "Midwest" },
+    { "id": "dresden", "company_id": "constellation", "name": "Dresden", "region": "Midwest" },
+    { "id": "fitzpatrick", "company_id": "constellation", "name": "FitzPatrick", "region": "Northeast" },
+    { "id": "lasalle", "company_id": "constellation", "name": "LaSalle", "region": "Midwest" },
+    { "id": "limerick", "company_id": "constellation", "name": "Limerick", "region": "Northeast" },
+    { "id": "nine-mile", "company_id": "constellation", "name": "Nine Mile Point", "region": "Northeast" },
+    { "id": "peach-bottom", "company_id": "constellation", "name": "Peach Bottom", "region": "Northeast" },
+    { "id": "quad-cities", "company_id": "constellation", "name": "Quad Cities", "region": "Midwest" },
+    { "id": "ginna", "company_id": "constellation", "name": "R.E. Ginna", "region": "Northeast" },
+    { "id": "brunswick", "company_id": "duke", "name": "Brunswick", "region": "Southeast" },
+    { "id": "harris", "company_id": "duke", "name": "Shearon Harris", "region": "Southeast" },
+    { "id": "mcguire", "company_id": "duke", "name": "McGuire", "region": "Southeast" },
+    { "id": "oconee", "company_id": "duke", "name": "Oconee", "region": "Southeast" },
+    { "id": "robinson", "company_id": "duke", "name": "H.B. Robinson", "region": "Southeast" },
+    { "id": "millstone", "company_id": "dominion", "name": "Millstone", "region": "Northeast" },
+    { "id": "north-anna", "company_id": "dominion", "name": "North Anna", "region": "Southeast" },
+    { "id": "surry", "company_id": "dominion", "name": "Surry", "region": "Southeast" },
+    { "id": "vc-summer", "company_id": "dominion", "name": "V.C. Summer", "region": "Southeast" },
+    { "id": "ano", "company_id": "entergy", "name": "Arkansas Nuclear One", "region": "Southeast" },
+    { "id": "grand-gulf", "company_id": "entergy", "name": "Grand Gulf", "region": "Southeast" },
+    { "id": "river-bend", "company_id": "entergy", "name": "River Bend", "region": "Southeast" },
+    { "id": "waterford", "company_id": "entergy", "name": "Waterford", "region": "Southeast" },
+    { "id": "point-beach", "company_id": "nextera", "name": "Point Beach", "region": "Midwest" },
+    { "id": "seabrook", "company_id": "nextera", "name": "Seabrook", "region": "Northeast" },
+    { "id": "st-lucie", "company_id": "nextera", "name": "St. Lucie", "region": "Southeast" },
+    { "id": "turkey-point", "company_id": "nextera", "name": "Turkey Point", "region": "Southeast" },
+    { "id": "browns-ferry", "company_id": "tva", "name": "Browns Ferry", "region": "Southeast" },
+    { "id": "sequoyah", "company_id": "tva", "name": "Sequoyah", "region": "Southeast" },
+    { "id": "watts-bar", "company_id": "tva", "name": "Watts Bar", "region": "Southeast" }
+  ]
+}
