@@ -10,6 +10,7 @@
     "scrape": "tsx scraper/index.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.93.3",
     "leaflet": "^1.9.4",

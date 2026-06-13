@@ -21,6 +21,10 @@ export function getPlantsByCompany(companyId: string): Plant[] {
 }
 
 export function getJobs(): Job[] {
+  return (jobsData.jobs as Job[]).filter(j => !j.status || j.status === 'published');
+}
+
+export function getAllJobsForAdmin(): Job[] {
   return jobsData.jobs as Job[];
 }
 

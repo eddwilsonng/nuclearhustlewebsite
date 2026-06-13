@@ -27,6 +27,10 @@ export interface Job {
   state: string | null;
   category: JobCategory;
   description?: string;
+  structured_description?: StructuredDescription | null;
+  status?: 'pending_review' | 'published';
+  agent_confidence?: 'high' | 'low';
+  review_notes?: string;
 }
 
 export interface JobWithCompany extends Job {

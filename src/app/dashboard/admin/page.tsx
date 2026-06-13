@@ -107,9 +107,15 @@ export default async function AdminOverviewPage() {
         Site-wide analytics
       </p>
 
-      <h2 className="text-sm font-mono tracking-widest uppercase text-gray-500 mb-3">
-        Jobs
-      </h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-mono tracking-widest uppercase text-gray-500">Jobs</h2>
+        <a
+          href="/dashboard/admin/review"
+          className="font-mono text-[10px] tracking-widest uppercase px-3 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
+        >
+          Review queue →
+        </a>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         {jobStats.map((stat) => (
           <div
