@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getJobsByState, getAllStateSlugs, getActiveCategories } from '@/lib/data';
+import { getJobsByState, getAllStateSlugs, getActiveCategories, getActiveStates } from '@/lib/data/static';
 import { getStateBySlug } from '@/lib/states';
 import { JobCard } from '@/components/JobCard';
 
@@ -21,10 +21,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!stateInfo) return { title: 'State Not Found | Nuclear Hustle' };
 
   const jobs = getJobsByState(state);
-  const title = `Nuclear Jobs in ${stateInfo.name} - ${jobs.length} Open Positions | Nuclear Hustle`;
-  const description = `Find ${jobs.length} nuclear power plant jobs in ${stateInfo.name}. Browse reactor operator, engineering, maintenance, and health physics positions.`;
+  const title = `${stateInfo.name} Nuclear Jobs — ${jobs.length} Positions | Nuclear Hustle`;
+  const description = `Browse ${jobs.length} nuclear jobs in ${stateInfo.name}. Reactor operator, engineering, and health physics roles at top operators.`;
 
-  return { title, description, openGraph: { title, description, type: 'website' } };
+  const url = `https://nuclearhustle.com/jobs/${state}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { title, description, url, type: 'website', siteName: 'Nuclear Hustle' },
+    twitter: { card: 'summary_large_image', title, description },
+  };
 }
 
 export default async function StatePage({ params }: PageProps) {
@@ -34,96 +41,161 @@ export default async function StatePage({ params }: PageProps) {
   if (!stateInfo) notFound();
 
   const jobs = getJobsByState(state);
-  const categories = getActiveCategories();
+  // Exclude 'other' category from the role filter chips
+  const categories = getActiveCategories().filter((c) => c.category !== 'other');
 
-  const otherStatesWithJobs = getAllStateSlugs()
-    .filter((s) => s !== state)
-    .slice(0, 10)
-    .map((s) => getStateBySlug(s)!)
-    .filter(Boolean);
+  // Build sidebar: other states with job counts, sorted by count desc
+  const allActiveStates = getActiveStates()
+    .filter(({ state: s }) => s.slug !== state)
+    .slice(0, 12);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#EDE8DF]">
+
       {/* Header */}
-      <div className="border-b border-gray-100 py-12">
+      <div className="border-b border-[#CFC8BC] py-12">
         <div className="max-w-6xl mx-auto px-6">
-          <nav className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase text-gray-400 mb-6">
-            <Link href="/" className="hover:text-gray-900 transition-colors">Home</Link>
-            <span className="text-gray-200">//</span>
-            <Link href="/jobs" className="hover:text-gray-900 transition-colors">Jobs</Link>
-            <span className="text-gray-200">//</span>
-            <span className="text-gray-900">{stateInfo.name}</span>
+          <nav className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase text-stone-400 mb-6">
+            <Link href="/" className="hover:text-stone-900 transition-colors">Home</Link>
+            <span aria-hidden="true">//</span>
+            <Link href="/jobs" className="hover:text-stone-900 transition-colors">Jobs</Link>
+            <span aria-hidden="true">//</span>
+            <span className="text-stone-900">{stateInfo.name}</span>
           </nav>
-          <p className="font-mono text-xs tracking-widest uppercase text-gray-300 mb-2">Location</p>
-          <h1 className="font-mono text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+
+          <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">Location</p>
+          <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 mb-3">
             Nuclear jobs in {stateInfo.name}
           </h1>
-          <p className="font-mono text-sm text-gray-400">
-            <strong className="text-gray-900">{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
-          </p>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <p className="font-mono text-sm text-stone-400">
+              <strong className="text-stone-900">{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
+            </p>
+            {jobs.length > 0 && (
+              <Link
+                href="/signup"
+                className="font-mono text-xs tracking-widest uppercase text-yellow-700 border border-yellow-300 bg-yellow-50 hover:bg-yellow-100 px-3 py-1 transition-colors"
+              >
+                ★ Get {stateInfo.name} job alerts →
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Role filter */}
-      <div className="border-b border-gray-100">
+      {/* Role filter bar */}
+      <div className="border-b border-[#CFC8BC]">
         <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center gap-2">
-          <span className="font-mono text-xs tracking-widest uppercase text-gray-300">Role</span>
-          {categories.map(({ category, name }) => (
+          <span className="font-mono text-xs tracking-widest uppercase text-stone-500 mr-1">Filter by role</span>
+          {categories.map(({ category, name, count }) => (
             <Link
               key={category}
               href={`/jobs/role/${category}`}
-              className="font-mono text-xs tracking-widest uppercase border border-gray-100 px-3 py-1 text-gray-500 hover:border-yellow-400 hover:text-gray-900 transition-colors"
+              className="font-mono text-xs tracking-widest uppercase border border-[#CFC8BC] px-3 py-1 text-stone-500 hover:border-yellow-400 hover:text-stone-900 transition-colors"
             >
               {name}
+              <span className="ml-1.5 text-stone-400">{count}</span>
             </Link>
           ))}
         </div>
       </div>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-4 gap-12">
+
           {/* Job list */}
           <div className="lg:col-span-3">
             {jobs.length > 0 ? (
-              <div className="border border-gray-100">
+              <div className="border border-[#CFC8BC]">
                 {jobs.map((job) => (
                   <JobCard key={job.id} job={job} />
                 ))}
               </div>
             ) : (
-              <div className="border border-gray-100 p-8 text-center">
-                <p className="font-mono text-sm text-gray-400 mb-4">No jobs currently available in {stateInfo.name}.</p>
-                <Link href="/jobs" className="font-mono text-xs tracking-widest uppercase text-yellow-600 hover:text-yellow-700 transition-colors">
-                  Browse all jobs →
-                </Link>
+              <div className="border border-[#CFC8BC] p-10 text-center">
+                <p className="font-mono text-sm text-stone-400 mb-2">
+                  No jobs currently listed in {stateInfo.name}.
+                </p>
+                <p className="font-mono text-xs text-stone-400 mb-6">
+                  New roles are added daily — set up an alert so you don't miss one.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Link
+                    href="/signup"
+                    className="font-mono text-xs tracking-widest uppercase px-5 py-3 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
+                  >
+                    Get job alerts →
+                  </Link>
+                  <Link
+                    href="/jobs"
+                    className="font-mono text-xs tracking-widest uppercase px-5 py-3 border border-[#CFC8BC] text-stone-600 hover:text-stone-900 hover:border-stone-400 transition-colors"
+                  >
+                    Browse all jobs →
+                  </Link>
+                </div>
               </div>
             )}
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <p className="font-mono text-xs tracking-widest uppercase text-gray-300 mb-4">Other states</p>
-            <ul className="space-y-2">
-              {otherStatesWithJobs.map((otherState) => (
-                <li key={otherState.slug}>
-                  <Link
-                    href={`/jobs/${otherState.slug}`}
-                    className="font-mono text-xs tracking-widest uppercase text-gray-400 hover:text-gray-900 transition-colors"
-                  >
-                    {otherState.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/jobs"
-              className="block font-mono text-xs tracking-widest uppercase text-gray-400 hover:text-gray-900 transition-colors mt-6"
-            >
-              All locations →
-            </Link>
+          <div className="lg:col-span-1 space-y-8">
+
+            {/* Job alert CTA */}
+            <div className="border border-yellow-300 bg-yellow-50 p-5">
+              <p className="font-mono text-[10px] tracking-widest uppercase text-yellow-700 mb-2">Free job alerts</p>
+              <p className="font-mono text-xs text-stone-600 leading-relaxed mb-4">
+                Be first to hear about new nuclear roles in {stateInfo.name}.
+              </p>
+              <Link
+                href="/signup"
+                className="block text-center font-mono text-xs tracking-widest uppercase px-4 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
+              >
+                Create free alert →
+              </Link>
+            </div>
+
+            {/* Other states */}
+            <div>
+              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Other states</p>
+              <ul className="space-y-2 border border-[#CFC8BC]">
+                {allActiveStates.map(({ state: otherState, count }) => (
+                  <li key={otherState.slug} className="border-b border-[#CFC8BC] last:border-b-0">
+                    <Link
+                      href={`/jobs/${otherState.slug}`}
+                      className="flex items-center justify-between px-3 py-2 font-mono text-xs tracking-widest uppercase text-stone-500 hover:text-stone-900 hover:bg-[#E5DFD5] transition-colors"
+                    >
+                      <span>{otherState.name}</span>
+                      <span className="text-stone-400">{count}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/jobs"
+                className="block font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors mt-3"
+              >
+                All locations →
+              </Link>
+            </div>
+
+            {/* Employer nudge */}
+            <div className="border border-[#CFC8BC] p-5">
+              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-2">Hiring in {stateInfo.name}?</p>
+              <p className="font-mono text-xs text-stone-500 leading-relaxed mb-4">
+                Post a role and reach nuclear professionals actively looking.
+              </p>
+              <Link
+                href="/signup/employer"
+                className="block text-center font-mono text-xs tracking-widest uppercase px-4 py-2.5 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors"
+              >
+                Post a job →
+              </Link>
+            </div>
+
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

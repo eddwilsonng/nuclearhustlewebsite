@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { isAdmin } from '@/lib/admin';
 import type { Profile } from '@/lib/types';
 
 export default async function DashboardLayout({
@@ -27,8 +28,8 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex">
-      <DashboardSidebar profile={profile as Profile} />
-      <main className="flex-1 p-8 bg-gray-50 min-h-[calc(100vh-73px)]">
+      <DashboardSidebar profile={profile as Profile} isAdmin={isAdmin(user.email)} />
+      <main className="flex-1 p-8 bg-[#E5DFD5] min-h-[calc(100vh-73px)]">
         {children}
       </main>
     </div>

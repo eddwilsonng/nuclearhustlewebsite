@@ -1,11 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
+function getSafeRedirectPath(value: string | null, fallback: string): string {
+  if (!value) return fallback;
+  // Must start with / and not contain protocol-relative or backslash tricks
+  if (!value.startsWith("/") || value.startsWith("//") || value.includes("\\")) {
+    return fallback;
+  }
+  return value;
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const role = searchParams.get("role");
-  const next = searchParams.get("next") ?? "/dashboard";
+  const next = getSafeRedirectPath(searchParams.get("next"), "/dashboard");
 
   if (code) {
     const supabase = await createClient();

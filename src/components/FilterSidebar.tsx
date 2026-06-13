@@ -25,7 +25,7 @@ export function FilterSidebar({
     <aside className="w-full lg:w-64 space-y-6">
       {/* Search */}
       <div>
-        <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="search" className="block text-sm font-medium text-stone-700 mb-2">
           Search
         </label>
         <input
@@ -34,20 +34,20 @@ export function FilterSidebar({
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Job title or location..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
+          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
         />
       </div>
 
       {/* Company Filter */}
       <div>
-        <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="company" className="block text-sm font-medium text-stone-700 mb-2">
           Company
         </label>
         <select
           id="company"
           value={selectedCompany || ''}
           onChange={(e) => onCompanyChange(e.target.value || null)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none bg-white"
+          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none bg-[#EDE8DF]"
         >
           <option value="">All Companies</option>
           {companies.map((company) => (
@@ -60,14 +60,14 @@ export function FilterSidebar({
 
       {/* Region Filter */}
       <div>
-        <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="region" className="block text-sm font-medium text-stone-700 mb-2">
           Region
         </label>
         <select
           id="region"
           value={selectedRegion || ''}
           onChange={(e) => onRegionChange((e.target.value as Region) || null)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none bg-white"
+          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none bg-[#EDE8DF]"
         >
           <option value="">All Regions</option>
           {REGIONS.map((region) => (
@@ -86,7 +86,7 @@ export function FilterSidebar({
             onRegionChange(null);
             onSearchChange('');
           }}
-          className="w-full px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="w-full px-4 py-2 text-sm text-stone-600 hover:text-stone-900 border border-stone-300 rounded-lg hover:bg-[#E5DFD5] transition-colors"
         >
           Clear Filters
         </button>

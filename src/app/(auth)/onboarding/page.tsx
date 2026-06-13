@@ -8,10 +8,10 @@ export const metadata = {
 export default function OnboardingPage() {
   return (
     <div className="w-full max-w-lg">
-      <h1 className="font-mono text-2xl font-bold text-gray-900 mb-2">
+      <h1 className="font-mono text-2xl font-bold text-stone-900 mb-2">
         One more step.
       </h1>
-      <p className="font-mono text-xs tracking-widest uppercase text-gray-400 mb-8">
+      <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-8">
         How will you use Nuclear Hustle?
       </p>
 
@@ -21,7 +21,7 @@ export default function OnboardingPage() {
           <input type="hidden" name="role" value="job_seeker" />
           <button
             type="submit"
-            className="w-full text-left block p-6 border border-gray-200 hover:border-yellow-400 hover:bg-yellow-50 transition-colors group"
+            className="w-full text-left block p-6 border border-[#CFC8BC] hover:border-yellow-400 hover:bg-yellow-50 transition-colors group"
           >
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 w-10 h-10 bg-blue-100 flex items-center justify-center">
@@ -30,10 +30,10 @@ export default function OnboardingPage() {
                 </svg>
               </div>
               <div>
-                <p className="font-mono font-bold text-sm text-gray-900 group-hover:text-yellow-700">
+                <p className="font-mono font-bold text-sm text-stone-900 group-hover:text-yellow-700">
                   I&apos;m looking for a job
                 </p>
-                <p className="mt-1 font-mono text-xs text-gray-500">
+                <p className="mt-1 font-mono text-xs text-stone-500">
                   Browse jobs and get discovered by employers
                 </p>
               </div>
@@ -44,7 +44,7 @@ export default function OnboardingPage() {
         {/* Employer */}
         <Link
           href="/onboarding/employer"
-          className="block p-6 border border-gray-200 hover:border-yellow-400 hover:bg-yellow-50 transition-colors group"
+          className="block p-6 border border-[#CFC8BC] hover:border-yellow-400 hover:bg-yellow-50 transition-colors group"
         >
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0 w-10 h-10 bg-green-100 flex items-center justify-center">
@@ -53,10 +53,10 @@ export default function OnboardingPage() {
               </svg>
             </div>
             <div>
-              <p className="font-mono font-bold text-sm text-gray-900 group-hover:text-yellow-700">
+              <p className="font-mono font-bold text-sm text-stone-900 group-hover:text-yellow-700">
                 I&apos;m hiring
               </p>
-              <p className="mt-1 font-mono text-xs text-gray-500">
+              <p className="mt-1 font-mono text-xs text-stone-500">
                 Post jobs and find qualified candidates
               </p>
             </div>

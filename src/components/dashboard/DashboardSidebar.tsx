@@ -6,12 +6,13 @@ import type { Profile } from '@/lib/types';
 
 interface DashboardSidebarProps {
   profile: Profile;
+  isAdmin?: boolean;
 }
 
-export function DashboardSidebar({ profile }: DashboardSidebarProps) {
+export function DashboardSidebar({ profile, isAdmin }: DashboardSidebarProps) {
   const pathname = usePathname();
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
 
   const jobSeekerLinks = [
     { href: '/dashboard', label: 'Overview' },
@@ -25,12 +26,18 @@ export function DashboardSidebar({ profile }: DashboardSidebarProps) {
     { href: '/dashboard/jobs/new', label: 'Post a Job' },
   ];
 
+  const adminLinks = [
+    { href: '/dashboard/admin', label: 'Admin Overview' },
+    { href: '/dashboard/admin/jobs', label: 'Manage Jobs' },
+    { href: '/dashboard/admin/scrape', label: 'Scrape Jobs' },
+  ];
+
   const links = profile.role === 'employer' ? employerLinks : jobSeekerLinks;
 
   return (
-    <aside className="w-56 bg-white border-r border-gray-100 min-h-[calc(100vh-57px)]">
+    <aside className="w-56 bg-[#EDE8DF] border-r border-[#CFC8BC] min-h-[calc(100vh-57px)]">
       <div className="p-6">
-        <p className="font-mono text-xs tracking-widest uppercase text-gray-300 mb-6">
+        <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-6">
           {profile.role === 'employer' ? 'Employer' : 'Job Seeker'}
         </p>
         <nav className="space-y-1">
@@ -40,14 +47,37 @@ export function DashboardSidebar({ profile }: DashboardSidebarProps) {
               href={link.href}
               className={`block font-mono text-xs tracking-widest uppercase py-2 transition-colors border-l-2 pl-3 ${
                 isActive(link.href)
-                  ? 'border-yellow-400 text-gray-900'
-                  : 'border-transparent text-gray-400 hover:text-gray-900 hover:border-gray-200'
+                  ? 'border-yellow-400 text-stone-900'
+                  : 'border-transparent text-stone-400 hover:text-stone-900 hover:border-[#CFC8BC]'
               }`}
             >
               {link.label}
             </Link>
           ))}
         </nav>
+        {isAdmin && (
+          <>
+            <div className="my-6 border-t border-[#CFC8BC]" />
+            <p className="font-mono text-xs tracking-widest uppercase text-yellow-500 mb-4">
+              Admin
+            </p>
+            <nav className="space-y-1">
+              {adminLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`block font-mono text-xs tracking-widest uppercase py-2 transition-colors border-l-2 pl-3 ${
+                    isActive(link.href)
+                      ? 'border-yellow-400 text-stone-900'
+                      : 'border-transparent text-stone-400 hover:text-stone-900 hover:border-[#CFC8BC]'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </>
+        )}
       </div>
     </aside>
   );

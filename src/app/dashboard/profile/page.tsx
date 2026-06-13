@@ -55,13 +55,13 @@ export default function ProfilePage() {
     return (
       <div className="max-w-2xl">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="h-8 bg-[#CFC8BC] rounded w-1/3 mb-6"></div>
+          <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
             <div className="space-y-4">
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-[#CFC8BC] rounded w-1/4"></div>
+              <div className="h-10 bg-[#CFC8BC] rounded"></div>
+              <div className="h-4 bg-[#CFC8BC] rounded w-1/4"></div>
+              <div className="h-10 bg-[#CFC8BC] rounded"></div>
             </div>
           </div>
         </div>
@@ -102,10 +102,10 @@ function JobSeekerProfileForm({
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">My Profile</h1>
+      <h1 className="text-2xl font-bold text-stone-900 mb-6">My Profile</h1>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h2>
+      <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6 mb-6">
+        <h2 className="text-lg font-semibold text-stone-900 mb-4">Personal Information</h2>
 
         {state.error && (
           <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
@@ -121,7 +121,7 @@ function JobSeekerProfileForm({
 
         <form action={formAction} className="space-y-4">
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="fullName" className="block text-sm font-medium text-stone-700 mb-1">
               Full Name
             </label>
             <input
@@ -130,12 +130,12 @@ function JobSeekerProfileForm({
               type="text"
               required
               defaultValue={profile.full_name}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-1">
               Email
             </label>
             <input
@@ -144,13 +144,13 @@ function JobSeekerProfileForm({
               type="email"
               disabled
               value={profile.email}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-500"
+              className="w-full px-3 py-2 border border-[#CFC8BC] rounded-md bg-[#E5DFD5] text-stone-500"
             />
-            <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+            <p className="mt-1 text-xs text-stone-500">Email cannot be changed</p>
           </div>
 
           <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="location" className="block text-sm font-medium text-stone-700 mb-1">
               Location
             </label>
             <input
@@ -158,7 +158,7 @@ function JobSeekerProfileForm({
               name="location"
               type="text"
               defaultValue={jobSeekerProfile?.location || ''}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
               placeholder="e.g., Chicago, IL"
             />
           </div>
@@ -166,15 +166,15 @@ function JobSeekerProfileForm({
           <button
             type="submit"
             disabled={isPending}
-            className="w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-400 disabled:bg-yellow-300 text-gray-900 font-semibold rounded-md transition-colors"
+            className="w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-400 disabled:bg-yellow-300 text-stone-900 font-semibold rounded-md transition-colors"
           >
             {isPending ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Resume</h2>
+      <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
+        <h2 className="text-lg font-semibold text-stone-900 mb-4">Resume</h2>
         <ResumeUpload
           currentResumeUrl={jobSeekerProfile?.resume_url || null}
           currentFilename={jobSeekerProfile?.resume_filename || null}
@@ -198,9 +198,9 @@ function EmployerProfileForm({
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Company Profile</h1>
+      <h1 className="text-2xl font-bold text-stone-900 mb-6">Company Profile</h1>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
         {state.error && (
           <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
             {state.error}
@@ -215,7 +215,7 @@ function EmployerProfileForm({
 
         <form action={formAction} className="space-y-4">
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="fullName" className="block text-sm font-medium text-stone-700 mb-1">
               Your Name
             </label>
             <input
@@ -224,12 +224,12 @@ function EmployerProfileForm({
               type="text"
               required
               defaultValue={profile.full_name}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-1">
               Email
             </label>
             <input
@@ -238,15 +238,15 @@ function EmployerProfileForm({
               type="email"
               disabled
               value={profile.email}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-500"
+              className="w-full px-3 py-2 border border-[#CFC8BC] rounded-md bg-[#E5DFD5] text-stone-500"
             />
-            <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+            <p className="mt-1 text-xs text-stone-500">Email cannot be changed</p>
           </div>
 
           <hr className="my-6" />
 
           <div>
-            <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="companyName" className="block text-sm font-medium text-stone-700 mb-1">
               Company Name
             </label>
             <input
@@ -255,12 +255,12 @@ function EmployerProfileForm({
               type="text"
               required
               defaultValue={employerProfile?.company_name || ''}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label htmlFor="companyWebsite" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="companyWebsite" className="block text-sm font-medium text-stone-700 mb-1">
               Company Website
             </label>
             <input
@@ -268,13 +268,13 @@ function EmployerProfileForm({
               name="companyWebsite"
               type="url"
               defaultValue={employerProfile?.company_website || ''}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
               placeholder="https://company.com"
             />
           </div>
 
           <div>
-            <label htmlFor="companyDescription" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="companyDescription" className="block text-sm font-medium text-stone-700 mb-1">
               Company Description
             </label>
             <textarea
@@ -282,7 +282,7 @@ function EmployerProfileForm({
               name="companyDescription"
               rows={4}
               defaultValue={employerProfile?.company_description || ''}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
               placeholder="Tell job seekers about your company..."
             />
           </div>
@@ -290,7 +290,7 @@ function EmployerProfileForm({
           <button
             type="submit"
             disabled={isPending}
-            className="w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-400 disabled:bg-yellow-300 text-gray-900 font-semibold rounded-md transition-colors"
+            className="w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-400 disabled:bg-yellow-300 text-stone-900 font-semibold rounded-md transition-colors"
           >
             {isPending ? 'Saving...' : 'Save Changes'}
           </button>

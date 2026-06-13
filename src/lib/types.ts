@@ -32,12 +32,28 @@ export interface Job {
 export interface JobWithCompany extends Job {
   company: Company;
   isEmployerJob?: boolean;
+  is_featured?: boolean;
+  featured_until?: string | null;
   application_type?: 'link' | 'form';
   employment_type?: string;
   structured_description?: StructuredDescription | null;
 }
 
 export type Region = Plant['region'];
+
+export interface JobListItem {
+  id: string;
+  company_id: string;
+  title: string;
+  location: string;
+  slug: string;
+  category: JobCategory;
+  scraped_at: string;
+  isEmployerJob?: boolean;
+  is_featured?: boolean;
+  featured_until?: string | null;
+  company: { id: string; name: string };
+}
 
 export const REGIONS: Region[] = ['Midwest', 'Southeast', 'Northeast', 'Southwest', 'West'];
 
@@ -96,6 +112,8 @@ export interface EmployerJob {
   application_url: string | null;
   application_email: string | null;
   is_active: boolean;
+  is_featured: boolean;
+  featured_until: string | null;
   expires_at: string | null;
   created_at: string;
 }

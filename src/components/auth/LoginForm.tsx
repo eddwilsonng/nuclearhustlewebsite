@@ -18,7 +18,7 @@ export function LoginForm({ redirect }: LoginFormProps) {
       <form action={signInWithGoogle}>
         <button
           type="submit"
-          className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-200 bg-white hover:border-gray-400 text-gray-700 font-mono text-xs tracking-widest uppercase transition-colors"
+          className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-[#CFC8BC] bg-[#EDE8DF] hover:border-stone-400 text-stone-700 font-mono text-xs tracking-widest uppercase transition-colors"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 flex-shrink-0" aria-hidden="true">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -31,9 +31,9 @@ export function LoginForm({ redirect }: LoginFormProps) {
       </form>
 
       <div className="flex items-center gap-3">
-        <div className="flex-1 border-t border-gray-100" />
-        <span className="font-mono text-xs text-gray-300">or</span>
-        <div className="flex-1 border-t border-gray-100" />
+        <div className="flex-1 border-t border-[#CFC8BC]" />
+        <span className="font-mono text-xs text-stone-600">or</span>
+        <div className="flex-1 border-t border-[#CFC8BC]" />
       </div>
 
       <form action={formAction} className="space-y-4">
@@ -46,7 +46,7 @@ export function LoginForm({ redirect }: LoginFormProps) {
         )}
 
         <div>
-          <label htmlFor="email" className="block font-mono text-xs tracking-widest uppercase text-gray-400 mb-2">
+          <label htmlFor="email" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">
             Email
           </label>
           <input
@@ -54,13 +54,13 @@ export function LoginForm({ redirect }: LoginFormProps) {
             name="email"
             type="email"
             required
-            className="w-full px-3 py-2 border border-gray-200 font-mono text-sm focus:outline-none focus:border-yellow-400 transition-colors"
+            className="w-full px-3 py-2 border border-[#CFC8BC] font-mono text-sm focus:outline-none focus:border-yellow-400 transition-colors"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block font-mono text-xs tracking-widest uppercase text-gray-400 mb-2">
+          <label htmlFor="password" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">
             Password
           </label>
           <input
@@ -69,7 +69,7 @@ export function LoginForm({ redirect }: LoginFormProps) {
             type="password"
             required
             minLength={6}
-            className="w-full px-3 py-2 border border-gray-200 font-mono text-sm focus:outline-none focus:border-yellow-400 transition-colors"
+            className="w-full px-3 py-2 border border-[#CFC8BC] font-mono text-sm focus:outline-none focus:border-yellow-400 transition-colors"
             placeholder="••••••••"
           />
         </div>
@@ -77,7 +77,7 @@ export function LoginForm({ redirect }: LoginFormProps) {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full py-3 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:bg-yellow-200 text-gray-900 font-mono text-xs tracking-widest uppercase font-bold transition-colors"
+          className="w-full py-3 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:bg-yellow-200 text-stone-900 font-mono text-xs tracking-widest uppercase font-bold transition-colors"
         >
           {isPending ? "Signing in..." : "Sign In"}
         </button>

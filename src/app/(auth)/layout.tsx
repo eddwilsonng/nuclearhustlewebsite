@@ -6,13 +6,13 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[#EDE8DF] flex flex-col">
       {/* Minimal header */}
-      <header className="border-b border-gray-100 py-5">
+      <header className="border-b border-[#CFC8BC] py-5">
         <div className="max-w-md mx-auto px-6">
           <Link href="/" className="flex items-center gap-2 justify-center">
-            <span className="font-mono text-gray-300 text-sm select-none">##</span>
-            <span className="font-mono font-bold text-xs tracking-widest uppercase text-gray-900">
+            <span className="font-mono text-stone-500 text-sm select-none">##</span>
+            <span className="font-mono font-bold text-xs tracking-widest uppercase text-stone-900">
               nuclearhustle
             </span>
           </Link>
@@ -25,8 +25,8 @@ export default function AuthLayout({
       </main>
 
       {/* Footer */}
-      <footer className="py-6 text-center border-t border-gray-100">
-        <Link href="/" className="font-mono text-xs tracking-widest uppercase text-gray-400 hover:text-gray-900 transition-colors">
+      <footer className="py-6 text-center border-t border-[#CFC8BC]">
+        <Link href="/" className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors">
           ← Back to home
         </Link>
       </footer>

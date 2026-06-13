@@ -1,0 +1,716 @@
+{
+  "plants": [
+    {
+      "id": "arkansas-nuclear-one",
+      "name": "Arkansas Nuclear One",
+      "state": "AR",
+      "city": "Russellville",
+      "operator": "Entergy",
+      "lat": 35.3103,
+      "lng": -93.2308,
+      "units": [
+        { "nrcName": "Arkansas Nuclear 1" },
+        { "nrcName": "Arkansas Nuclear 2" }
+      ]
+    },
+    {
+      "id": "beaver-valley",
+      "name": "Beaver Valley",
+      "state": "PA",
+      "city": "Shippingport",
+      "operator": "FirstEnergy",
+      "lat": 40.6234,
+      "lng": -80.4332,
+      "units": [
+        { "nrcName": "Beaver Valley 1" },
+        { "nrcName": "Beaver Valley 2" }
+      ]
+    },
+    {
+      "id": "braidwood",
+      "name": "Braidwood",
+      "state": "IL",
+      "city": "Braidwood",
+      "operator": "Constellation",
+      "lat": 41.2394,
+      "lng": -88.2312,
+      "units": [
+        { "nrcName": "Braidwood 1" },
+        { "nrcName": "Braidwood 2" }
+      ]
+    },
+    {
+      "id": "browns-ferry",
+      "name": "Browns Ferry",
+      "state": "AL",
+      "city": "Athens",
+      "operator": "TVA",
+      "lat": 34.7039,
+      "lng": -87.119,
+      "units": [
+        { "nrcName": "Browns Ferry 1" },
+        { "nrcName": "Browns Ferry 2" },
+        { "nrcName": "Browns Ferry 3" }
+      ]
+    },
+    {
+      "id": "brunswick",
+      "name": "Brunswick",
+      "state": "NC",
+      "city": "Southport",
+      "operator": "Duke Energy",
+      "lat": 33.9594,
+      "lng": -78.0244,
+      "units": [
+        { "nrcName": "Brunswick 1" },
+        { "nrcName": "Brunswick 2" }
+      ]
+    },
+    {
+      "id": "byron",
+      "name": "Byron",
+      "state": "IL",
+      "city": "Byron",
+      "operator": "Constellation",
+      "lat": 42.0731,
+      "lng": -89.2794,
+      "units": [
+        { "nrcName": "Byron 1" },
+        { "nrcName": "Byron 2" }
+      ]
+    },
+    {
+      "id": "callaway",
+      "name": "Callaway",
+      "state": "MO",
+      "city": "Fulton",
+      "operator": "Ameren",
+      "lat": 38.7675,
+      "lng": -91.78,
+      "units": [
+        { "nrcName": "Callaway" }
+      ]
+    },
+    {
+      "id": "calvert-cliffs",
+      "name": "Calvert Cliffs",
+      "state": "MD",
+      "city": "Lusby",
+      "operator": "Constellation",
+      "lat": 38.435,
+      "lng": -76.4419,
+      "units": [
+        { "nrcName": "Calvert Cliffs 1" },
+        { "nrcName": "Calvert Cliffs 2" }
+      ]
+    },
+    {
+      "id": "columbia",
+      "name": "Columbia Generating Station",
+      "state": "WA",
+      "city": "Richland",
+      "operator": "Energy Northwest",
+      "lat": 46.4725,
+      "lng": -119.3344,
+      "units": [
+        { "nrcName": "Columbia Generating Station" }
+      ]
+    },
+    {
+      "id": "comanche-peak",
+      "name": "Comanche Peak",
+      "state": "TX",
+      "city": "Glen Rose",
+      "operator": "Vistra Energy",
+      "lat": 32.2981,
+      "lng": -97.7778,
+      "units": [
+        { "nrcName": "Comanche Peak 1" },
+        { "nrcName": "Comanche Peak 2" }
+      ]
+    },
+    {
+      "id": "cook",
+      "name": "D.C. Cook",
+      "state": "MI",
+      "city": "Bridgman",
+      "operator": "Indiana Michigan Power",
+      "lat": 41.9764,
+      "lng": -86.5658,
+      "units": [
+        { "nrcName": "D.C. Cook 1" },
+        { "nrcName": "D.C. Cook 2" }
+      ]
+    },
+    {
+      "id": "cooper",
+      "name": "Cooper",
+      "state": "NE",
+      "city": "Brownville",
+      "operator": "NPPD",
+      "lat": 40.3614,
+      "lng": -95.6428,
+      "units": [
+        { "nrcName": "Cooper" }
+      ]
+    },
+    {
+      "id": "davis-besse",
+      "name": "Davis-Besse",
+      "state": "OH",
+      "city": "Oak Harbor",
+      "operator": "FirstEnergy",
+      "lat": 41.5967,
+      "lng": -83.085,
+      "units": [
+        { "nrcName": "Davis-Besse" }
+      ]
+    },
+    {
+      "id": "diablo-canyon",
+      "name": "Diablo Canyon",
+      "state": "CA",
+      "city": "Avila Beach",
+      "operator": "PG&E",
+      "lat": 35.2097,
+      "lng": -120.8542,
+      "units": [
+        { "nrcName": "Diablo Canyon 1" },
+        { "nrcName": "Diablo Canyon 2" }
+      ]
+    },
+    {
+      "id": "dresden",
+      "name": "Dresden",
+      "state": "IL",
+      "city": "Morris",
+      "operator": "Constellation",
+      "lat": 41.3928,
+      "lng": -88.2692,
+      "units": [
+        { "nrcName": "Dresden 2" },
+        { "nrcName": "Dresden 3" }
+      ]
+    },
+    {
+      "id": "farley",
+      "name": "Farley",
+      "state": "AL",
+      "city": "Dothan",
+      "operator": "Southern Company",
+      "lat": 31.2228,
+      "lng": -85.1106,
+      "units": [
+        { "nrcName": "Farley 1" },
+        { "nrcName": "Farley 2" }
+      ]
+    },
+    {
+      "id": "fermi",
+      "name": "Fermi",
+      "state": "MI",
+      "city": "Newport",
+      "operator": "DTE Energy",
+      "lat": 41.9611,
+      "lng": -83.2583,
+      "units": [
+        { "nrcName": "Fermi 2" }
+      ]
+    },
+    {
+      "id": "fitzpatrick",
+      "name": "FitzPatrick",
+      "state": "NY",
+      "city": "Scriba",
+      "operator": "Constellation",
+      "lat": 43.5183,
+      "lng": -76.4033,
+      "units": [
+        { "nrcName": "FitzPatrick" }
+      ]
+    },
+    {
+      "id": "ginna",
+      "name": "Ginna",
+      "state": "NY",
+      "city": "Ontario",
+      "operator": "Constellation",
+      "lat": 43.2822,
+      "lng": -77.3094,
+      "units": [
+        { "nrcName": "Ginna" }
+      ]
+    },
+    {
+      "id": "grand-gulf",
+      "name": "Grand Gulf",
+      "state": "MS",
+      "city": "Port Gibson",
+      "operator": "Entergy",
+      "lat": 32.005,
+      "lng": -91.0467,
+      "units": [
+        { "nrcName": "Grand Gulf 1" }
+      ]
+    },
+    {
+      "id": "harris",
+      "name": "Shearon Harris",
+      "state": "NC",
+      "city": "New Hill",
+      "operator": "Duke Energy",
+      "lat": 35.6358,
+      "lng": -78.9539,
+      "units": [
+        { "nrcName": "Harris 1" }
+      ]
+    },
+    {
+      "id": "hatch",
+      "name": "Hatch",
+      "state": "GA",
+      "city": "Baxley",
+      "operator": "Southern Company",
+      "lat": 31.9333,
+      "lng": -82.3525,
+      "units": [
+        { "nrcName": "Hatch 1" },
+        { "nrcName": "Hatch 2" }
+      ]
+    },
+    {
+      "id": "hope-creek",
+      "name": "Hope Creek",
+      "state": "NJ",
+      "city": "Salem",
+      "operator": "PSEG",
+      "lat": 39.4619,
+      "lng": -75.5361,
+      "units": [
+        { "nrcName": "Hope Creek 1" }
+      ]
+    },
+    {
+      "id": "lasalle",
+      "name": "LaSalle",
+      "state": "IL",
+      "city": "Marseilles",
+      "operator": "Constellation",
+      "lat": 41.2386,
+      "lng": -88.6681,
+      "units": [
+        { "nrcName": "LaSalle 1" },
+        { "nrcName": "LaSalle 2" }
+      ]
+    },
+    {
+      "id": "limerick",
+      "name": "Limerick",
+      "state": "PA",
+      "city": "Limerick",
+      "operator": "Constellation",
+      "lat": 40.2278,
+      "lng": -75.5875,
+      "units": [
+        { "nrcName": "Limerick 1" },
+        { "nrcName": "Limerick 2" }
+      ]
+    },
+    {
+      "id": "mcguire",
+      "name": "McGuire",
+      "state": "NC",
+      "city": "Huntersville",
+      "operator": "Duke Energy",
+      "lat": 35.4336,
+      "lng": -80.9533,
+      "units": [
+        { "nrcName": "McGuire 1" },
+        { "nrcName": "McGuire 2" }
+      ]
+    },
+    {
+      "id": "millstone",
+      "name": "Millstone",
+      "state": "CT",
+      "city": "Waterford",
+      "operator": "Dominion Energy",
+      "lat": 41.3072,
+      "lng": -72.1664,
+      "units": [
+        { "nrcName": "Millstone 2" },
+        { "nrcName": "Millstone 3" }
+      ]
+    },
+    {
+      "id": "monticello",
+      "name": "Monticello",
+      "state": "MN",
+      "city": "Monticello",
+      "operator": "Xcel Energy",
+      "lat": 45.3336,
+      "lng": -93.8464,
+      "units": [
+        { "nrcName": "Monticello" }
+      ]
+    },
+    {
+      "id": "nine-mile-point",
+      "name": "Nine Mile Point",
+      "state": "NY",
+      "city": "Scriba",
+      "operator": "Constellation",
+      "lat": 43.5225,
+      "lng": -76.41,
+      "units": [
+        { "nrcName": "Nine Mile Point 1" },
+        { "nrcName": "Nine Mile Point 2" }
+      ]
+    },
+    {
+      "id": "north-anna",
+      "name": "North Anna",
+      "state": "VA",
+      "city": "Mineral",
+      "operator": "Dominion Energy",
+      "lat": 38.0644,
+      "lng": -77.7897,
+      "units": [
+        { "nrcName": "North Anna 1" },
+        { "nrcName": "North Anna 2" }
+      ]
+    },
+    {
+      "id": "oconee",
+      "name": "Oconee",
+      "state": "SC",
+      "city": "Seneca",
+      "operator": "Duke Energy",
+      "lat": 34.7917,
+      "lng": -82.9003,
+      "units": [
+        { "nrcName": "Oconee 1" },
+        { "nrcName": "Oconee 2" },
+        { "nrcName": "Oconee 3" }
+      ]
+    },
+    {
+      "id": "palo-verde",
+      "name": "Palo Verde",
+      "state": "AZ",
+      "city": "Wintersburg",
+      "operator": "Arizona Public Service",
+      "lat": 33.3878,
+      "lng": -112.8622,
+      "units": [
+        { "nrcName": "Palo Verde 1" },
+        { "nrcName": "Palo Verde 2" },
+        { "nrcName": "Palo Verde 3" }
+      ]
+    },
+    {
+      "id": "peach-bottom",
+      "name": "Peach Bottom",
+      "state": "PA",
+      "city": "Delta",
+      "operator": "Constellation",
+      "lat": 39.7564,
+      "lng": -76.2694,
+      "units": [
+        { "nrcName": "Peach Bottom 2" },
+        { "nrcName": "Peach Bottom 3" }
+      ]
+    },
+    {
+      "id": "perry",
+      "name": "Perry",
+      "state": "OH",
+      "city": "Perry",
+      "operator": "FirstEnergy",
+      "lat": 41.8017,
+      "lng": -81.1417,
+      "units": [
+        { "nrcName": "Perry 1" }
+      ]
+    },
+    {
+      "id": "point-beach",
+      "name": "Point Beach",
+      "state": "WI",
+      "city": "Two Rivers",
+      "operator": "NextEra Energy",
+      "lat": 44.2806,
+      "lng": -87.5367,
+      "units": [
+        { "nrcName": "Point Beach 1" },
+        { "nrcName": "Point Beach 2" }
+      ]
+    },
+    {
+      "id": "prairie-island",
+      "name": "Prairie Island",
+      "state": "MN",
+      "city": "Red Wing",
+      "operator": "Xcel Energy",
+      "lat": 44.6181,
+      "lng": -92.6372,
+      "units": [
+        { "nrcName": "Prairie Island 1" },
+        { "nrcName": "Prairie Island 2" }
+      ]
+    },
+    {
+      "id": "quad-cities",
+      "name": "Quad Cities",
+      "state": "IL",
+      "city": "Cordova",
+      "operator": "Constellation",
+      "lat": 41.7264,
+      "lng": -90.3306,
+      "units": [
+        { "nrcName": "Quad Cities 1" },
+        { "nrcName": "Quad Cities 2" }
+      ]
+    },
+    {
+      "id": "robinson",
+      "name": "Robinson",
+      "state": "SC",
+      "city": "Hartsville",
+      "operator": "Duke Energy",
+      "lat": 34.3978,
+      "lng": -80.1567,
+      "units": [
+        { "nrcName": "Robinson 2" }
+      ]
+    },
+    {
+      "id": "salem",
+      "name": "Salem",
+      "state": "NJ",
+      "city": "Salem",
+      "operator": "PSEG",
+      "lat": 39.4617,
+      "lng": -75.5381,
+      "units": [
+        { "nrcName": "Salem 1" },
+        { "nrcName": "Salem 2" }
+      ]
+    },
+    {
+      "id": "seabrook",
+      "name": "Seabrook",
+      "state": "NH",
+      "city": "Seabrook",
+      "operator": "NextEra Energy",
+      "lat": 42.8978,
+      "lng": -70.85,
+      "units": [
+        { "nrcName": "Seabrook 1" }
+      ]
+    },
+    {
+      "id": "sequoyah",
+      "name": "Sequoyah",
+      "state": "TN",
+      "city": "Soddy-Daisy",
+      "operator": "TVA",
+      "lat": 35.2253,
+      "lng": -85.0908,
+      "units": [
+        { "nrcName": "Sequoyah 1" },
+        { "nrcName": "Sequoyah 2" }
+      ]
+    },
+    {
+      "id": "south-texas",
+      "name": "South Texas",
+      "state": "TX",
+      "city": "Bay City",
+      "operator": "NRG Energy",
+      "lat": 28.7964,
+      "lng": -96.0478,
+      "units": [
+        { "nrcName": "South Texas 1" },
+        { "nrcName": "South Texas 2" }
+      ]
+    },
+    {
+      "id": "st-lucie",
+      "name": "St. Lucie",
+      "state": "FL",
+      "city": "Jensen Beach",
+      "operator": "NextEra Energy",
+      "lat": 27.3486,
+      "lng": -80.2467,
+      "units": [
+        { "nrcName": "Saint Lucie 1" },
+        { "nrcName": "Saint Lucie 2" }
+      ]
+    },
+    {
+      "id": "surry",
+      "name": "Surry",
+      "state": "VA",
+      "city": "Surry",
+      "operator": "Dominion Energy",
+      "lat": 37.1656,
+      "lng": -76.6983,
+      "units": [
+        { "nrcName": "Surry 1" },
+        { "nrcName": "Surry 2" }
+      ]
+    },
+    {
+      "id": "susquehanna",
+      "name": "Susquehanna",
+      "state": "PA",
+      "city": "Berwick",
+      "operator": "Talen Energy",
+      "lat": 41.0969,
+      "lng": -76.1503,
+      "units": [
+        { "nrcName": "Susquehanna 1" },
+        { "nrcName": "Susquehanna 2" }
+      ]
+    },
+    {
+      "id": "three-mile-island",
+      "name": "Crane Clean Energy Center",
+      "state": "PA",
+      "city": "Middletown",
+      "operator": "Constellation",
+      "lat": 40.1528,
+      "lng": -76.7239,
+      "units": [
+        { "nrcName": "Three Mile Island 1" }
+      ]
+    },
+    {
+      "id": "turkey-point",
+      "name": "Turkey Point",
+      "state": "FL",
+      "city": "Homestead",
+      "operator": "NextEra Energy",
+      "lat": 25.4342,
+      "lng": -80.3319,
+      "units": [
+        { "nrcName": "Turkey Point 3" },
+        { "nrcName": "Turkey Point 4" }
+      ]
+    },
+    {
+      "id": "vogtle",
+      "name": "Vogtle",
+      "state": "GA",
+      "city": "Waynesboro",
+      "operator": "Southern Company",
+      "lat": 33.1439,
+      "lng": -81.7611,
+      "units": [
+        { "nrcName": "Vogtle 1" },
+        { "nrcName": "Vogtle 2" },
+        { "nrcName": "Vogtle 3" },
+        { "nrcName": "Vogtle 4" }
+      ]
+    },
+    {
+      "id": "waterford",
+      "name": "Waterford",
+      "state": "LA",
+      "city": "Killona",
+      "operator": "Entergy",
+      "lat": 29.9969,
+      "lng": -90.4717,
+      "units": [
+        { "nrcName": "Waterford 3" }
+      ]
+    },
+    {
+      "id": "watts-bar",
+      "name": "Watts Bar",
+      "state": "TN",
+      "city": "Spring City",
+      "operator": "TVA",
+      "lat": 35.6053,
+      "lng": -84.7892,
+      "units": [
+        { "nrcName": "Watts Bar 1" },
+        { "nrcName": "Watts Bar 2" }
+      ]
+    },
+    {
+      "id": "wolf-creek",
+      "name": "Wolf Creek",
+      "state": "KS",
+      "city": "Burlington",
+      "operator": "Evergy",
+      "lat": 38.2369,
+      "lng": -95.6883,
+      "units": [
+        { "nrcName": "Wolf Creek 1" }
+      ]
+    },
+    {
+      "id": "catawba",
+      "name": "Catawba",
+      "state": "SC",
+      "city": "Clover",
+      "operator": "Duke Energy",
+      "lat": 35.0703,
+      "lng": -81.0731,
+      "units": [
+        { "nrcName": "Catawba 1" },
+        { "nrcName": "Catawba 2" }
+      ]
+    },
+    {
+      "id": "clinton",
+      "name": "Clinton",
+      "state": "IL",
+      "city": "Clinton",
+      "operator": "Constellation",
+      "lat": 40.1014,
+      "lng": -88.8364,
+      "units": [
+        { "nrcName": "Clinton" }
+      ]
+    },
+    {
+      "id": "palisades",
+      "name": "Palisades",
+      "state": "MI",
+      "city": "Covert",
+      "operator": "Holtec International",
+      "lat": 42.3278,
+      "lng": -86.3156,
+      "units": [
+        { "nrcName": "Palisades" }
+      ]
+    },
+    {
+      "id": "river-bend",
+      "name": "River Bend Station",
+      "state": "LA",
+      "city": "St. Francisville",
+      "operator": "Entergy",
+      "lat": 30.7564,
+      "lng": -91.3314,
+      "units": [
+        { "nrcName": "River Bend Station 1" }
+      ]
+    },
+    {
+      "id": "summer",
+      "name": "V.C. Summer",
+      "state": "SC",
+      "city": "Jenkinsville",
+      "operator": "Dominion Energy",
+      "lat": 34.2964,
+      "lng": -81.3281,
+      "units": [
+        { "nrcName": "Summer" }
+      ]
+    }
+  ]
+}

@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { JobWithCompany, Company, Region } from '@/lib/types';
+import { JobListItem, Company, Region } from '@/lib/types';
 import { JobCard } from './JobCard';
 import { FilterSidebar } from './FilterSidebar';
 
 interface JobListProps {
-  jobs: JobWithCompany[];
+  jobs: JobListItem[];
   companies: Company[];
 }
 
@@ -23,11 +23,9 @@ export function JobList({ jobs, companies }: JobListProps) {
     }
 
     if (selectedRegion) {
-      // For now, filter by location text containing region info
-      // In production, this would use the plants data
       result = result.filter((job) => {
         const company = companies.find((c) => c.id === job.company_id);
-        return company !== undefined; // Simplified - all companies match for now
+        return company !== undefined;
       });
     }
 
@@ -41,7 +39,12 @@ export function JobList({ jobs, companies }: JobListProps) {
       );
     }
 
-    return result;
+    // Featured jobs float to the top
+    return result.sort((a, b) => {
+      const aFeatured = a.is_featured && a.featured_until && new Date(a.featured_until) > new Date() ? 1 : 0;
+      const bFeatured = b.is_featured && b.featured_until && new Date(b.featured_until) > new Date() ? 1 : 0;
+      return bFeatured - aFeatured;
+    });
   }, [jobs, companies, selectedCompany, selectedRegion, searchQuery]);
 
   return (
@@ -58,15 +61,15 @@ export function JobList({ jobs, companies }: JobListProps) {
 
       <main className="flex-1">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-gray-600">
+          <p className="text-stone-600">
             {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''} found
           </p>
         </div>
 
         {filteredJobs.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">No jobs found matching your criteria.</p>
-            <p className="text-gray-400 text-sm mt-2">
+          <div className="text-center py-12 bg-[#E5DFD5] rounded-lg">
+            <p className="text-stone-500">No jobs found matching your criteria.</p>
+            <p className="text-stone-400 text-sm mt-2">
               Try adjusting your filters or search terms.
             </p>
           </div>

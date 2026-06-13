@@ -42,17 +42,17 @@ async function JobSeekerDashboard({ userId, profile }: { userId: string; profile
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+      <h1 className="text-2xl font-bold text-stone-900 mb-6">
         Welcome back, {profile.full_name.split(' ')[0]}!
       </h1>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Profile Completeness */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Status</h2>
+        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
+          <h2 className="text-lg font-semibold text-stone-900 mb-4">Profile Status</h2>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Full Name</span>
+              <span className="text-sm text-stone-600">Full Name</span>
               <span className="text-green-600">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -60,7 +60,7 @@ async function JobSeekerDashboard({ userId, profile }: { userId: string; profile
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Location</span>
+              <span className="text-sm text-stone-600">Location</span>
               {typedJobSeekerProfile?.location ? (
                 <span className="text-green-600">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -76,7 +76,7 @@ async function JobSeekerDashboard({ userId, profile }: { userId: string; profile
               )}
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Resume</span>
+              <span className="text-sm text-stone-600">Resume</span>
               {typedJobSeekerProfile?.resume_url ? (
                 <span className="text-green-600">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -94,19 +94,19 @@ async function JobSeekerDashboard({ userId, profile }: { userId: string; profile
           </div>
           <Link
             href="/dashboard/profile"
-            className="mt-4 block text-center py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-md transition-colors"
+            className="mt-4 block text-center py-2 px-4 bg-[#E5DFD5] hover:bg-[#CFC8BC] text-stone-700 font-medium rounded-md transition-colors"
           >
             Complete Profile
           </Link>
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
+          <h2 className="text-lg font-semibold text-stone-900 mb-4">Quick Actions</h2>
           <div className="space-y-3">
             <Link
               href="/jobs"
-              className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-md hover:bg-[#E5DFD5] transition-colors"
             >
               <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
                 <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,13 +114,13 @@ async function JobSeekerDashboard({ userId, profile }: { userId: string; profile
                 </svg>
               </div>
               <div>
-                <p className="font-medium text-gray-900">Browse Jobs</p>
-                <p className="text-sm text-gray-500">Find your next opportunity</p>
+                <p className="font-medium text-stone-900">Browse Jobs</p>
+                <p className="text-sm text-stone-500">Find your next opportunity</p>
               </div>
             </Link>
             <Link
               href="/dashboard/profile"
-              className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-md hover:bg-[#E5DFD5] transition-colors"
             >
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,8 +128,8 @@ async function JobSeekerDashboard({ userId, profile }: { userId: string; profile
                 </svg>
               </div>
               <div>
-                <p className="font-medium text-gray-900">Upload Resume</p>
-                <p className="text-sm text-gray-500">Keep your resume up to date</p>
+                <p className="font-medium text-stone-900">Upload Resume</p>
+                <p className="text-sm text-stone-500">Keep your resume up to date</p>
               </div>
             </Link>
           </div>
@@ -165,23 +165,23 @@ async function EmployerDashboard({ userId, profile }: { userId: string; profile:
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+      <h1 className="text-2xl font-bold text-stone-900 mb-6">
         Welcome back, {profile.full_name.split(' ')[0]}!
       </h1>
 
       {/* Stats */}
       <div className="grid gap-6 md:grid-cols-3 mb-8">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <p className="text-sm text-gray-500">Active Jobs</p>
-          <p className="text-3xl font-bold text-gray-900">{activeJobs}</p>
+        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
+          <p className="text-sm text-stone-500">Active Jobs</p>
+          <p className="text-3xl font-bold text-stone-900">{activeJobs}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <p className="text-sm text-gray-500">Total Jobs Posted</p>
-          <p className="text-3xl font-bold text-gray-900">{totalJobs}</p>
+        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
+          <p className="text-sm text-stone-500">Total Jobs Posted</p>
+          <p className="text-3xl font-bold text-stone-900">{totalJobs}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <p className="text-sm text-gray-500">Company</p>
-          <p className="text-lg font-semibold text-gray-900 truncate">
+        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
+          <p className="text-sm text-stone-500">Company</p>
+          <p className="text-lg font-semibold text-stone-900 truncate">
             {typedEmployerProfile?.company_name || 'Not set'}
           </p>
         </div>
@@ -195,30 +195,30 @@ async function EmployerDashboard({ userId, profile }: { userId: string; profile:
         >
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-yellow-600 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </div>
             <div>
-              <p className="font-semibold text-gray-900">Post a New Job</p>
-              <p className="text-sm text-gray-700">Reach qualified candidates</p>
+              <p className="font-semibold text-stone-900">Post a New Job</p>
+              <p className="text-sm text-stone-400">Reach qualified candidates</p>
             </div>
           </div>
         </Link>
 
         <Link
           href="/dashboard/jobs"
-          className="bg-white hover:bg-gray-50 rounded-lg border border-gray-200 p-6 transition-colors"
+          className="bg-[#EDE8DF] hover:bg-[#E5DFD5] rounded-lg border border-[#CFC8BC] p-6 transition-colors"
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-12 h-12 bg-[#E5DFD5] rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
             <div>
-              <p className="font-semibold text-gray-900">Manage Job Postings</p>
-              <p className="text-sm text-gray-500">Edit or deactivate listings</p>
+              <p className="font-semibold text-stone-900">Manage Job Postings</p>
+              <p className="text-sm text-stone-500">Edit or deactivate listings</p>
             </div>
           </div>
         </Link>
@@ -227,20 +227,20 @@ async function EmployerDashboard({ userId, profile }: { userId: string; profile:
       {/* Recent Jobs */}
       {jobs.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Job Postings</h2>
-          <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+          <h2 className="text-lg font-semibold text-stone-900 mb-4">Recent Job Postings</h2>
+          <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
             {jobs.slice(0, 5).map((job) => (
               <div key={job.id} className="p-4 flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900">{job.title}</p>
-                  <p className="text-sm text-gray-500">{job.location}</p>
+                  <p className="font-medium text-stone-900">{job.title}</p>
+                  <p className="text-sm text-stone-500">{job.location}</p>
                 </div>
                 <div className="flex items-center gap-4">
                   <span
                     className={`px-2 py-1 text-xs font-medium rounded ${
                       job.is_active
                         ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-600'
+                        : 'bg-[#E5DFD5] text-stone-600'
                     }`}
                   >
                     {job.is_active ? 'Active' : 'Inactive'}

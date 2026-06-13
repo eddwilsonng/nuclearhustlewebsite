@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getCompanies, getCompanyById, getPlantsByCompany, getJobsByCompany } from '@/lib/data';
+import { getCompanies, getCompanyById, getPlantsByCompany, getJobsByCompany } from '@/lib/data/static';
 import { JobCard } from '@/components/JobCard';
 
 interface PageProps {
@@ -20,10 +20,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!company) return { title: 'Company Not Found | Nuclear Hustle' };
 
   const jobs = getJobsByCompany(slug);
-  const title = `${company.name} Nuclear Jobs - ${jobs.length} Positions | Nuclear Hustle`;
-  const description = `Find nuclear power plant jobs at ${company.name}. Browse ${jobs.length} open positions and apply today.`;
+  const title = `${company.name} Nuclear Jobs — ${jobs.length} Positions | Nuclear Hustle`;
+  const description = `Find ${jobs.length} nuclear jobs at ${company.name}. Browse open positions and apply today.`;
 
-  return { title, description, openGraph: { title, description, type: 'website' } };
+  const url = `https://nuclearhustle.com/companies/${slug}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { title, description, url, type: 'website', siteName: 'Nuclear Hustle' },
+    twitter: { card: 'summary_large_image', title, description },
+  };
 }
 
 export default async function CompanyPage({ params }: PageProps) {
@@ -43,25 +50,25 @@ export default async function CompanyPage({ params }: PageProps) {
   }, {} as Record<string, typeof plants>);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#EDE8DF]">
       {/* Header */}
-      <div className="border-b border-gray-100 py-12">
+      <div className="bg-[#EDE8DF] border-b border-[#CFC8BC] py-12">
         <div className="max-w-6xl mx-auto px-6">
-          <nav className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase text-gray-400 mb-6">
-            <Link href="/" className="hover:text-gray-900 transition-colors">Home</Link>
-            <span className="text-gray-200">//</span>
-            <Link href="/companies" className="hover:text-gray-900 transition-colors">Companies</Link>
-            <span className="text-gray-200">//</span>
-            <span className="text-gray-900">{company.name}</span>
+          <nav className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase text-stone-500 mb-6">
+            <Link href="/" className="hover:text-stone-900 transition-colors">Home</Link>
+            <span className="text-stone-400">//</span>
+            <Link href="/companies" className="hover:text-stone-900 transition-colors">Companies</Link>
+            <span className="text-stone-400">//</span>
+            <span className="text-stone-600">{company.name}</span>
           </nav>
-          <p className="font-mono text-xs tracking-widest uppercase text-gray-300 mb-2">Company</p>
-          <h1 className="font-mono text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+          <p className="font-mono text-xs tracking-widest uppercase text-yellow-400 mb-2">Company</p>
+          <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 mb-3">
             {company.name}
           </h1>
-          <div className="flex flex-wrap items-center gap-2 font-mono text-sm text-gray-400">
-            <span><strong className="text-gray-900">{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}</span>
-            <span className="text-gray-200">//</span>
-            <span><strong className="text-gray-900">{plants.length}</strong> nuclear plant{plants.length !== 1 ? 's' : ''}</span>
+          <div className="flex flex-wrap items-center gap-2 font-mono text-sm text-stone-400">
+            <span><strong className="text-stone-900">{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}</span>
+            <span className="text-stone-400">//</span>
+            <span><strong className="text-stone-900">{plants.length}</strong> nuclear plant{plants.length !== 1 ? 's' : ''}</span>
           </div>
         </div>
       </div>
@@ -71,16 +78,16 @@ export default async function CompanyPage({ params }: PageProps) {
 
           {/* Main: Jobs */}
           <div className="lg:col-span-2">
-            <p className="font-mono text-xs tracking-widest uppercase text-gray-300 mb-4">Open positions</p>
+            <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">Open positions</p>
             {jobs.length > 0 ? (
-              <div className="border border-gray-100">
+              <div className="border border-[#CFC8BC]">
                 {jobs.map((job) => (
                   <JobCard key={job.id} job={job} />
                 ))}
               </div>
             ) : (
-              <div className="border border-gray-100 p-8 text-center">
-                <p className="font-mono text-sm text-gray-400 mb-4">No open positions currently listed.</p>
+              <div className="border border-[#CFC8BC] p-8 text-center">
+                <p className="font-mono text-sm text-stone-400 mb-4">No open positions currently listed.</p>
                 <a
                   href={company.careers_url}
                   target="_blank"
@@ -97,12 +104,12 @@ export default async function CompanyPage({ params }: PageProps) {
           <div className="lg:col-span-1 space-y-8">
             {/* Company info */}
             <div>
-              <p className="font-mono text-xs tracking-widest uppercase text-gray-300 mb-4">Info</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">Info</p>
               <a
                 href={company.careers_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-mono text-xs tracking-widest uppercase text-gray-500 hover:text-gray-900 transition-colors"
+                className="font-mono text-xs tracking-widest uppercase text-stone-500 hover:text-stone-900 transition-colors"
               >
                 Careers page ↗
               </a>
@@ -111,14 +118,14 @@ export default async function CompanyPage({ params }: PageProps) {
             {/* Plants */}
             {plants.length > 0 && (
               <div>
-                <p className="font-mono text-xs tracking-widest uppercase text-gray-300 mb-4">Nuclear plants</p>
+                <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">Nuclear plants</p>
                 <div className="space-y-4">
                   {Object.entries(plantsByRegion).map(([region, regionPlants]) => (
                     <div key={region}>
-                      <p className="font-mono text-xs tracking-widest uppercase text-gray-300 mb-2">{region}</p>
+                      <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-2">{region}</p>
                       <ul className="space-y-1">
                         {regionPlants.map((plant) => (
-                          <li key={plant.id} className="font-mono text-xs text-gray-600">
+                          <li key={plant.id} className="font-mono text-xs text-stone-600">
                             — {plant.name}
                           </li>
                         ))}
@@ -131,13 +138,13 @@ export default async function CompanyPage({ params }: PageProps) {
 
             {/* Other companies */}
             <div>
-              <p className="font-mono text-xs tracking-widest uppercase text-gray-300 mb-4">Other companies</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">Other companies</p>
               <ul className="space-y-2">
                 {otherCompanies.map((c) => (
                   <li key={c.id}>
                     <Link
                       href={`/companies/${c.id}`}
-                      className="font-mono text-xs tracking-widest uppercase text-gray-400 hover:text-gray-900 transition-colors"
+                      className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
                     >
                       {c.name}
                     </Link>
@@ -146,7 +153,7 @@ export default async function CompanyPage({ params }: PageProps) {
               </ul>
               <Link
                 href="/companies"
-                className="block font-mono text-xs tracking-widest uppercase text-gray-400 hover:text-gray-900 transition-colors mt-4"
+                className="block font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors mt-4"
               >
                 All companies →
               </Link>

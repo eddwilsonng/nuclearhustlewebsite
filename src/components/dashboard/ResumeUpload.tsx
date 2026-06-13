@@ -15,12 +15,12 @@ export function ResumeUpload({ currentResumeUrl, currentFilename }: ResumeUpload
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Resume</label>
+        <label className="block text-sm font-medium text-stone-700 mb-2">Resume</label>
 
         {currentResumeUrl && currentFilename && (
-          <div className="mb-4 p-3 bg-gray-50 rounded-md flex items-center justify-between">
+          <div className="mb-4 p-3 bg-[#E5DFD5] rounded-md flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -28,7 +28,7 @@ export function ResumeUpload({ currentResumeUrl, currentFilename }: ResumeUpload
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <span className="text-sm text-gray-700">{currentFilename}</span>
+              <span className="text-sm text-stone-400">{currentFilename}</span>
             </div>
             <a
               href={currentResumeUrl}
@@ -42,7 +42,7 @@ export function ResumeUpload({ currentResumeUrl, currentFilename }: ResumeUpload
         )}
 
         <form action={formAction}>
-          <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-yellow-500 transition-colors">
+          <div className="border-2 border-dashed border-stone-300 rounded-md p-6 text-center hover:border-yellow-500 transition-colors">
             <input
               type="file"
               name="resume"
@@ -53,7 +53,7 @@ export function ResumeUpload({ currentResumeUrl, currentFilename }: ResumeUpload
             />
             <label htmlFor="resume" className="cursor-pointer">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400"
+                className="mx-auto h-12 w-12 text-stone-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -65,10 +65,10 @@ export function ResumeUpload({ currentResumeUrl, currentFilename }: ResumeUpload
                   d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                 />
               </svg>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-stone-600">
                 {fileName || 'Click to upload or drag and drop'}
               </p>
-              <p className="mt-1 text-xs text-gray-500">PDF or Word (max 5MB)</p>
+              <p className="mt-1 text-xs text-stone-500">PDF or Word (max 5MB)</p>
             </label>
           </div>
 
@@ -76,7 +76,7 @@ export function ResumeUpload({ currentResumeUrl, currentFilename }: ResumeUpload
             <button
               type="submit"
               disabled={isPending}
-              className="mt-4 w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-400 disabled:bg-yellow-300 text-gray-900 font-semibold rounded-md transition-colors"
+              className="mt-4 w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-400 disabled:bg-yellow-300 text-stone-900 font-semibold rounded-md transition-colors"
             >
               {isPending ? 'Uploading...' : 'Upload Resume'}
             </button>

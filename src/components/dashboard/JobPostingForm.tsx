@@ -7,6 +7,7 @@ import type { EmployerJob } from '@/lib/types';
 interface JobPostingFormProps {
   job?: EmployerJob;
   mode: 'create' | 'edit';
+  customAction?: (prevState: ActionState, formData: FormData) => Promise<ActionState>;
 }
 
 const CATEGORIES = [
@@ -27,8 +28,8 @@ const EMPLOYMENT_TYPES = [
   { value: 'internship', label: 'Internship' },
 ];
 
-export function JobPostingForm({ job, mode }: JobPostingFormProps) {
-  const action = mode === 'create' ? createJobPosting : updateJobPosting;
+export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps) {
+  const action = customAction || (mode === 'create' ? createJobPosting : updateJobPosting);
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(action, {});
   const errorRef = useRef<HTMLDivElement>(null);
 
@@ -81,7 +82,7 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
       )}
 
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className="block text-sm font-medium text-stone-700 mb-1">
           Job Title
         </label>
         <input
@@ -91,14 +92,14 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
           required
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
           placeholder="e.g., Senior Reactor Operator"
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="location" className="block text-sm font-medium text-stone-700 mb-1">
             Location
           </label>
           <input
@@ -108,13 +109,13 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
             required
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             placeholder="e.g., Charlotte, NC"
           />
         </div>
 
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="category" className="block text-sm font-medium text-stone-700 mb-1">
             Category
           </label>
           <select
@@ -123,7 +124,7 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
             required
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
           >
             <option value="">Select a category</option>
             {CATEGORIES.map((cat) => (
@@ -136,7 +137,7 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
       </div>
 
       <div>
-        <label htmlFor="employmentType" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="employmentType" className="block text-sm font-medium text-stone-700 mb-1">
           Employment Type
         </label>
         <select
@@ -144,7 +145,7 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
           name="employmentType"
           value={employmentType}
           onChange={(e) => setEmploymentType(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
         >
           {EMPLOYMENT_TYPES.map((type) => (
             <option key={type.value} value={type.value}>
@@ -156,7 +157,7 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
 
       {/* Application method */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium text-stone-700 mb-3">
           How should candidates apply?
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -166,13 +167,13 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
             className={`flex items-start gap-3 p-4 border rounded-md text-left transition-colors ${
               applicationType === 'link'
                 ? 'border-yellow-500 bg-yellow-50'
-                : 'border-gray-200 hover:border-gray-300'
+                : 'border-[#CFC8BC] hover:border-stone-300'
             }`}
           >
             <span className={`mt-0.5 text-lg leading-none ${applicationType === 'link' ? 'opacity-100' : 'opacity-30'}`}>🔗</span>
             <div>
-              <p className="text-sm font-medium text-gray-900">Link to careers page</p>
-              <p className="text-xs text-gray-500 mt-0.5">Redirect applicants to your website</p>
+              <p className="text-sm font-medium text-stone-900">Link to careers page</p>
+              <p className="text-xs text-stone-500 mt-0.5">Redirect applicants to your website</p>
             </div>
           </button>
 
@@ -182,13 +183,13 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
             className={`flex items-start gap-3 p-4 border rounded-md text-left transition-colors ${
               applicationType === 'form'
                 ? 'border-yellow-500 bg-yellow-50'
-                : 'border-gray-200 hover:border-gray-300'
+                : 'border-[#CFC8BC] hover:border-stone-300'
             }`}
           >
             <span className={`mt-0.5 text-lg leading-none ${applicationType === 'form' ? 'opacity-100' : 'opacity-30'}`}>✉️</span>
             <div>
-              <p className="text-sm font-medium text-gray-900">Receive by email</p>
-              <p className="text-xs text-gray-500 mt-0.5">Applications sent to your inbox</p>
+              <p className="text-sm font-medium text-stone-900">Receive by email</p>
+              <p className="text-xs text-stone-500 mt-0.5">Applications sent to your inbox</p>
             </div>
           </button>
         </div>
@@ -196,8 +197,8 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
         <div className="mt-3">
           {applicationType === 'link' ? (
             <div>
-              <label htmlFor="applicationUrl" className="block text-sm font-medium text-gray-700 mb-1">
-                Application URL <span className="text-gray-400 font-normal">(optional)</span>
+              <label htmlFor="applicationUrl" className="block text-sm font-medium text-stone-700 mb-1">
+                Application URL <span className="text-stone-400 font-normal">(optional)</span>
               </label>
               <input
                 id="applicationUrl"
@@ -205,13 +206,13 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
                 type="url"
                 value={applicationUrl}
                 onChange={(e) => setApplicationUrl(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 placeholder="https://yourcompany.com/apply"
               />
             </div>
           ) : (
             <div>
-              <label htmlFor="applicationEmail" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="applicationEmail" className="block text-sm font-medium text-stone-700 mb-1">
                 Application email
               </label>
               <input
@@ -221,10 +222,10 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
                 required={applicationType === 'form'}
                 value={applicationEmail}
                 onChange={(e) => setApplicationEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 placeholder="hiring@yourcompany.com"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-stone-500">
                 Applications will be emailed here with the candidate&apos;s CV attached.
               </p>
             </div>
@@ -235,8 +236,8 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
       {/* Structured description */}
       <div className="space-y-5">
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-1">Job Description</p>
-          <p className="text-xs text-gray-400 mb-4">Fill in the sections that apply — none are required individually.</p>
+          <p className="text-sm font-medium text-stone-700 mb-1">Job Description</p>
+          <p className="text-xs text-stone-400 mb-4">Fill in the sections that apply — none are required individually.</p>
         </div>
 
         {[
@@ -248,7 +249,7 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
           { id: 'whatWeOffer', label: 'What we offer', value: whatWeOffer, onChange: setWhatWeOffer, placeholder: '• Competitive salary\n• Healthcare and pension\n• Relocation assistance...' },
         ].map(({ id, label, value, onChange, placeholder }) => (
           <div key={id}>
-            <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={id} className="block text-sm font-medium text-stone-700 mb-1">
               {label}
             </label>
             <textarea
@@ -257,7 +258,7 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
               rows={4}
               value={value}
               onChange={(e) => onChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
               placeholder={placeholder}
             />
           </div>
@@ -268,7 +269,7 @@ export function JobPostingForm({ job, mode }: JobPostingFormProps) {
         <button
           type="submit"
           disabled={isPending}
-          className="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 disabled:bg-yellow-300 text-gray-900 font-semibold rounded-md transition-colors"
+          className="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 disabled:bg-yellow-300 text-stone-900 font-semibold rounded-md transition-colors"
         >
           {isPending
             ? mode === 'create' ? 'Creating...' : 'Saving...'

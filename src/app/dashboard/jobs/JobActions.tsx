@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toggleJobStatus, deleteJobPosting } from '@/lib/auth/actions';
 
@@ -26,6 +26,50 @@ export function JobStatusToggle({ jobId, isActive }: { jobId: string; isActive: 
       }`}
     >
       {isPending ? '...' : isActive ? 'Deactivate' : 'Activate'}
+    </button>
+  );
+}
+
+export function FeatureJobButton({ jobId, isFeatured, featuredUntil }: {
+  jobId: string;
+  isFeatured: boolean;
+  featuredUntil: string | null;
+}) {
+  const [isLoading, setIsLoading] = useState(false);
+  const isCurrentlyFeatured = isFeatured && featuredUntil && new Date(featuredUntil) > new Date();
+
+  const handleFeature = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId }),
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      setIsLoading(false);
+    }
+  };
+
+  if (isCurrentlyFeatured && featuredUntil) {
+    return (
+      <span className="px-3 py-1.5 text-xs font-mono tracking-widest uppercase border border-yellow-200 text-yellow-700 bg-yellow-50 rounded-md">
+        Featured until {new Date(featuredUntil).toLocaleDateString()}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={handleFeature}
+      disabled={isLoading}
+      className="px-3 py-1.5 text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 hover:bg-yellow-100 rounded-md transition-colors font-medium"
+    >
+      {isLoading ? '...' : '★ Feature — $99'}
     </button>
   );
 }

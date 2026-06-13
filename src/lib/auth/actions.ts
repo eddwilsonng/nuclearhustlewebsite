@@ -7,19 +7,19 @@ import { z } from "zod";
 // Validation schemas
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 const jobSeekerSignupSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
   fullName: z.string().min(2, "Name must be at least 2 characters"),
   location: z.string().optional(),
 });
 
 const employerSignupSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
   fullName: z.string().min(2, "Name must be at least 2 characters"),
   companyName: z.string().min(2, "Company name must be at least 2 characters"),
   companyWebsite: z.string().url("Invalid URL").optional().or(z.literal("")),
@@ -69,7 +69,14 @@ export async function signIn(
   }
 
   const redirectTo = formData.get("redirect") as string;
-  redirect(redirectTo || "/dashboard");
+  const safePath =
+    redirectTo &&
+    redirectTo.startsWith("/") &&
+    !redirectTo.startsWith("//") &&
+    !redirectTo.includes("\\")
+      ? redirectTo
+      : "/dashboard";
+  redirect(safePath);
 }
 
 export async function signUpJobSeeker(
@@ -372,7 +379,11 @@ export async function getEmployerProfile() {
   return profile;
 }
 
-// Update job seeker profile
+const jobSeekerProfileSchema = z.object({
+  fullName: z.string().min(2, "Name must be at least 2 characters").max(200),
+  location: z.string().max(200).optional().or(z.literal("")),
+});
+
 export async function updateJobSeekerProfile(
   prevState: ActionState,
   formData: FormData
@@ -386,23 +397,27 @@ export async function updateJobSeekerProfile(
     return { error: "Not authenticated" };
   }
 
-  const fullName = formData.get("fullName") as string;
-  const location = formData.get("location") as string;
+  const parsed = jobSeekerProfileSchema.safeParse({
+    fullName: formData.get("fullName"),
+    location: formData.get("location"),
+  });
 
-  // Update profile name
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
   const { error: profileError } = await supabase
     .from("profiles")
-    .update({ full_name: fullName })
+    .update({ full_name: parsed.data.fullName })
     .eq("id", user.id);
 
   if (profileError) {
     return { error: profileError.message };
   }
 
-  // Update job seeker location
   const { error: jobSeekerError } = await supabase
     .from("job_seeker_profiles")
-    .update({ location: location || null })
+    .update({ location: parsed.data.location || null })
     .eq("user_id", user.id);
 
   if (jobSeekerError) {
@@ -412,7 +427,13 @@ export async function updateJobSeekerProfile(
   return { success: true };
 }
 
-// Update employer profile
+const employerProfileUpdateSchema = z.object({
+  fullName: z.string().min(2, "Name must be at least 2 characters").max(200),
+  companyName: z.string().min(2, "Company name must be at least 2 characters").max(200),
+  companyWebsite: z.string().url("Invalid URL").max(500).optional().or(z.literal("")),
+  companyDescription: z.string().max(2000).optional().or(z.literal("")),
+});
+
 export async function updateEmployerProfile(
   prevState: ActionState,
   formData: FormData
@@ -426,28 +447,32 @@ export async function updateEmployerProfile(
     return { error: "Not authenticated" };
   }
 
-  const fullName = formData.get("fullName") as string;
-  const companyName = formData.get("companyName") as string;
-  const companyWebsite = formData.get("companyWebsite") as string;
-  const companyDescription = formData.get("companyDescription") as string;
+  const parsed = employerProfileUpdateSchema.safeParse({
+    fullName: formData.get("fullName"),
+    companyName: formData.get("companyName"),
+    companyWebsite: formData.get("companyWebsite"),
+    companyDescription: formData.get("companyDescription"),
+  });
 
-  // Update profile name
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
   const { error: profileError } = await supabase
     .from("profiles")
-    .update({ full_name: fullName })
+    .update({ full_name: parsed.data.fullName })
     .eq("id", user.id);
 
   if (profileError) {
     return { error: profileError.message };
   }
 
-  // Update employer profile
   const { error: employerError } = await supabase
     .from("employer_profiles")
     .update({
-      company_name: companyName,
-      company_website: companyWebsite || null,
-      company_description: companyDescription || null,
+      company_name: parsed.data.companyName,
+      company_website: parsed.data.companyWebsite || null,
+      company_description: parsed.data.companyDescription || null,
     })
     .eq("user_id", user.id);
 
@@ -771,10 +796,22 @@ export async function toggleJobStatus(jobId: string, isActive: boolean) {
     return { error: "Not authenticated" };
   }
 
+  // Verify ownership at the app layer before touching the DB
+  const { data: employerProfile } = await supabase
+    .from("employer_profiles")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!employerProfile) {
+    return { error: "Employer profile not found" };
+  }
+
   const { error } = await supabase
     .from("employer_jobs")
     .update({ is_active: isActive })
-    .eq("id", jobId);
+    .eq("id", jobId)
+    .eq("employer_id", employerProfile.id); // scope to this employer only
 
   if (error) {
     return { error: error.message };
@@ -794,10 +831,22 @@ export async function deleteJobPosting(jobId: string) {
     return { error: "Not authenticated" };
   }
 
+  // Verify ownership at the app layer before touching the DB
+  const { data: employerProfile } = await supabase
+    .from("employer_profiles")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!employerProfile) {
+    return { error: "Employer profile not found" };
+  }
+
   const { error } = await supabase
     .from("employer_jobs")
     .delete()
-    .eq("id", jobId);
+    .eq("id", jobId)
+    .eq("employer_id", employerProfile.id); // scope to this employer only
 
   if (error) {
     return { error: error.message };
