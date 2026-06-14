@@ -46,11 +46,11 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
   return (
     <div className="max-w-4xl">
       {showFeaturedSuccess && <FeaturedSuccessBanner />}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <h1 className="text-2xl font-bold text-stone-900">Job Postings</h1>
         <Link
           href="/dashboard/jobs/new"
-          className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-stone-900 font-semibold rounded-md transition-colors"
+          className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-stone-900 font-semibold rounded-md transition-colors text-center sm:text-left shrink-0"
         >
           Post New Job
         </Link>
@@ -83,7 +83,7 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
         <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
           {typedJobs.map((job) => (
             <div key={job.id} className="p-4">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-stone-900 truncate">{job.title}</h3>

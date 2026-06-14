@@ -1,12 +1,18 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getJobsByCategory, getActiveStates, getActiveCategories } from '@/lib/data/static';
+import Script from 'next/script';
+import { Suspense } from 'react';
+import { getJobsByCategory, getActiveStates, getActiveCategories, getCompanies } from '@/lib/data/static';
 import { getCategoryInfo, getAllCategories, JobCategory } from '@/lib/categorize';
-import { JobCard } from '@/components/JobCard';
+import { CategoryJobsList } from '@/components/CategoryJobsList';
+import { generateCategoryPageSchema } from '@/lib/seo/schema';
+import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
+import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
 
 interface PageProps {
   params: Promise<{ category: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
 export async function generateStaticParams() {
@@ -14,8 +20,9 @@ export async function generateStaticParams() {
   return categories.map((category) => ({ category }));
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { category } = await params;
+  const { page: pageParam } = await searchParams;
   const categoryInfo = getCategoryInfo(category as JobCategory);
 
   if (categoryInfo.id === 'other' && category !== 'other') {
@@ -23,35 +30,66 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const jobs = getJobsByCategory(category as JobCategory);
-  const title = `Nuclear ${categoryInfo.name} Jobs — ${jobs.length} Positions | Nuclear Hustle`;
-  const description = `Browse ${jobs.length} nuclear ${categoryInfo.name.toLowerCase()} jobs across the US. ${categoryInfo.description}`.slice(0, 155);
+  const basePath = `/jobs/role/${category}`;
 
-  const url = `https://nuclearhustle.com/jobs/role/${category}`;
-  return {
-    title,
-    description,
-    alternates: { canonical: url },
-    openGraph: { title, description, url, type: 'website', siteName: 'Nuclear Hustle' },
-    twitter: { card: 'summary_large_image', title, description },
-  };
+  return buildJobsPaginationMetadata({
+    pageParam,
+    totalJobs: jobs.length,
+    basePath,
+    page1Title: `Nuclear ${categoryInfo.name} Jobs — ${jobs.length} Positions | Nuclear Hustle`,
+    page1Description: `Browse ${jobs.length} nuclear ${categoryInfo.name.toLowerCase()} jobs across the US. ${categoryInfo.description}`.slice(0, 155),
+    pagedTitle: (page, totalPages) =>
+      `Nuclear ${categoryInfo.name} Jobs — Page ${page} of ${totalPages} | Nuclear Hustle`,
+    pagedDescription: (page, totalPages, totalJobs) =>
+      `Page ${page} of ${totalPages} — ${totalJobs} nuclear ${categoryInfo.name.toLowerCase()} jobs across the US.`,
+  });
 }
 
-export default async function CategoryPage({ params }: PageProps) {
+export default async function CategoryPage({ params, searchParams }: PageProps) {
   const { category } = await params;
+  const { page: pageParam } = await searchParams;
+  const page = parsePageParam(pageParam);
   const categoryInfo = getCategoryInfo(category as JobCategory);
   const allCategories = getAllCategories();
 
   if (!allCategories.includes(category as JobCategory)) notFound();
 
   const jobs = getJobsByCategory(category as JobCategory);
-  const activeStates = getActiveStates().slice(0, 8);
+  const basePath = `/jobs/role/${category}`;
+  const totalPages = getTotalPages(jobs.length);
+
+  if (page > totalPages) {
+    redirect(buildJobsPageUrl(basePath, totalPages));
+  }
+  const activeStates = getActiveStates();
   // Exclude current category and 'other' from the sidebar list
   const activeCategories = getActiveCategories().filter(
     (c) => c.category !== category && c.category !== 'other'
   );
 
+  // Get company names for schema
+  const companies = getCompanies();
+  const companyMap = new Map(companies.map((c) => [c.id, c.name]));
+
+  // Generate schema markup
+  const url = `https://nuclearhustle.com/jobs/role/${category}`;
+  const schemaData = generateCategoryPageSchema({
+    categoryName: categoryInfo.name,
+    categoryDescription: categoryInfo.description || '',
+    jobCount: jobs.length,
+    jobs: jobs.slice(0, 50),
+    companies: companyMap,
+    states: activeStates.map((s) => s.state.name),
+    url,
+  });
+
   return (
     <div className="min-h-screen bg-[#EDE8DF]">
+      <Script
+        id="category-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      />
 
       {/* Header */}
       <div className="border-b border-[#CFC8BC] py-12">
@@ -72,6 +110,12 @@ export default async function CategoryPage({ params }: PageProps) {
           <div className="flex flex-wrap items-center gap-4 mb-3">
             <p className="font-mono text-sm text-stone-400">
               <strong className="text-stone-900">{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
+              {totalPages > 1 && (
+                <>
+                  <span className="text-stone-400 mx-2">//</span>
+                  <span>Page {page} of {totalPages}</span>
+                </>
+              )}
             </p>
             {jobs.length > 0 && (
               <Link
@@ -89,34 +133,27 @@ export default async function CategoryPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* State filter bar */}
-      <div className="border-b border-[#CFC8BC]">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center gap-2">
-          <span className="font-mono text-xs tracking-widest uppercase text-stone-500 mr-1">Filter by state</span>
-          {activeStates.map(({ state, count }) => (
-            <Link
-              key={state.slug}
-              href={`/jobs/${state.slug}`}
-              className="font-mono text-xs tracking-widest uppercase border border-[#CFC8BC] px-3 py-1 text-stone-500 hover:border-yellow-400 hover:text-stone-900 transition-colors"
-            >
-              {state.name}
-              <span className="ml-1.5 text-stone-400">{count}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
-
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-4 gap-12">
 
-          {/* Job list — category tag is hidden since we're already on this category's page */}
+          {/* Job list with sorting/filtering */}
           <div className="lg:col-span-3">
             {jobs.length > 0 ? (
-              <div className="border border-[#CFC8BC]">
-                {jobs.map((job) => (
-                  <JobCard key={job.id} job={job} hideCategory />
-                ))}
-              </div>
+              <Suspense
+                fallback={
+                  <div className="border border-[#CFC8BC] p-10 text-center">
+                    <p className="font-mono text-xs tracking-widest uppercase text-stone-400">Loading jobs…</p>
+                  </div>
+                }
+              >
+                <CategoryJobsList
+                  jobs={jobs}
+                  categoryName={categoryInfo.name}
+                  hideCategory
+                  initialPage={page}
+                  basePath={basePath}
+                />
+              </Suspense>
             ) : (
               <div className="border border-[#CFC8BC] p-10 text-center">
                 <p className="font-mono text-sm text-stone-400 mb-2">

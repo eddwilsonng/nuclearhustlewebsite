@@ -230,12 +230,12 @@ async function EmployerDashboard({ userId, profile }: { userId: string; profile:
           <h2 className="text-lg font-semibold text-stone-900 mb-4">Recent Job Postings</h2>
           <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
             {jobs.slice(0, 5).map((job) => (
-              <div key={job.id} className="p-4 flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-stone-900">{job.title}</p>
+              <div key={job.id} className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="font-medium text-stone-900 truncate">{job.title}</p>
                   <p className="text-sm text-stone-500">{job.location}</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 shrink-0">
                   <span
                     className={`px-2 py-1 text-xs font-medium rounded ${
                       job.is_active

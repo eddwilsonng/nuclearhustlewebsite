@@ -2,15 +2,16 @@
 
 import { useState, useMemo } from 'react';
 import { JobListItem, Company, Region } from '@/lib/types';
-import { JobCard } from './JobCard';
 import { FilterSidebar } from './FilterSidebar';
+import { PaginatedJobResults } from './PaginatedJobResults';
 
 interface JobListProps {
   jobs: JobListItem[];
   companies: Company[];
+  initialPage?: number;
 }
 
-export function JobList({ jobs, companies }: JobListProps) {
+export function JobList({ jobs, companies, initialPage = 1 }: JobListProps) {
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,13 +40,14 @@ export function JobList({ jobs, companies }: JobListProps) {
       );
     }
 
-    // Featured jobs float to the top
     return result.sort((a, b) => {
       const aFeatured = a.is_featured && a.featured_until && new Date(a.featured_until) > new Date() ? 1 : 0;
       const bFeatured = b.is_featured && b.featured_until && new Date(b.featured_until) > new Date() ? 1 : 0;
       return bFeatured - aFeatured;
     });
   }, [jobs, companies, selectedCompany, selectedRegion, searchQuery]);
+
+  const resetKey = `${selectedCompany ?? ''}|${selectedRegion ?? ''}|${searchQuery}`;
 
   return (
     <div className="flex flex-col lg:flex-row gap-8">
@@ -59,28 +61,22 @@ export function JobList({ jobs, companies }: JobListProps) {
         onSearchChange={setSearchQuery}
       />
 
-      <main className="flex-1">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-stone-600">
-            {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''} found
-          </p>
-        </div>
-
+      <div className="flex-1 min-w-0">
         {filteredJobs.length === 0 ? (
-          <div className="text-center py-12 bg-[#E5DFD5] rounded-lg">
-            <p className="text-stone-500">No jobs found matching your criteria.</p>
-            <p className="text-stone-400 text-sm mt-2">
+          <div className="text-center py-12 bg-[#E5DFD5]">
+            <p className="font-mono text-sm text-stone-500">No jobs found matching your criteria.</p>
+            <p className="font-mono text-xs text-stone-400 mt-2">
               Try adjusting your filters or search terms.
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredJobs.map((job) => (
-              <JobCard key={job.id} job={job} />
-            ))}
-          </div>
+          <PaginatedJobResults
+            jobs={filteredJobs}
+            initialPage={initialPage}
+            resetKey={resetKey}
+          />
         )}
-      </main>
+      </div>
     </div>
   );
 }

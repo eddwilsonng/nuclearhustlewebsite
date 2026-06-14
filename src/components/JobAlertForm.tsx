@@ -38,7 +38,7 @@ export function JobAlertForm() {
       <div className="flex items-center gap-3 font-mono text-sm">
         <span className="text-yellow-600">✓</span>
         <span className="text-stone-600">
-          You&apos;re on the list — we&apos;ll email new jobs as they land.{' '}
+          You&apos;re on the list — we&apos;ll email you new jobs every Monday.{' '}
           <Link href="/signup" className="underline underline-offset-2 text-stone-900 hover:text-yellow-600 transition-colors">
             Create a free account
           </Link>{' '}

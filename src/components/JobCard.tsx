@@ -40,7 +40,7 @@ export function JobCard({ job, hideCategory = false }: JobCardProps) {
   return (
     <Link
       href={`/job/${job.slug}`}
-      className={`flex items-center gap-4 px-4 py-4 bg-[#EDE8DF] border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors group ${isFeatured ? 'border-l-2 border-l-yellow-400' : ''}`}
+      className={`flex items-start gap-3 sm:items-center sm:gap-4 px-4 py-4 bg-[#EDE8DF] border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors group ${isFeatured ? 'border-l-2 border-l-yellow-400' : ''}`}
     >
       {/* Company initials */}
       <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center border ${isEmployerJob ? 'border-yellow-300 bg-yellow-50' : 'border-[#CFC8BC] bg-[#E5DFD5]'}`}>
@@ -51,28 +51,33 @@ export function JobCard({ job, hideCategory = false }: JobCardProps) {
 
       {/* Job info */}
       <div className="flex-1 min-w-0">
-        <h3 className="font-mono text-sm font-semibold text-stone-900 truncate group-hover:text-yellow-600 transition-colors">
+        <h3 className="font-mono text-sm font-semibold text-stone-900 line-clamp-2 sm:truncate sm:line-clamp-none group-hover:text-yellow-600 transition-colors">
           {job.title}
         </h3>
-        <p className="font-mono text-xs text-stone-400 mt-0.5">
-          {job.company.name} <span aria-hidden="true">//</span> {job.location}
-        </p>
+        <div className="flex items-center justify-between gap-3 mt-0.5">
+          <p className="font-mono text-xs text-stone-400 min-w-0 truncate">
+            {job.company.name} <span aria-hidden="true">//</span> {job.location}
+          </p>
+          <span className="font-mono text-[10px] text-stone-400 whitespace-nowrap shrink-0 sm:hidden" suppressHydrationWarning>
+            {getPostedLabel(job.scraped_at)}
+          </span>
+        </div>
       </div>
 
-      {/* Right meta */}
-      <div className="flex-shrink-0 flex items-center gap-3">
+      {/* Right meta — desktop only */}
+      <div className="hidden sm:flex flex-shrink-0 items-center gap-3">
         {isFeatured && (
-          <span className="hidden sm:block font-mono text-[10px] tracking-widest uppercase border border-yellow-400 bg-yellow-50 text-yellow-700 px-2 py-0.5">
+          <span className="font-mono text-[10px] tracking-widest uppercase border border-yellow-400 bg-yellow-50 text-yellow-700 px-2 py-0.5">
             Featured
           </span>
         )}
         {isEmployerJob && !isFeatured && (
-          <span className="hidden sm:block font-mono text-[10px] tracking-widest uppercase border border-yellow-200 text-yellow-600 px-2 py-0.5">
+          <span className="font-mono text-[10px] tracking-widest uppercase border border-yellow-200 text-yellow-600 px-2 py-0.5">
             Direct
           </span>
         )}
         {showCategory && (
-          <span className="hidden sm:block font-mono text-[10px] tracking-widest uppercase text-stone-500 border border-[#CFC8BC] px-2 py-0.5">
+          <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 border border-[#CFC8BC] px-2 py-0.5">
             {categoryLabel}
           </span>
         )}

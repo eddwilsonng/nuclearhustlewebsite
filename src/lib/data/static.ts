@@ -185,6 +185,8 @@ export function toJobListItem(job: JobWithCompany): JobListItem {
     category: job.category,
     scraped_at: job.scraped_at,
     isEmployerJob: job.isEmployerJob,
+    is_featured: job.is_featured,
+    featured_until: job.featured_until,
     company: { id: job.company.id, name: job.company.name },
   };
 }

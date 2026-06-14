@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS public.job_alert_subscribers (
   email TEXT NOT NULL,
   confirmed_at TIMESTAMPTZ DEFAULT NULL,
   unsubscribed_at TIMESTAMPTZ DEFAULT NULL,
+  last_digest_sent_at TIMESTAMPTZ DEFAULT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -13,3 +14,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS job_alert_subscribers_email_idx
 
 -- No RLS — this table is only accessed via service role key from API routes
 ALTER TABLE public.job_alert_subscribers DISABLE ROW LEVEL SECURITY;
+
+-- If table already exists, run this separately:
+-- ALTER TABLE public.job_alert_subscribers
+--   ADD COLUMN IF NOT EXISTS last_digest_sent_at TIMESTAMPTZ DEFAULT NULL;

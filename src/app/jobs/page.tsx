@@ -1,19 +1,54 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { Suspense } from 'react';
+import { redirect } from 'next/navigation';
 import { getJobsForList, getActiveStates, getActiveCategories, getCompanies } from '@/lib/data/static';
 import { JobList } from '@/components/JobList';
+import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
+import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
 
-export const metadata: Metadata = {
-  title: 'All Nuclear Jobs - Browse Open Positions | Nuclear Hustle',
-  description: 'Browse all nuclear power plant jobs across the United States. Find reactor operator, engineering, maintenance, and health physics positions.',
-  alternates: { canonical: 'https://nuclearhustle.com/jobs' },
-};
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
+}
 
-export default function JobsPage() {
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const { page: pageParam } = await searchParams;
+  const jobs = getJobsForList();
+
+  return buildJobsPaginationMetadata({
+    pageParam,
+    totalJobs: jobs.length,
+    basePath: '/jobs',
+    page1Title: 'All Nuclear Jobs - Browse Open Positions | Nuclear Hustle',
+    page1Description:
+      'Browse all nuclear power plant jobs across the United States. Find reactor operator, engineering, maintenance, and health physics positions.',
+    pagedTitle: (page, totalPages) =>
+      `Nuclear Jobs — Page ${page} of ${totalPages} | Nuclear Hustle`,
+    pagedDescription: (page, totalPages, totalJobs) =>
+      `Page ${page} of ${totalPages} — browse ${totalJobs} nuclear power plant jobs across the United States.`,
+  });
+}
+
+function JobListFallback() {
+  return (
+    <div className="border border-[#CFC8BC] p-10 text-center">
+      <p className="font-mono text-xs tracking-widest uppercase text-stone-400">Loading jobs…</p>
+    </div>
+  );
+}
+
+export default async function JobsPage({ searchParams }: PageProps) {
+  const { page: pageParam } = await searchParams;
+  const page = parsePageParam(pageParam);
   const jobs = getJobsForList();
   const companies = getCompanies();
   const activeStates = getActiveStates();
   const activeCategories = getActiveCategories();
+  const totalPages = getTotalPages(jobs.length);
+
+  if (page > totalPages) {
+    redirect(buildJobsPageUrl('/jobs', totalPages));
+  }
 
   return (
     <div className="min-h-screen bg-[#EDE8DF]">
@@ -26,6 +61,12 @@ export default function JobsPage() {
             <strong className="text-stone-900">{jobs.length}</strong> open positions
             <span className="text-stone-400 mx-2">//</span>
             <strong className="text-stone-900">{companies.length}</strong> companies
+            {totalPages > 1 && (
+              <>
+                <span className="text-stone-400 mx-2">//</span>
+                <span className="text-stone-400">Page {page} of {totalPages}</span>
+              </>
+            )}
           </p>
         </div>
       </div>
@@ -64,7 +105,9 @@ export default function JobsPage() {
 
       {/* Job list */}
       <main className="max-w-6xl mx-auto px-6 py-8">
-        <JobList jobs={jobs} companies={companies} />
+        <Suspense fallback={<JobListFallback />}>
+          <JobList jobs={jobs} companies={companies} initialPage={page} />
+        </Suspense>
       </main>
     </div>
   );

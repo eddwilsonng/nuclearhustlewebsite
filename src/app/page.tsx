@@ -6,6 +6,7 @@ import { getJobsWithCompany, getCompanies, getActiveStates, getActiveCategories 
 import { JobCard } from '@/components/JobCard';
 import { FeaturedJobsSection, FeaturedJobsSkeleton } from '@/components/FeaturedJobsSection';
 import { JobAlertForm } from '@/components/JobAlertForm';
+import { HiringStrip } from '@/components/HiringStrip';
 import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = {
@@ -15,14 +16,6 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://nuclearhustle.com' },
 };
 
-const TRUST_COMPANIES = [
-  'Constellation Energy',
-  'Duke Energy',
-  'Dominion Energy',
-  'Entergy',
-  'NextEra Energy',
-  'Tennessee Valley Authority',
-];
 
 export default async function Home() {
   const jobs = getJobsWithCompany();
@@ -70,18 +63,18 @@ export default async function Home() {
             </p>
 
             {/* Primary CTA */}
-            <div className="mt-8">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-stretch">
               <Link
                 href="/jobs"
-                className="font-mono text-xs tracking-widest uppercase px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors inline-block"
+                className="font-mono text-xs tracking-widest uppercase px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors text-center w-full sm:w-fit"
               >
                 Browse {jobs.length} Jobs →
               </Link>
               <Link
                 href="/companies"
-                className="font-mono text-xs tracking-widest uppercase ml-6 text-stone-400 hover:text-stone-900 transition-colors"
+                className="font-mono text-xs tracking-widest uppercase px-6 py-3 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors text-center w-full sm:w-fit"
               >
-                View companies
+                View companies →
               </Link>
             </div>
 
@@ -112,19 +105,7 @@ export default async function Home() {
 
       </section>
 
-      {/* Trust strip — companies hiring */}
-      <div className="border-b border-[#CFC8BC] bg-[#E5DFD5]">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-y-2">
-          <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400 shrink-0">
-            Hiring from
-          </span>
-          {TRUST_COMPANIES.map((name) => (
-            <span key={name} className="font-mono text-xs tracking-wide text-stone-500 font-bold uppercase">
-              {name}
-            </span>
-          ))}
-        </div>
-      </div>
+      <HiringStrip />
 
       {/* Section divider */}
       <div className="max-w-6xl mx-auto px-6 py-8">
@@ -134,15 +115,15 @@ export default async function Home() {
       {/* Featured Listings */}
       <section className="pb-16">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="flex items-baseline justify-between mb-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8">
             <div>
               <p className="font-mono text-xs tracking-widest uppercase text-stone-500 mb-2">01</p>
-              <h2 className="font-mono text-2xl font-bold text-stone-900">Featured listings</h2>
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900">Featured listings</h2>
               <p className="font-mono text-xs text-stone-400 mt-1">Sponsored roles from top operators</p>
             </div>
             <Link
               href={postJobHref}
-              className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
+              className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors shrink-0"
             >
               Feature a listing →
             </Link>
@@ -162,14 +143,14 @@ export default async function Home() {
       {/* Latest Jobs */}
       <section className="pb-20">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="flex items-baseline justify-between mb-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8">
             <div>
               <p className="font-mono text-xs tracking-widest uppercase text-stone-500 mb-2">02</p>
-              <h2 className="font-mono text-2xl font-bold text-stone-900">Latest listings</h2>
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900">Latest listings</h2>
             </div>
             <Link
               href="/jobs"
-              className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
+              className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors shrink-0"
             >
               All {jobs.length} jobs →
             </Link>
@@ -218,12 +199,15 @@ export default async function Home() {
               </Link>
             ))}
           </div>
-          <p className="mt-6 font-mono text-xs text-stone-400">
-            Don&apos;t see your role?{' '}
-            <Link href="/signup" className="underline underline-offset-2 hover:text-stone-900 transition-colors">
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-baseline sm:gap-1">
+            <span className="font-mono text-xs text-stone-400">Don&apos;t see your role?</span>
+            <Link
+              href="/signup"
+              className="font-mono text-xs text-stone-400 hover:text-stone-900 transition-colors underline underline-offset-2 w-fit"
+            >
               Create a free alert and we&apos;ll notify you →
             </Link>
-          </p>
+          </div>
         </div>
       </section>
 

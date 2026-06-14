@@ -1,12 +1,16 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getJobsByState, getAllStateSlugs, getActiveCategories, getActiveStates } from '@/lib/data/static';
+import { Suspense } from 'react';
+import { getJobsByState, getAllStateSlugs, getActiveCategories, getActiveStates, toJobListItem } from '@/lib/data/static';
 import { getStateBySlug } from '@/lib/states';
-import { JobCard } from '@/components/JobCard';
+import { PaginatedJobResults } from '@/components/PaginatedJobResults';
+import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
+import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
 
 interface PageProps {
   params: Promise<{ state: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
 export async function generateStaticParams() {
@@ -14,33 +18,45 @@ export async function generateStaticParams() {
   return slugs.map((state) => ({ state }));
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { state } = await params;
+  const { page: pageParam } = await searchParams;
   const stateInfo = getStateBySlug(state);
 
   if (!stateInfo) return { title: 'State Not Found | Nuclear Hustle' };
 
   const jobs = getJobsByState(state);
-  const title = `${stateInfo.name} Nuclear Jobs — ${jobs.length} Positions | Nuclear Hustle`;
-  const description = `Browse ${jobs.length} nuclear jobs in ${stateInfo.name}. Reactor operator, engineering, and health physics roles at top operators.`;
+  const basePath = `/jobs/${state}`;
 
-  const url = `https://nuclearhustle.com/jobs/${state}`;
-  return {
-    title,
-    description,
-    alternates: { canonical: url },
-    openGraph: { title, description, url, type: 'website', siteName: 'Nuclear Hustle' },
-    twitter: { card: 'summary_large_image', title, description },
-  };
+  return buildJobsPaginationMetadata({
+    pageParam,
+    totalJobs: jobs.length,
+    basePath,
+    page1Title: `${stateInfo.name} Nuclear Jobs — ${jobs.length} Positions | Nuclear Hustle`,
+    page1Description: `Browse ${jobs.length} nuclear jobs in ${stateInfo.name}. Reactor operator, engineering, and health physics roles at top operators.`,
+    pagedTitle: (page, totalPages) =>
+      `${stateInfo.name} Nuclear Jobs — Page ${page} of ${totalPages} | Nuclear Hustle`,
+    pagedDescription: (page, totalPages, totalJobs) =>
+      `Page ${page} of ${totalPages} — ${totalJobs} nuclear jobs in ${stateInfo.name}.`,
+  });
 }
 
-export default async function StatePage({ params }: PageProps) {
+export default async function StatePage({ params, searchParams }: PageProps) {
   const { state } = await params;
+  const { page: pageParam } = await searchParams;
+  const page = parsePageParam(pageParam);
   const stateInfo = getStateBySlug(state);
 
   if (!stateInfo) notFound();
 
   const jobs = getJobsByState(state);
+  const jobListItems = jobs.map(toJobListItem);
+  const basePath = `/jobs/${state}`;
+  const totalPages = getTotalPages(jobs.length);
+
+  if (page > totalPages) {
+    redirect(buildJobsPageUrl(basePath, totalPages));
+  }
   // Exclude 'other' category from the role filter chips
   const categories = getActiveCategories().filter((c) => c.category !== 'other');
 
@@ -71,6 +87,12 @@ export default async function StatePage({ params }: PageProps) {
           <div className="flex flex-wrap items-center gap-4">
             <p className="font-mono text-sm text-stone-400">
               <strong className="text-stone-900">{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
+              {totalPages > 1 && (
+                <>
+                  <span className="text-stone-400 mx-2">//</span>
+                  <span>Page {page} of {totalPages}</span>
+                </>
+              )}
             </p>
             {jobs.length > 0 && (
               <Link
@@ -107,11 +129,19 @@ export default async function StatePage({ params }: PageProps) {
           {/* Job list */}
           <div className="lg:col-span-3">
             {jobs.length > 0 ? (
-              <div className="border border-[#CFC8BC]">
-                {jobs.map((job) => (
-                  <JobCard key={job.id} job={job} />
-                ))}
-              </div>
+              <Suspense
+                fallback={
+                  <div className="border border-[#CFC8BC] p-10 text-center">
+                    <p className="font-mono text-xs tracking-widest uppercase text-stone-400">Loading jobs…</p>
+                  </div>
+                }
+              >
+                <PaginatedJobResults
+                  jobs={jobListItems}
+                  initialPage={page}
+                  basePath={basePath}
+                />
+              </Suspense>
             ) : (
               <div className="border border-[#CFC8BC] p-10 text-center">
                 <p className="font-mono text-sm text-stone-400 mb-2">
