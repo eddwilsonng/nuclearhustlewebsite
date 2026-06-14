@@ -27,6 +27,10 @@ export const metadata: Metadata = {
   description: "Find nuclear power plant jobs across the US. Updated daily from major operators.",
   keywords: ["nuclear jobs", "nuclear power plant careers", "nuclear engineer jobs", "reactor operator jobs"],
   alternates: { canonical: "https://nuclearhustle.com" },
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    shortcut: "/favicon.svg",
+  },
   openGraph: {
     type: "website",
     siteName: "Nuclear Hustle",
