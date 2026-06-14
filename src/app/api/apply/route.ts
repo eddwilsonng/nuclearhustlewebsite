@@ -124,7 +124,7 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     const { data: job, error: jobError } = await supabase
       .from('employer_jobs')
-      .select('id, title, slug, application_type, application_email, employer:employer_profiles(company_name)')
+      .select('id, employer_id, title, slug, application_type, application_email, employer:employer_profiles(company_name)')
       .eq('slug', jobId)
       .eq('is_active', true)
       .single();
@@ -137,21 +137,43 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'This job does not accept form applications' }, { status: 400 });
     }
 
-    // Upload CV with sanitized filename
+    // Use the service-role client for storage + the application row. Applicants
+    // are anonymous, so the user-scoped storage RLS policies don't apply to them.
+    const { createAdminClient } = await import('@/lib/supabase/admin');
+    const admin = createAdminClient();
+
+    // Upload CV with sanitized filename. We persist the storage PATH (not a
+    // signed URL) so the recruiter dashboard can mint fresh links on demand.
+    let cvPath: string | null = null;
     let cvUrl: string | null = null;
     const safeName = sanitizeFilename(applicantName);
     const fileName = `applications/${job.id}/${Date.now()}-${safeName}.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await admin.storage
       .from('resumes')
       .upload(fileName, cvFile, { cacheControl: '3600', upsert: false });
 
     if (!uploadError) {
-      // Use a signed URL (24 hr TTL) instead of a public URL — CVs are PII
-      const { data: signedData } = await supabase.storage
+      cvPath = fileName;
+      // Short-lived signed URL just for the notification email
+      const { data: signedData } = await admin.storage
         .from('resumes')
         .createSignedUrl(fileName, 60 * 60 * 24);
       cvUrl = signedData?.signedUrl ?? null;
+    }
+
+    // Persist the application so it shows in the recruiter dashboard
+    const { error: insertError } = await admin.from('job_applications').insert({
+      job_id: job.id,
+      employer_id: job.employer_id,
+      applicant_name: applicantName,
+      applicant_email: applicantEmail,
+      message: message || null,
+      cv_path: cvPath,
+    });
+
+    if (insertError) {
+      console.error('[apply] Failed to persist application:', insertError.message);
     }
 
     // Send email with escaped values

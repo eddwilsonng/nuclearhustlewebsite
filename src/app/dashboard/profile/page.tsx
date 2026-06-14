@@ -287,6 +287,30 @@ function EmployerProfileForm({
             />
           </div>
 
+          <div>
+            <label htmlFor="companyLogo" className="block text-sm font-medium text-stone-700 mb-1">
+              Company Logo
+            </label>
+            {employerProfile?.company_logo_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={employerProfile.company_logo_url}
+                alt="Current company logo"
+                className="h-14 w-14 object-contain border border-[#CFC8BC] bg-white mb-2"
+              />
+            )}
+            <input
+              id="companyLogo"
+              name="companyLogo"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              className="w-full text-sm text-stone-700 file:mr-3 file:py-2 file:px-3 file:border file:border-stone-300 file:bg-[#E5DFD5] file:text-stone-700 file:font-medium hover:file:bg-[#CFC8BC]"
+            />
+            <p className="mt-1 text-xs text-stone-500">
+              PNG, JPG, WEBP, or SVG. Max 2MB. Shown on your job listings.
+            </p>
+          </div>
+
           <button
             type="submit"
             disabled={isPending}

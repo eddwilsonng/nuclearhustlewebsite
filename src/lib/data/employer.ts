@@ -14,6 +14,7 @@ export async function getEmployerJobs(): Promise<JobWithCompany[]> {
         employer:employer_profiles(*)
       `)
       .eq('is_active', true)
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('created_at', { ascending: false });
 
     if (error || !employerJobs) {
@@ -45,6 +46,7 @@ export async function getEmployerJobs(): Promise<JobWithCompany[]> {
         scraper_type: 'custom' as const,
         last_scraped: null,
         description: job.employer.company_description || null,
+        logo_url: job.employer.company_logo_url || null,
       },
     }));
   } catch {
@@ -64,6 +66,7 @@ export async function getEmployerJobBySlug(slug: string): Promise<JobWithCompany
       `)
       .eq('slug', slug)
       .eq('is_active', true)
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .single();
 
     if (error || !job) {
@@ -94,6 +97,7 @@ export async function getEmployerJobBySlug(slug: string): Promise<JobWithCompany
         scraper_type: 'custom' as const,
         last_scraped: null,
         description: typedJob.employer.company_description || null,
+        logo_url: typedJob.employer.company_logo_url || null,
       },
     };
   } catch {
@@ -161,6 +165,7 @@ export async function getFeaturedJobs(): Promise<JobWithCompany[]> {
       .eq('is_featured', true)
       .eq('is_active', true)
       .gt('featured_until', new Date().toISOString())
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('created_at', { ascending: false });
 
     if (error || !featuredJobs) {
@@ -191,6 +196,7 @@ export async function getFeaturedJobs(): Promise<JobWithCompany[]> {
         scraper_type: 'custom' as const,
         last_scraped: null,
         description: job.employer.company_description || null,
+        logo_url: job.employer.company_logo_url || null,
       },
     }));
   } catch {

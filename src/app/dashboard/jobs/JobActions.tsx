@@ -2,7 +2,29 @@
 
 import { useTransition, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { toggleJobStatus, deleteJobPosting } from '@/lib/auth/actions';
+import { toggleJobStatus, deleteJobPosting, renewJob } from '@/lib/auth/actions';
+
+export function RenewJobButton({ jobId }: { jobId: string }) {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleRenew = () => {
+    startTransition(async () => {
+      await renewJob(jobId);
+      router.refresh();
+    });
+  };
+
+  return (
+    <button
+      onClick={handleRenew}
+      disabled={isPending}
+      className="px-3 py-1.5 text-xs font-mono tracking-widest uppercase text-stone-900 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 border border-yellow-400 transition-colors font-bold"
+    >
+      {isPending ? '…' : 'Renew 60d'}
+    </button>
+  );
+}
 
 export function JobStatusToggle({ jobId, isActive }: { jobId: string; isActive: boolean }) {
   const [isPending, startTransition] = useTransition();

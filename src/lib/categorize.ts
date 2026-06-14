@@ -4,6 +4,7 @@ export type JobCategory =
   | 'engineering'
   | 'health-physics'
   | 'security'
+  | 'training'
   | 'administrative'
   | 'other';
 
@@ -46,10 +47,16 @@ export const CATEGORIES: CategoryInfo[] = [
     keywords: ['security', 'armed', 'officer', 'protective force', 'guard'],
   },
   {
+    id: 'training',
+    name: 'Training & Licensing',
+    description: 'License training, simulator instruction, and accreditation roles',
+    keywords: ['instructor', 'training', 'simulator', 'license operator candidate', 'sro candidate', 'ro candidate', 'accreditation', 'inpo'],
+  },
+  {
     id: 'administrative',
     name: 'Administrative',
     description: 'Management, administrative, and support roles',
-    keywords: ['admin', 'clerk', 'coordinator', 'manager', 'director', 'analyst', 'specialist', 'planner', 'scheduler', 'procurement', 'supply chain', 'hr', 'human resources', 'training', 'instructor'],
+    keywords: ['admin', 'clerk', 'coordinator', 'manager', 'director', 'analyst', 'specialist', 'planner', 'scheduler', 'procurement', 'supply chain', 'hr', 'human resources'],
   },
 ];
 
@@ -57,11 +64,11 @@ const CATEGORY_PATTERNS: Record<JobCategory, RegExp[]> = {
   operations: [
     /reactor operator/i,
     /\bsro\b/i,
-    /\bro\b/i,
     /control room/i,
     /nuclear operator/i,
     /shift supervisor/i,
     /unit supervisor/i,
+    /shift manager/i,
     /operations\s+(manager|supervisor|specialist)/i,
   ],
   maintenance: [
@@ -99,6 +106,14 @@ const CATEGORY_PATTERNS: Record<JobCategory, RegExp[]> = {
     /protective\s+force/i,
     /nuclear\s+security/i,
   ],
+  training: [
+    /instructor/i,
+    /\btraining\b/i,
+    /simulator/i,
+    /licensed?\s+operator\s+candidate/i,
+    /\b(sro|ro)\s+candidate/i,
+    /accreditation/i,
+  ],
   administrative: [
     /\badmin\b/i,
     /coordinator/i,
@@ -111,8 +126,6 @@ const CATEGORY_PATTERNS: Record<JobCategory, RegExp[]> = {
     /supply\s+chain/i,
     /human\s+resources/i,
     /\bhr\s/i,
-    /training/i,
-    /instructor/i,
     /document\s+control/i,
   ],
   other: [],
@@ -145,5 +158,5 @@ export function getCategoryInfo(category: JobCategory): CategoryInfo {
 }
 
 export function getAllCategories(): JobCategory[] {
-  return ['operations', 'maintenance', 'engineering', 'health-physics', 'security', 'administrative', 'other'];
+  return ['operations', 'maintenance', 'engineering', 'health-physics', 'security', 'training', 'administrative', 'other'];
 }

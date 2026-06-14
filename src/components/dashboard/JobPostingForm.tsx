@@ -16,6 +16,7 @@ const CATEGORIES = [
   { value: 'maintenance', label: 'Maintenance' },
   { value: 'health-physics', label: 'Health Physics' },
   { value: 'security', label: 'Security' },
+  { value: 'training', label: 'Training & Licensing' },
   { value: 'administrative', label: 'Administrative' },
   { value: 'other', label: 'Other' },
 ];

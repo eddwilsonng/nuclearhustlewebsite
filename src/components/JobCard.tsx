@@ -27,6 +27,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   'maintenance':   'Maintenance',
   'health-physics':'Health Physics',
   'security':      'Security',
+  'training':      'Training & Licensing',
   'administrative':'Administrative',
   'other':         'Other',
 };

@@ -1,8 +1,25 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { JobStatusToggle, DeleteJobButton, FeatureJobButton } from './JobActions';
+import { JobStatusToggle, DeleteJobButton, FeatureJobButton, RenewJobButton } from './JobActions';
 import { FeaturedSuccessBanner } from './FeaturedSuccessBanner';
+import { getApplicationCountsByJob } from '@/lib/data/applications';
 import type { EmployerProfile, EmployerJob } from '@/lib/types';
+
+const EXPIRY_SOON_DAYS = 7;
+
+function getExpiryState(expiresAt: string | null): {
+  label: string;
+  expired: boolean;
+  soon: boolean;
+} | null {
+  if (!expiresAt) return null;
+  const diffMs = new Date(expiresAt).getTime() - Date.now();
+  const days = Math.ceil(diffMs / (24 * 60 * 60 * 1000));
+  if (days <= 0) return { label: 'Expired', expired: true, soon: false };
+  if (days <= EXPIRY_SOON_DAYS)
+    return { label: `Expires in ${days}d`, expired: false, soon: true };
+  return { label: `Expires ${new Date(expiresAt).toLocaleDateString()}`, expired: false, soon: false };
+}
 
 export const metadata = {
   title: 'Manage Jobs - Nuclear Hustle',
@@ -42,6 +59,7 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
     .order('created_at', { ascending: false });
 
   const typedJobs = (jobs || []) as EmployerJob[];
+  const applicationCounts = await getApplicationCountsByJob();
 
   return (
     <div className="max-w-4xl">
@@ -81,11 +99,14 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
         </div>
       ) : (
         <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
-          {typedJobs.map((job) => (
+          {typedJobs.map((job) => {
+            const appCount = applicationCounts[job.id];
+            const expiry = getExpiryState(job.expires_at);
+            return (
             <div key={job.id} className="p-4">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold text-stone-900 truncate">{job.title}</h3>
                     <span
                       className={`px-2 py-0.5 text-xs font-medium rounded ${
@@ -96,20 +117,54 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
                     >
                       {job.is_active ? 'Active' : 'Inactive'}
                     </span>
+                    {expiry && (
+                      <span
+                        className={`px-2 py-0.5 text-xs font-medium rounded ${
+                          expiry.expired
+                            ? 'bg-red-100 text-red-700'
+                            : expiry.soon
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-[#E5DFD5] text-stone-500'
+                        }`}
+                      >
+                        {expiry.label}
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm text-stone-500 mt-1">{job.location}</p>
-                  <p className="text-xs text-stone-400 mt-1">
-                    Posted {new Date(job.created_at).toLocaleDateString()}
-                  </p>
+                  <div className="flex items-center gap-3 mt-2 font-mono text-xs text-stone-400">
+                    <span>Posted {new Date(job.created_at).toLocaleDateString()}</span>
+                    <span>·</span>
+                    <span>{job.view_count} views</span>
+                    <span>·</span>
+                    <Link
+                      href={`/dashboard/jobs/${job.id}/applications`}
+                      className="text-stone-700 hover:text-stone-900 underline-offset-2 hover:underline"
+                    >
+                      {appCount?.total ?? 0} application{(appCount?.total ?? 0) === 1 ? '' : 's'}
+                      {appCount?.new ? (
+                        <span className="ml-1 inline-block bg-yellow-400 text-stone-900 px-1.5 py-0.5 rounded font-bold">
+                          {appCount.new} new
+                        </span>
+                      ) : null}
+                    </Link>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap">
+                  {expiry?.expired && <RenewJobButton jobId={job.id} />}
                   <FeatureJobButton
                     jobId={job.id}
                     isFeatured={job.is_featured}
                     featuredUntil={job.featured_until}
                   />
                   <JobStatusToggle jobId={job.id} isActive={job.is_active} />
+                  <Link
+                    href={`/dashboard/jobs/${job.id}/applications`}
+                    className="px-3 py-1.5 text-sm text-stone-700 hover:bg-[#E5DFD5] rounded-md transition-colors"
+                  >
+                    Applicants
+                  </Link>
                   <Link
                     href={`/dashboard/jobs/${job.id}/edit`}
                     className="px-3 py-1.5 text-sm text-stone-700 hover:bg-[#E5DFD5] rounded-md transition-colors"
@@ -127,7 +182,8 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

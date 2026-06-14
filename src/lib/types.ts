@@ -7,6 +7,7 @@ export interface Company {
   scraper_type: 'workday' | 'custom' | 'taleo' | 'dayforce' | 'greenhouse' | 'lever';
   last_scraped: string | null;
   description?: string | null;
+  logo_url?: string | null;
 }
 
 export interface Plant {
@@ -88,6 +89,7 @@ export interface EmployerProfile {
   company_slug: string;
   company_website: string | null;
   company_description: string | null;
+  company_logo_url: string | null;
   is_verified: boolean;
   created_at: string;
 }
@@ -119,10 +121,25 @@ export interface EmployerJob {
   is_featured: boolean;
   featured_until: string | null;
   expires_at: string | null;
+  view_count: number;
   created_at: string;
 }
 
 
 export interface EmployerJobWithProfile extends EmployerJob {
   employer: EmployerProfile;
+}
+
+export type ApplicationStatus = 'new' | 'reviewed' | 'shortlisted' | 'rejected';
+
+export interface JobApplication {
+  id: string;
+  job_id: string;
+  employer_id: string;
+  applicant_name: string;
+  applicant_email: string;
+  message: string | null;
+  cv_path: string | null;
+  status: ApplicationStatus;
+  created_at: string;
 }

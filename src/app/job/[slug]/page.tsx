@@ -8,6 +8,7 @@ import { getStateBySlug } from '@/lib/states';
 import { parseJobDescription, formatSectionTitle } from '@/lib/parseJobDescription';
 import { JobDescriptionBlock, JobDescriptionSection } from '@/components/job/JobDescriptionBlock';
 import { ApplicationForm } from '@/components/job/ApplicationForm';
+import { ViewTracker } from '@/components/job/ViewTracker';
 import {
   BrowsePageHeader,
   BrowseBreadcrumb,
@@ -121,6 +122,8 @@ export default async function JobPage({ params }: PageProps) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
 
+      {isEmployerJob && <ViewTracker jobId={job.id.replace(/^employer-/, '')} />}
+
       <div className="min-h-screen bg-[#EDE8DF]">
 
         <BrowsePageHeader className="py-8 md:py-10">
@@ -185,7 +188,7 @@ export default async function JobPage({ params }: PageProps) {
         </BrowsePageHeader>
 
         {/* Body */}
-        <main className="max-w-6xl mx-auto px-6 py-10">
+        <main className="max-w-6xl mx-auto px-6 py-10 pb-24 md:pb-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
 
             {/* Left: description */}
@@ -223,8 +226,8 @@ export default async function JobPage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* Bottom apply nudge */}
-              <div className="mt-12 pt-8 border-t border-[#CFC8BC]">
+              {/* Bottom apply nudge — desktop only; mobile uses sticky bar */}
+              <div className="hidden md:block mt-12 pt-8 border-t border-[#CFC8BC]">
                 <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-3">Ready to apply?</p>
                 <a
                   href={applyHref}
@@ -246,8 +249,8 @@ export default async function JobPage({ params }: PageProps) {
             <div className="md:col-span-1">
               <div className="sticky top-6 space-y-4">
 
-                {/* Apply card */}
-                <div className="border border-[#CFC8BC] p-5">
+                {/* Apply card — desktop sidebar only; mobile uses sticky bar */}
+                <div className="hidden md:block border border-[#CFC8BC] p-5">
                   <a
                     href={applyHref}
                     target={applyExternal ? '_blank' : undefined}
@@ -310,6 +313,14 @@ export default async function JobPage({ params }: PageProps) {
                 {/* Company card */}
                 <div className="border border-[#CFC8BC] p-5">
                   <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-3">About the company</p>
+                  {job.company.logo_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={job.company.logo_url}
+                      alt={`${job.company.name} logo`}
+                      className="h-12 w-12 object-contain border border-[#CFC8BC] bg-white mb-3"
+                    />
+                  )}
                   {isEmployerJob ? (
                     <p className="font-mono text-sm font-bold text-stone-900 mb-2">{job.company.name}</p>
                   ) : (

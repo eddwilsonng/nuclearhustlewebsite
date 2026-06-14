@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createFeaturedCheckoutSession } from "@/lib/stripe/featured";
+import { expiryFromNow } from "@/lib/jobs/expiry";
 
 // Validation schemas
 const loginSchema = z.object({
@@ -480,13 +481,47 @@ export async function updateEmployerProfile(
     return { error: profileError.message };
   }
 
+  const employerUpdate: {
+    company_name: string;
+    company_website: string | null;
+    company_description: string | null;
+    company_logo_url?: string;
+  } = {
+    company_name: parsed.data.companyName,
+    company_website: parsed.data.companyWebsite || null,
+    company_description: parsed.data.companyDescription || null,
+  };
+
+  // Optional logo upload to the public company-logos bucket
+  const logoFile = formData.get("companyLogo") as File | null;
+  if (logoFile && logoFile.size > 0) {
+    const allowedLogoTypes = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+    if (!allowedLogoTypes.includes(logoFile.type)) {
+      return { error: "Logo must be a PNG, JPG, WEBP, or SVG image" };
+    }
+    if (logoFile.size > 2 * 1024 * 1024) {
+      return { error: "Logo must be less than 2MB" };
+    }
+
+    const ext = logoFile.name.split(".").pop()?.toLowerCase() || "png";
+    const logoPath = `${user.id}/logo-${Date.now()}.${ext}`;
+    const { error: logoUploadError } = await supabase.storage
+      .from("company-logos")
+      .upload(logoPath, logoFile, { cacheControl: "3600", upsert: true });
+
+    if (logoUploadError) {
+      return { error: logoUploadError.message };
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("company-logos").getPublicUrl(logoPath);
+    employerUpdate.company_logo_url = publicUrl;
+  }
+
   const { error: employerError } = await supabase
     .from("employer_profiles")
-    .update({
-      company_name: parsed.data.companyName,
-      company_website: parsed.data.companyWebsite || null,
-      company_description: parsed.data.companyDescription || null,
-    })
+    .update(employerUpdate)
     .eq("user_id", user.id);
 
   if (employerError) {
@@ -692,6 +727,7 @@ export async function createJobPosting(
       application_type: applicationType,
       application_url: applicationType === "link" ? (applicationUrl || null) : null,
       application_email: applicationType === "form" ? (applicationEmail || null) : null,
+      expires_at: expiryFromNow(),
     })
     .select("id")
     .single();
@@ -887,4 +923,109 @@ export async function deleteJobPosting(jobId: string) {
   }
 
   return { success: true };
+}
+
+// Renew an expiring/expired job — extends the expiry window and reactivates it
+export async function renewJob(jobId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { data: employerProfile } = await supabase
+    .from("employer_profiles")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!employerProfile) {
+    return { error: "Employer profile not found" };
+  }
+
+  const { error } = await supabase
+    .from("employer_jobs")
+    .update({ expires_at: expiryFromNow(), is_active: true })
+    .eq("id", jobId)
+    .eq("employer_id", employerProfile.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
+const APPLICATION_STATUSES = ["new", "reviewed", "shortlisted", "rejected"] as const;
+
+// Update an application's pipeline status (RLS scopes this to the owner)
+export async function updateApplicationStatus(applicationId: string, status: string) {
+  if (!APPLICATION_STATUSES.includes(status as (typeof APPLICATION_STATUSES)[number])) {
+    return { error: "Invalid status" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { error } = await supabase
+    .from("job_applications")
+    .update({ status })
+    .eq("id", applicationId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
+// Mint a fresh signed URL for an applicant's CV. Ownership is verified via the
+// user-scoped client (RLS), then the service-role client signs the private file.
+export async function getApplicationCvUrl(
+  applicationId: string
+): Promise<{ url?: string; error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { data: application, error } = await supabase
+    .from("job_applications")
+    .select("cv_path")
+    .eq("id", applicationId)
+    .single();
+
+  if (error || !application) {
+    return { error: "Application not found" };
+  }
+
+  const cvPath = (application as { cv_path: string | null }).cv_path;
+  if (!cvPath) {
+    return { error: "No CV on file for this applicant" };
+  }
+
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const admin = createAdminClient();
+  const { data: signed, error: signError } = await admin.storage
+    .from("resumes")
+    .createSignedUrl(cvPath, 60 * 5); // 5-minute single-use link
+
+  if (signError || !signed) {
+    return { error: "Could not generate CV link" };
+  }
+
+  return { url: signed.signedUrl };
 }

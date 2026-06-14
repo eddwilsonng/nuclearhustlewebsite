@@ -59,6 +59,7 @@ export const CATEGORY_ORDER: JobCategory[] = [
   'maintenance',
   'health-physics',
   'security',
+  'training',
   'administrative',
   'other',
 ];
