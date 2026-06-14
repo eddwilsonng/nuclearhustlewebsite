@@ -22,8 +22,11 @@ export default async function DashboardLayout({
     .eq('id', user.id)
     .single();
 
+  // Authenticated but no profile row yet (e.g. a Google user who hasn't finished
+  // onboarding). Send them to onboarding, NOT /login — middleware bounces
+  // authenticated users off /login, which would create a redirect loop.
   if (!profile) {
-    redirect('/login');
+    redirect('/onboarding');
   }
 
   return (

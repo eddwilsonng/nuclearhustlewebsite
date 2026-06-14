@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { createFeaturedCheckoutSession } from "@/lib/stripe/featured";
 
 // Validation schemas
 const loginSchema = z.object({
@@ -282,6 +283,18 @@ export async function completeGoogleEmployerProfile(
   if (!companyName || companyName.length < 2) {
     return { error: "Company name must be at least 2 characters" };
   }
+
+  // Ensure the base profile row exists. Google users who signed in via /login
+  // (no role) won't have one yet, and employer_profiles.user_id references it.
+  const fullName =
+    (user.user_metadata?.full_name as string) || user.email!.split("@")[0];
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .upsert(
+      { id: user.id, email: user.email!, full_name: fullName, role: "employer" },
+      { onConflict: "id" }
+    );
+  if (profileError) return { error: profileError.message };
 
   const baseSlug = generateSlug(companyName);
   let companySlug = baseSlug;
@@ -664,23 +677,44 @@ export async function createJobPosting(
   const baseSlug = generateSlug(validatedFields.data.title);
   const jobSlug = `${baseSlug}-${Date.now()}`;
 
-  const { error: insertError } = await supabase.from("employer_jobs").insert({
-    employer_id: employerProfile.id,
-    title: validatedFields.data.title,
-    slug: jobSlug,
-    location: validatedFields.data.location,
-    state,
-    category: validatedFields.data.category,
-    description: descriptionFallback,
-    structured_description: structured,
-    employment_type: validatedFields.data.employmentType || "full-time",
-    application_type: applicationType,
-    application_url: applicationType === "link" ? (applicationUrl || null) : null,
-    application_email: applicationType === "form" ? (applicationEmail || null) : null,
-  });
+  const { data: insertedJob, error: insertError } = await supabase
+    .from("employer_jobs")
+    .insert({
+      employer_id: employerProfile.id,
+      title: validatedFields.data.title,
+      slug: jobSlug,
+      location: validatedFields.data.location,
+      state,
+      category: validatedFields.data.category,
+      description: descriptionFallback,
+      structured_description: structured,
+      employment_type: validatedFields.data.employmentType || "full-time",
+      application_type: applicationType,
+      application_url: applicationType === "link" ? (applicationUrl || null) : null,
+      application_email: applicationType === "form" ? (applicationEmail || null) : null,
+    })
+    .select("id")
+    .single();
 
   if (insertError) {
     return { error: insertError.message };
+  }
+
+  // If the employer opted to feature the listing during posting, send them
+  // straight to Stripe checkout for the newly created job.
+  if (formData.get("feature") === "on" && insertedJob) {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const result = await createFeaturedCheckoutSession({
+      jobId: insertedJob.id,
+      userId: user.id,
+      customerEmail: user.email,
+      successUrl: `${siteUrl}/dashboard/jobs?featured=success`,
+      cancelUrl: `${siteUrl}/dashboard/jobs`,
+    });
+    if (result.ok) {
+      redirect(result.url);
+    }
+    // Checkout couldn't be created — the job is still posted; fall through.
   }
 
   redirect("/dashboard/jobs");

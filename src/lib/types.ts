@@ -4,7 +4,7 @@ export interface Company {
   id: string;
   name: string;
   careers_url: string;
-  scraper_type: 'workday' | 'custom' | 'taleo' | 'dayforce';
+  scraper_type: 'workday' | 'custom' | 'taleo' | 'dayforce' | 'greenhouse' | 'lever';
   last_scraped: string | null;
   description?: string | null;
 }
@@ -28,7 +28,7 @@ export interface Job {
   category: JobCategory;
   description?: string;
   structured_description?: StructuredDescription | null;
-  status?: 'pending_review' | 'published';
+  status?: 'pending_review' | 'published' | 'rejected';
   agent_confidence?: 'high' | 'low';
   review_notes?: string;
 }

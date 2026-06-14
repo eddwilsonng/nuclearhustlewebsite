@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { signOut } from '@/lib/auth/actions';
 
 const PRIMARY_LINKS = [
   { href: '/jobs',      label: 'Jobs',        num: '01' },
@@ -10,12 +11,17 @@ const PRIMARY_LINKS = [
   { href: '/about',     label: 'About',       num: '04' },
 ];
 
-const SECONDARY_LINKS = [
+const LOGGED_OUT_LINKS = [
   { href: '/login',  label: 'Log In' },
   { href: '/signup', label: 'Sign Up' },
 ];
 
-export function MobileNav() {
+const LOGGED_IN_LINKS = [
+  { href: '/dashboard',         label: 'Dashboard' },
+  { href: '/dashboard/profile', label: 'Profile' },
+];
+
+export function MobileNav({ isAuthed = false }: { isAuthed?: boolean }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -81,7 +87,7 @@ export function MobileNav() {
 
           {/* Secondary links */}
           <div className="mt-6 flex flex-col">
-            {SECONDARY_LINKS.map(({ href, label }) => (
+            {(isAuthed ? LOGGED_IN_LINKS : LOGGED_OUT_LINKS).map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
@@ -94,6 +100,19 @@ export function MobileNav() {
                 <span className="font-mono text-xs text-stone-400 group-hover:text-stone-900 transition-colors">→</span>
               </Link>
             ))}
+            {isAuthed && (
+              <form action={signOut} onSubmit={close}>
+                <button
+                  type="submit"
+                  className="group w-full flex items-center justify-between py-4 border-b border-[#CFC8BC]/60"
+                >
+                  <span className="font-mono text-xs tracking-widest uppercase text-red-600 transition-colors">
+                    Sign Out
+                  </span>
+                  <span className="font-mono text-xs text-red-400 transition-colors">→</span>
+                </button>
+              </form>
+            )}
           </div>
         </nav>
 

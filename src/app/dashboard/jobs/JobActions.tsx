@@ -57,8 +57,8 @@ export function FeatureJobButton({ jobId, isFeatured, featuredUntil }: {
 
   if (isCurrentlyFeatured && featuredUntil) {
     return (
-      <span className="px-3 py-1.5 text-xs font-mono tracking-widest uppercase border border-yellow-200 text-yellow-700 bg-yellow-50 rounded-md">
-        Featured until {new Date(featuredUntil).toLocaleDateString()}
+      <span className="px-3 py-1.5 text-xs font-mono tracking-widest uppercase border border-yellow-400 text-stone-900 bg-yellow-50">
+        ★ Featured until {new Date(featuredUntil).toLocaleDateString()}
       </span>
     );
   }
@@ -67,9 +67,9 @@ export function FeatureJobButton({ jobId, isFeatured, featuredUntil }: {
     <button
       onClick={handleFeature}
       disabled={isLoading}
-      className="px-3 py-1.5 text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 hover:bg-yellow-100 rounded-md transition-colors font-medium"
+      className="px-3 py-1.5 text-xs font-mono tracking-widest uppercase text-stone-900 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 border border-yellow-400 transition-colors font-bold"
     >
-      {isLoading ? '...' : '★ Feature — $99'}
+      {isLoading ? '…' : '★ Feature — $99'}
     </button>
   );
 }

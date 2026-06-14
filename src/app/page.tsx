@@ -6,6 +6,7 @@ import { getJobsWithCompany, getCompanies, getActiveStates, getActiveCategories 
 import { JobCard } from '@/components/JobCard';
 import { FeaturedJobsSection, FeaturedJobsSkeleton } from '@/components/FeaturedJobsSection';
 import { JobAlertForm } from '@/components/JobAlertForm';
+import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = {
   title: 'Nuclear Hustle — Nuclear Power Plant Jobs',
@@ -29,6 +30,12 @@ export default async function Home() {
   const activeStates = getActiveStates();
   const activeCategories = getActiveCategories();
   const recentJobs = jobs.slice(0, 20);
+
+  // Logged-in employers go straight to the posting flow (with its inline feature
+  // option); everyone else is routed to employer signup first.
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const postJobHref = user ? '/dashboard/jobs/new' : '/signup/employer';
 
   return (
     <main className="min-h-screen">
@@ -121,7 +128,7 @@ export default async function Home() {
 
       {/* Section divider */}
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <span className="font-mono text-sm text-stone-400" aria-hidden="true">//</span>
+        <span className="font-mono text-sm text-stone-400" aria-hidden="true">{'//'}</span>
       </div>
 
       {/* Featured Listings */}
@@ -134,7 +141,7 @@ export default async function Home() {
               <p className="font-mono text-xs text-stone-400 mt-1">Sponsored roles from top operators</p>
             </div>
             <Link
-              href="/signup/employer"
+              href={postJobHref}
               className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
             >
               Feature a listing →
@@ -142,14 +149,14 @@ export default async function Home() {
           </div>
 
           <Suspense fallback={<FeaturedJobsSkeleton />}>
-            <FeaturedJobsSection />
+            <FeaturedJobsSection postHref={postJobHref} />
           </Suspense>
         </div>
       </section>
 
       {/* Section divider */}
       <div className="max-w-6xl mx-auto px-6 py-4">
-        <span className="font-mono text-sm text-stone-400" aria-hidden="true">//</span>
+        <span className="font-mono text-sm text-stone-400" aria-hidden="true">{'//'}</span>
       </div>
 
       {/* Latest Jobs */}
@@ -187,7 +194,7 @@ export default async function Home() {
 
       {/* Section divider */}
       <div className="max-w-6xl mx-auto px-6 py-4">
-        <span className="font-mono text-sm text-stone-400" aria-hidden="true">//</span>
+        <span className="font-mono text-sm text-stone-400" aria-hidden="true">{'//'}</span>
       </div>
 
       {/* Browse by Role */}
@@ -222,7 +229,7 @@ export default async function Home() {
 
       {/* Section divider */}
       <div className="max-w-6xl mx-auto px-6 py-4">
-        <span className="font-mono text-sm text-stone-400" aria-hidden="true">//</span>
+        <span className="font-mono text-sm text-stone-400" aria-hidden="true">{'//'}</span>
       </div>
 
       {/* Browse by State */}
@@ -287,7 +294,7 @@ export default async function Home() {
                 Post a role and reach qualified nuclear professionals actively looking for their next opportunity.
               </p>
               <Link
-                href="/signup/employer"
+                href={postJobHref}
                 className="font-mono text-xs tracking-widest uppercase px-5 py-3 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors inline-block"
               >
                 Post a Job →

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { signOut } from '@/lib/auth/actions';
 import type { Profile } from '@/lib/types';
 
 interface DashboardSidebarProps {
@@ -27,9 +28,10 @@ export function DashboardSidebar({ profile, isAdmin }: DashboardSidebarProps) {
   ];
 
   const adminLinks = [
-    { href: '/dashboard/admin', label: 'Admin Overview' },
+    { href: '/dashboard/admin', label: 'Operations', exact: true },
+    { href: '/dashboard/admin/review', label: 'Content Review' },
+    { href: '/dashboard/admin/scrape', label: 'Scraper' },
     { href: '/dashboard/admin/jobs', label: 'Manage Jobs' },
-    { href: '/dashboard/admin/scrape', label: 'Scrape Jobs' },
   ];
 
   const links = profile.role === 'employer' ? employerLinks : jobSeekerLinks;
@@ -59,7 +61,7 @@ export function DashboardSidebar({ profile, isAdmin }: DashboardSidebarProps) {
           <>
             <div className="my-6 border-t border-[#CFC8BC]" />
             <p className="font-mono text-xs tracking-widest uppercase text-yellow-500 mb-4">
-              Admin
+              Operations
             </p>
             <nav className="space-y-1">
               {adminLinks.map((link) => (
@@ -67,7 +69,7 @@ export function DashboardSidebar({ profile, isAdmin }: DashboardSidebarProps) {
                   key={link.href}
                   href={link.href}
                   className={`block font-mono text-xs tracking-widest uppercase py-2 transition-colors border-l-2 pl-3 ${
-                    isActive(link.href)
+                    (link.exact ? pathname === link.href : isActive(link.href))
                       ? 'border-yellow-400 text-stone-900'
                       : 'border-transparent text-stone-400 hover:text-stone-900 hover:border-[#CFC8BC]'
                   }`}
@@ -78,6 +80,16 @@ export function DashboardSidebar({ profile, isAdmin }: DashboardSidebarProps) {
             </nav>
           </>
         )}
+
+        <div className="my-6 border-t border-[#CFC8BC]" />
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="block w-full text-left font-mono text-xs tracking-widest uppercase py-2 border-l-2 border-transparent pl-3 text-red-500 hover:text-red-700 hover:border-red-300 transition-colors"
+          >
+            Sign Out
+          </button>
+        </form>
       </div>
     </aside>
   );

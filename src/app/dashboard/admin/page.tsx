@@ -1,8 +1,45 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { isAdmin } from '@/lib/admin';
-import { getJobs } from '@/lib/data/static';
+import { getJobs, getAllJobsForAdmin, getCompanies } from '@/lib/data/static';
+import { readAgentRuns } from '@/lib/ops/runLog';
 import { JobChart } from '@/components/admin/JobChart';
+import { PipelinePanel, type PipelineStats } from '@/components/admin/PipelinePanel';
+import { AgentRunsPanel } from '@/components/admin/AgentRunsPanel';
+
+function buildPipelineStats(): PipelineStats {
+  const all = getAllJobsForAdmin();
+  const companies = getCompanies();
+  const nameById = new Map(companies.map((c) => [c.id, c.name]));
+
+  const pending = all.filter((j) => j.status === 'pending_review');
+  const published = all.filter((j) => !j.status || j.status === 'published');
+  const rejected = all.filter((j) => j.status === 'rejected');
+
+  const sourceMap = new Map<string, { pending: number; published: number }>();
+  for (const j of all) {
+    const entry = sourceMap.get(j.company_id) || { pending: 0, published: 0 };
+    if (j.status === 'pending_review') entry.pending++;
+    else if (!j.status || j.status === 'published') entry.published++;
+    sourceMap.set(j.company_id, entry);
+  }
+
+  const bySource = Array.from(sourceMap.entries())
+    .map(([id, v]) => ({ id, name: nameById.get(id) || id, ...v }))
+    .filter((s) => s.pending + s.published > 0)
+    .sort((a, b) => b.pending + b.published - (a.pending + a.published))
+    .slice(0, 8);
+
+  return {
+    total: all.length,
+    pending: pending.length,
+    published: published.length,
+    rejected: rejected.length,
+    high: pending.filter((j) => j.agent_confidence !== 'low').length,
+    low: pending.filter((j) => j.agent_confidence === 'low').length,
+    bySource,
+  };
+}
 
 async function getEmployerJobsForAdmin() {
   const supabase = await createClient();
@@ -100,22 +137,23 @@ export default async function AdminOverviewPage() {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 10);
 
+  const pipeline = buildPipelineStats();
+  const agentRuns = readAgentRuns(12);
+
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Admin Overview</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Operations</h1>
       <p className="text-sm text-gray-500 mb-8 font-mono">
-        Site-wide analytics
+        Run and monitor the site&apos;s automated processes
       </p>
 
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-mono tracking-widest uppercase text-gray-500">Jobs</h2>
-        <a
-          href="/dashboard/admin/review"
-          className="font-mono text-[10px] tracking-widest uppercase px-3 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
-        >
-          Review queue →
-        </a>
+      {/* Processes */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+        <PipelinePanel stats={pipeline} />
+        <AgentRunsPanel runs={agentRuns} />
       </div>
+
+      <h2 className="text-sm font-mono tracking-widest uppercase text-gray-500 mb-3">Jobs</h2>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         {jobStats.map((stat) => (
           <div

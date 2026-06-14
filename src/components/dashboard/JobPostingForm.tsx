@@ -44,6 +44,9 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
   const [applicationUrl, setApplicationUrl] = useState(job?.application_url ?? '');
   const [applicationEmail, setApplicationEmail] = useState(job?.application_email ?? '');
 
+  // Inline featured-listing upgrade (create flow only)
+  const [feature, setFeature] = useState(false);
+
   // Structured description fields
   const sd = job?.structured_description;
   const [about, setAbout] = useState(sd?.about ?? '');
@@ -265,6 +268,38 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
         ))}
       </div>
 
+      {/* Featured-listing upgrade — create flow only */}
+      {mode === 'create' && (
+        <div>
+          <input type="hidden" name="feature" value={feature ? 'on' : ''} />
+          <button
+            type="button"
+            onClick={() => setFeature((f) => !f)}
+            aria-pressed={feature}
+            className={`w-full flex items-start gap-3 p-4 border text-left transition-colors ${
+              feature ? 'border-yellow-400 bg-yellow-50' : 'border-[#CFC8BC] hover:border-stone-400 bg-[#EDE8DF]'
+            }`}
+          >
+            <span
+              className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center border ${
+                feature ? 'border-yellow-500 bg-yellow-400 text-stone-900' : 'border-[#CFC8BC] bg-white text-transparent'
+              }`}
+            >
+              ✓
+            </span>
+            <div>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-900 font-bold">
+                ★ Feature this listing — $99
+              </p>
+              <p className="font-mono text-xs text-stone-500 mt-1 normal-case tracking-normal">
+                Pin it to the top of the board and homepage for 30 days. You&apos;ll be taken to secure
+                checkout after posting. Skip to publish for free.
+              </p>
+            </div>
+          </button>
+        </div>
+      )}
+
       <div className="flex justify-end gap-4">
         <button
           type="submit"
@@ -272,8 +307,8 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
           className="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 disabled:bg-yellow-300 text-stone-900 font-semibold rounded-md transition-colors"
         >
           {isPending
-            ? mode === 'create' ? 'Creating...' : 'Saving...'
-            : mode === 'create' ? 'Post Job' : 'Save Changes'}
+            ? mode === 'create' ? (feature ? 'Posting…' : 'Creating...') : 'Saving...'
+            : mode === 'create' ? (feature ? 'Post & Feature →' : 'Post Job') : 'Save Changes'}
         </button>
       </div>
     </form>

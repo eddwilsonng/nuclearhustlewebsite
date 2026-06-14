@@ -17,14 +17,26 @@ interface ReviewJob {
   description?: string;
 }
 
+// Structured-description fields are usually strings, but some scraped/AI rows
+// store arrays (e.g. responsibilities as a list) or other shapes. Coerce safely.
+function asText(value: unknown): string {
+  if (value == null) return '';
+  if (Array.isArray(value)) {
+    return value.map((v) => (typeof v === 'string' ? v : String(v))).join('\n');
+  }
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') return '';
+  return String(value);
+}
+
 function DescriptionPreview({ sd }: { sd: StructuredDescription }) {
   const fields = [
-    { label: 'About this role', value: sd.about },
-    { label: 'Responsibilities', value: sd.responsibilities },
-    { label: 'Qualifications', value: sd.qualifications },
-    { label: 'Desired', value: sd.desired },
-    { label: 'Location / Working conditions', value: sd.location_details },
-  ].filter(f => f.value?.trim());
+    { label: 'About this role', value: asText(sd.about) },
+    { label: 'Responsibilities', value: asText(sd.responsibilities) },
+    { label: 'Qualifications', value: asText(sd.qualifications) },
+    { label: 'Desired', value: asText(sd.desired) },
+    { label: 'Location / Working conditions', value: asText(sd.location_details) },
+  ].filter(f => f.value.trim());
 
   return (
     <div className="space-y-4">
@@ -60,7 +72,7 @@ function EditableDescription({
           <label className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1 block">{label}</label>
           <textarea
             rows={4}
-            value={sd[key] || ''}
+            value={asText(sd[key])}
             onChange={e => onChange({ ...sd, [key]: e.target.value })}
             className="w-full font-mono text-xs text-stone-700 bg-white border border-[#CFC8BC] px-3 py-2 focus:outline-none focus:border-stone-400 resize-y"
           />
@@ -203,6 +215,7 @@ function JobCard({
 export default function ReviewQueuePage() {
   const [jobs, setJobs] = useState<ReviewJob[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bulkBusy, setBulkBusy] = useState<'approve' | 'reject' | null>(null);
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || '';
 
   const load = useCallback(async () => {
@@ -215,6 +228,8 @@ export default function ReviewQueuePage() {
     setLoading(false);
   }, []);
 
+  // Fetch the queue once on mount (and after actions via load()).
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   const pending = jobs.filter(j => j.status === 'pending_review');
@@ -222,18 +237,55 @@ export default function ReviewQueuePage() {
   const highConf = pending.filter(j => j.agent_confidence !== 'low');
   const sorted = [...lowConf, ...highConf];
 
+  async function runBulk(kind: 'approve' | 'reject', ids: string[]) {
+    if (ids.length === 0) return;
+    const verb = kind === 'approve' ? 'Approve' : 'Reject';
+    if (!confirm(`${verb} ${ids.length} job${ids.length === 1 ? '' : 's'}? You can change this later from Manage Jobs.`)) return;
+    setBulkBusy(kind);
+    await fetch(kind === 'approve' ? '/api/admin/publish-jobs' : '/api/admin/reject-jobs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+      body: JSON.stringify({ jobIds: ids }),
+    });
+    setBulkBusy(null);
+    await load();
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
-      <div className="mb-8">
+      <div className="mb-6">
         <Link href="/dashboard/admin" className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-700">
-          ← Admin
+          ← Operations
         </Link>
-        <h1 className="font-mono text-2xl font-bold text-stone-900 mt-3">Review Queue</h1>
+        <h1 className="font-mono text-2xl font-bold text-stone-900 mt-3">Content Review Pipeline</h1>
         <p className="font-mono text-xs text-stone-500 mt-1">
           {pending.length} job{pending.length !== 1 ? 's' : ''} pending review
           {lowConf.length > 0 && ` · ${lowConf.length} flagged for closer attention`}
         </p>
       </div>
+
+      {pending.length > 0 && (
+        <div className="mb-8 flex flex-wrap items-center gap-3 border border-[#CFC8BC] bg-[#EDE8DF] px-4 py-3">
+          <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">Bulk</span>
+          <button
+            onClick={() => runBulk('approve', highConf.map(j => j.id))}
+            disabled={bulkBusy !== null || highConf.length === 0}
+            className="font-mono text-xs tracking-widest uppercase px-4 py-2 bg-stone-900 hover:bg-stone-700 text-white font-bold transition-colors disabled:opacity-40"
+          >
+            {bulkBusy === 'approve' ? 'Approving…' : `Approve all high-confidence (${highConf.length})`}
+          </button>
+          <button
+            onClick={() => runBulk('reject', lowConf.map(j => j.id))}
+            disabled={bulkBusy !== null || lowConf.length === 0}
+            className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-red-200 hover:bg-red-50 text-red-600 transition-colors disabled:opacity-40"
+          >
+            {bulkBusy === 'reject' ? 'Rejecting…' : `Reject all flagged (${lowConf.length})`}
+          </button>
+          <span className="font-mono text-[10px] text-stone-400 normal-case tracking-normal ml-auto max-w-[16rem]">
+            Low-confidence shown first — scan those before bulk-approving.
+          </span>
+        </div>
+      )}
 
       {loading ? (
         <p className="font-mono text-xs text-stone-400">Loading…</p>

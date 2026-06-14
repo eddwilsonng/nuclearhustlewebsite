@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "scrape": "tsx scraper/index.ts"
+    "scrape": "tsx scraper/index.ts",
+    "process-jobs": "tsx scraper/process-pending.ts",
+    "scrape:review": "tsx scraper/index.ts && tsx scraper/process-pending.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",

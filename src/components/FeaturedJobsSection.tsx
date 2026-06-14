@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { getFeaturedJobs } from '@/lib/data/employer';
 import { JobCard } from '@/components/JobCard';
 
-export async function FeaturedJobsSection() {
+export async function FeaturedJobsSection({ postHref = '/signup/employer' }: { postHref?: string }) {
   const featuredJobs = await getFeaturedJobs();
 
   return (
@@ -20,7 +20,7 @@ export async function FeaturedJobsSection() {
             Get your role in front of thousands of nuclear professionals. Featured listings appear at the top of the board.
           </p>
           <Link
-            href="/signup/employer"
+            href={postHref}
             className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors inline-block"
           >
             Post a featured job

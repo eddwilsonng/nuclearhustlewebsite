@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
+import { FEATURED_DURATION_DAYS } from '@/lib/stripe/featured';
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     const featuredUntil = new Date();
-    featuredUntil.setDate(featuredUntil.getDate() + 30);
+    featuredUntil.setDate(featuredUntil.getDate() + FEATURED_DURATION_DAYS);
 
     const { error } = await supabase
       .from('employer_jobs')

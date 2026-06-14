@@ -45,3 +45,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local data backups
+backups/
+src/data/jobs.backup-*.json
+
+# Operations agent run log (local)
+.agent-runs.json

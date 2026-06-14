@@ -1,104 +1,25 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { createScraper } from './scrapers';
-import { CompanyConfig, ScraperResult, ScrapedJob } from './types';
-import { categorizeJob, JobCategory } from '../src/lib/categorize';
-import { extractState, generateJobSlug } from '../src/lib/states';
+import { ScraperResult } from './types';
+import { COMPANIES } from './companies';
+import { EnrichedJob, mergeCompanyJobs, fetchJobDescription, MergeStats } from './enrich';
 import { closeBrowser, createContext, createPage } from './browser';
+import { recordAgentRun } from '../src/lib/ops/runLog';
 
-// Company configurations for initial 6 operators
-const COMPANIES: CompanyConfig[] = [
-  {
-    id: 'constellation',
-    name: 'Constellation Energy',
-    careersUrl: 'https://jobs.constellationenergy.com/careers-home/',
-    scraperType: 'custom',
-  },
-  {
-    id: 'duke',
-    name: 'Duke Energy',
-    careersUrl: 'https://dukeenergy.wd1.myworkdayjobs.com/search',
-    scraperType: 'workday',
-  },
-  {
-    id: 'dominion',
-    name: 'Dominion Energy',
-    careersUrl: 'https://careers.dominionenergy.com/',
-    scraperType: 'custom',
-  },
-  {
-    id: 'entergy',
-    name: 'Entergy',
-    careersUrl: 'https://jobs.entergy.com/',
-    scraperType: 'custom',
-  },
-  {
-    id: 'nextera',
-    name: 'NextEra Energy',
-    careersUrl: 'https://www.nexteraenergy.com/careers/search-jobs.html',
-    scraperType: 'custom',
-  },
-  {
-    id: 'tva',
-    name: 'Tennessee Valley Authority',
-    careersUrl: 'https://www.tva.com/careers',
-    scraperType: 'custom',
-  },
-];
+const JOBS_PATH = path.join(__dirname, '..', 'src', 'data', 'jobs.json');
+const COMPANIES_PATH = path.join(__dirname, '..', 'src', 'data', 'companies.json');
 
-interface EnrichedJob {
-  id: string;
-  company_id: string;
-  title: string;
-  location: string;
-  url: string;
-  scraped_at: string;
-  slug: string;
-  state: string | null;
-  category: JobCategory;
-  description?: string;
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function fetchJobDescription(page: any, url: string): Promise<string | null> {
+function loadExisting(): EnrichedJob[] {
+  if (!fs.existsSync(JOBS_PATH)) return [];
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-    await sleep(1500);
-
-    // Try multiple selectors for job description
-    const selectors = [
-      '[data-automation-id="jobPostingDescription"]',
-      '[data-automation-id="jobDescription"]',
-      '.job-description',
-      '.jobDescription',
-      '#job-description',
-      '[class*="job-description"]',
-      '[class*="JobDescription"]',
-      '[class*="description"]',
-      'article',
-    ];
-
-    for (const selector of selectors) {
-      try {
-        const element = await page.$(selector);
-        if (element) {
-          const text = await element.textContent();
-          if (text && text.length > 200 && text.length < 15000) {
-            const cleaned = text.trim().replace(/\s+/g, ' ');
-            if (!cleaned.toLowerCase().includes('cookie policy') &&
-                !cleaned.toLowerCase().includes('privacy notice')) {
-              return cleaned.slice(0, 8000);
-            }
-          }
-        }
-      } catch {
-        continue;
-      }
-    }
-
-    return null;
-  } catch (error) {
-    return null;
+    return (JSON.parse(fs.readFileSync(JOBS_PATH, 'utf-8')).jobs as EnrichedJob[]) || [];
+  } catch {
+    return [];
   }
 }
 
@@ -106,14 +27,16 @@ async function runScrapers(): Promise<void> {
   console.log('Starting Nuclear Hustle job scraper...');
   console.log(`Scraping ${COMPANIES.length} companies\n`);
 
-  const results: ScraperResult[] = [];
-  const allJobs: EnrichedJob[] = [];
-
   const now = new Date().toISOString();
-  let jobId = 1;
+  let allJobs = loadExisting();
+  const before = allJobs.length;
+  console.log(`Loaded ${before} existing jobs (preserving status + structured descriptions)\n`);
 
-  // Phase 1: Scrape job listings from all companies
-  console.log('=== Phase 1: Scraping job listings ===\n');
+  const results: ScraperResult[] = [];
+  const totals: MergeStats = { new: 0, updated: 0, kept: 0, dropped: 0 };
+
+  // Phase 1: scrape each company, fetch missing descriptions, merge (status-preserving).
+  console.log('=== Phase 1: Scraping + merging per company ===\n');
 
   for (const company of COMPANIES) {
     try {
@@ -121,26 +44,32 @@ async function runScrapers(): Promise<void> {
       const result = await scraper.scrape();
       results.push(result);
 
-      // Add jobs to the collection with enrichment
-      for (const job of result.jobs) {
-        const id = String(jobId++);
-        const category = categorizeJob(job.title);
-        const state = extractState(job.location);
-        const slug = generateJobSlug(job.title, job.location, id);
-
-        allJobs.push({
-          id,
-          company_id: company.id,
-          title: job.title,
-          location: job.location,
-          url: job.url,
-          scraped_at: now,
-          slug,
-          state,
-          category,
-          description: job.description,
-        });
+      // Fetch descriptions for jobs that arrived without one (API adapters include them).
+      const needDesc = result.jobs.filter((j) => !j.description);
+      if (needDesc.length > 0) {
+        const context = await createContext();
+        const page = await createPage(context);
+        for (const job of needDesc) {
+          const description = await fetchJobDescription(page, job.url);
+          if (description) job.description = description;
+          await sleep(500);
+        }
+        await page.close();
+        await context.close();
       }
+
+      const { jobs, stats } = mergeCompanyJobs(allJobs, company.id, result.jobs, now);
+      allJobs = jobs;
+      totals.new += stats.new;
+      totals.updated += stats.updated;
+      totals.kept += stats.kept;
+      totals.dropped += stats.dropped;
+
+      console.log(
+        `${company.name}: ${result.jobs.length} scraped -> ` +
+          `+${stats.new} new, ${stats.updated} updated, ${stats.dropped} filtered out` +
+          `${result.success ? '' : ' [SCRAPE FAILED]'}`
+      );
 
       await sleep(1000);
     } catch (error) {
@@ -154,67 +83,56 @@ async function runScrapers(): Promise<void> {
     }
   }
 
-  // Print Phase 1 summary
-  console.log('\n--- Phase 1 Summary ---');
+  // Persist.
+  fs.writeFileSync(JOBS_PATH, JSON.stringify({ jobs: allJobs }, null, 2) + '\n');
+
+  // Update last_scraped for successful companies.
+  if (fs.existsSync(COMPANIES_PATH)) {
+    const companiesData = JSON.parse(fs.readFileSync(COMPANIES_PATH, 'utf-8'));
+    for (const result of results) {
+      if (!result.success) continue;
+      const entry = companiesData.companies?.find((c: { id: string }) => c.id === result.companyId);
+      if (entry) entry.last_scraped = now;
+    }
+    fs.writeFileSync(COMPANIES_PATH, JSON.stringify(companiesData, null, 2) + '\n');
+  }
+
+  await closeBrowser();
+
+  // Summary.
+  const successCount = results.filter((r) => r.success).length;
+  console.log('\n--- Summary ---');
   for (const result of results) {
     const company = COMPANIES.find((c) => c.id === result.companyId);
     const status = result.success ? 'OK' : 'FAILED';
-    console.log(`${company?.name}: ${result.jobs.length} jobs [${status}]${result.error ? ` - ${result.error}` : ''}`);
+    console.log(
+      `${company?.name}: ${result.jobs.length} jobs [${status}]${result.error ? ` - ${result.error}` : ''}`
+    );
   }
-
-  const totalJobs = results.reduce((sum, r) => sum + r.jobs.length, 0);
-  const successCount = results.filter((r) => r.success).length;
-  console.log(`\nTotal: ${totalJobs} jobs from ${successCount}/${results.length} companies`);
-
-  // Phase 2: Fetch descriptions for jobs that don't have them
-  console.log('\n=== Phase 2: Fetching job descriptions ===\n');
-
-  const jobsNeedingDescriptions = allJobs.filter(j => !j.description);
-  console.log(`Fetching descriptions for ${jobsNeedingDescriptions.length} jobs...\n`);
-
-  if (jobsNeedingDescriptions.length > 0) {
-    const context = await createContext();
-    const page = await createPage(context);
-
-    let fetched = 0;
-    let failed = 0;
-
-    for (const job of jobsNeedingDescriptions) {
-      const description = await fetchJobDescription(page, job.url);
-      if (description) {
-        job.description = description;
-        fetched++;
-        console.log(`  ✓ ${job.title.slice(0, 50)}...`);
-      } else {
-        failed++;
-        console.log(`  ✗ ${job.title.slice(0, 50)}...`);
-      }
-
-      // Rate limiting
-      await sleep(500);
-    }
-
-    await page.close();
-    await context.close();
-
-    console.log(`\n--- Phase 2 Summary ---`);
-    console.log(`Descriptions fetched: ${fetched}/${jobsNeedingDescriptions.length}`);
-    console.log(`Failed: ${failed}`);
-  }
-
-  // Save jobs to JSON file
-  const outputPath = path.join(__dirname, '..', 'src', 'data', 'jobs.json');
-  fs.writeFileSync(outputPath, JSON.stringify({ jobs: allJobs }, null, 2));
-  console.log(`\nSaved ${allJobs.length} jobs to ${outputPath}`);
-
-  // Clean up browser instance
-  await closeBrowser();
+  console.log(
+    `\nCompanies: ${successCount}/${results.length} succeeded\n` +
+      `Jobs: ${before} -> ${allJobs.length} ` +
+      `(+${totals.new} new pending review, ${totals.updated} updated, ${totals.dropped} filtered as non-nuclear)`
+  );
+  console.log(`Saved to ${JOBS_PATH}`);
   console.log('Browser closed.');
+
+  const finishedAt = new Date();
+  recordAgentRun({
+    type: 'scrape',
+    label: `Scrape — all sources (${successCount}/${results.length} ok)`,
+    status: successCount > 0 ? 'success' : 'error',
+    startedAt: now,
+    finishedAt: finishedAt.toISOString(),
+    durationMs: finishedAt.getTime() - new Date(now).getTime(),
+    stats: {
+      new: totals.new,
+      updated: totals.updated,
+      dropped: totals.dropped,
+      kept: totals.kept,
+      companies: successCount,
+    },
+  });
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-// Run if executed directly
 runScrapers().catch(console.error);

@@ -20,8 +20,14 @@ export function getPlantsByCompany(companyId: string): Plant[] {
   return companiesData.plants.filter((p) => p.company_id === companyId) as Plant[];
 }
 
+// Public-facing base: only jobs that have cleared review. Every public accessor
+// derives from this so pending_review / rejected jobs never reach the live board.
+function publishedJobs(): Job[] {
+  return (jobsData.jobs as Job[]).filter((j) => !j.status || j.status === 'published');
+}
+
 export function getJobs(): Job[] {
-  return (jobsData.jobs as Job[]).filter(j => !j.status || j.status === 'published');
+  return publishedJobs();
 }
 
 export function getAllJobsForAdmin(): Job[] {
@@ -33,7 +39,7 @@ export function getJobsWithCompany(filters?: {
   region?: Region;
   search?: string;
 }): JobWithCompany[] {
-  let jobs = jobsData.jobs as Job[];
+  let jobs = publishedJobs();
   const companies = companiesData.companies as Company[];
   const plants = companiesData.plants as Plant[];
 
@@ -80,7 +86,7 @@ export function getActiveRegions(): Region[] {
 }
 
 export function getJobBySlug(slug: string): JobWithCompany | undefined {
-  const job = jobsData.jobs.find((j) => j.slug === slug) as Job | undefined;
+  const job = publishedJobs().find((j) => j.slug === slug);
   if (!job) return undefined;
 
   const company = companiesData.companies.find(
@@ -91,7 +97,7 @@ export function getJobBySlug(slug: string): JobWithCompany | undefined {
 }
 
 export function getJobsByState(stateSlug: string): JobWithCompany[] {
-  const jobs = (jobsData.jobs as Job[]).filter((j) => j.state === stateSlug);
+  const jobs = publishedJobs().filter((j) => j.state === stateSlug);
   const companies = companiesData.companies as Company[];
 
   return jobs.map((job) => ({
@@ -101,7 +107,7 @@ export function getJobsByState(stateSlug: string): JobWithCompany[] {
 }
 
 export function getJobsByCategory(category: JobCategory): JobWithCompany[] {
-  const jobs = (jobsData.jobs as Job[]).filter((j) => j.category === category);
+  const jobs = publishedJobs().filter((j) => j.category === category);
   const companies = companiesData.companies as Company[];
 
   return jobs.map((job) => ({
@@ -111,7 +117,7 @@ export function getJobsByCategory(category: JobCategory): JobWithCompany[] {
 }
 
 export function getActiveStates(): { state: StateInfo; count: number }[] {
-  const jobs = jobsData.jobs as Job[];
+  const jobs = publishedJobs();
   const stateCounts = new Map<string, number>();
 
   for (const job of jobs) {
@@ -130,7 +136,7 @@ export function getActiveStates(): { state: StateInfo; count: number }[] {
 }
 
 export function getActiveCategories(): { category: JobCategory; name: string; count: number }[] {
-  const jobs = jobsData.jobs as Job[];
+  const jobs = publishedJobs();
   const categoryCounts = new Map<JobCategory, number>();
 
   for (const job of jobs) {
@@ -147,11 +153,11 @@ export function getActiveCategories(): { category: JobCategory; name: string; co
 }
 
 export function getAllJobSlugs(): string[] {
-  return (jobsData.jobs as Job[]).map((j) => j.slug);
+  return publishedJobs().map((j) => j.slug);
 }
 
 export function getAllStateSlugs(): string[] {
-  const jobs = jobsData.jobs as Job[];
+  const jobs = publishedJobs();
   const states = new Set<string>();
   for (const job of jobs) {
     if (job.state) states.add(job.state);
@@ -160,7 +166,7 @@ export function getAllStateSlugs(): string[] {
 }
 
 export function getJobsByCompany(companyId: string): JobWithCompany[] {
-  const jobs = (jobsData.jobs as Job[]).filter((j) => j.company_id === companyId);
+  const jobs = publishedJobs().filter((j) => j.company_id === companyId);
   const companies = companiesData.companies as Company[];
 
   return jobs.map((job) => ({
@@ -192,7 +198,7 @@ export function getJobsForList(filters?: {
 }
 
 export function getRelatedJobs(job: Job, limit: number = 5): JobWithCompany[] {
-  const allJobs = jobsData.jobs as Job[];
+  const allJobs = publishedJobs();
   const companies = companiesData.companies as Company[];
 
   const related = allJobs

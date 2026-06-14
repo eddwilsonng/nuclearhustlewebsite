@@ -100,11 +100,10 @@ export class WorkdayScraper extends BrowserBaseScraper {
 
       await this.closeBrowser();
 
-      // Filter for nuclear-related jobs if we didn't search
-      const nuclearJobs = this.filterNuclearJobs(jobs);
-
-      console.log(`Found ${nuclearJobs.length} jobs from ${this.config.name}`);
-      return this.createResult(nuclearJobs);
+      // Relevance filtering happens centrally in the enrichment loop (scraper/relevance.ts),
+      // scored on title + description + department — not here on title alone.
+      console.log(`Found ${jobs.length} jobs from ${this.config.name}`);
+      return this.createResult(jobs);
     } catch (error) {
       await this.closeBrowser();
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -171,10 +170,14 @@ export class WorkdayScraper extends BrowserBaseScraper {
   private buildJobUrl(path: string): string {
     if (path.startsWith('http')) return path;
 
-    // Extract base domain from careers URL
+    // Prefer explicit workdayHost; otherwise derive base domain from careers URL.
     // e.g., https://dukeenergy.wd1.myworkdayjobs.com/search -> https://dukeenergy.wd1.myworkdayjobs.com
     const urlMatch = this.config.careersUrl.match(/(https:\/\/[^/]+)/);
-    const baseDomain = urlMatch ? urlMatch[1] : this.config.careersUrl.replace('/search', '');
+    const baseDomain = this.config.workdayHost
+      ? `https://${this.config.workdayHost}`
+      : urlMatch
+        ? urlMatch[1]
+        : this.config.careersUrl.replace('/search', '');
 
     // Workday paths from API typically start with /en-US/
     // If path doesn't include language prefix, add /en-US/search
@@ -193,22 +196,6 @@ export class WorkdayScraper extends BrowserBaseScraper {
     }
 
     return `${baseDomain}/en-US/search/job/${path}`;
-  }
-
-  private filterNuclearJobs(jobs: ScrapedJob[]): ScrapedJob[] {
-    const nuclearKeywords = [
-      'nuclear', 'reactor', 'radiation', 'health physics',
-      'nrc', 'criticality', 'isotope', 'fission',
-      'uranium', 'plutonium', 'fuel', 'core'
-    ];
-
-    // If already a small filtered set, return all
-    if (jobs.length <= 50) return jobs;
-
-    return jobs.filter((job) => {
-      const title = job.title.toLowerCase();
-      return nuclearKeywords.some((kw) => title.includes(kw));
-    });
   }
 
   private deduplicateInterceptedJobs(jobs: WorkdayJob[]): WorkdayJob[] {

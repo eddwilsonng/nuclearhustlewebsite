@@ -26,7 +26,7 @@ export function UserMenu({ profile }: UserMenuProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const initials = profile.full_name
+  const initials = (profile.full_name || profile.email || '?')
     .split(' ')
     .map((n) => n[0])
     .join('')
@@ -37,10 +37,10 @@ export function UserMenu({ profile }: UserMenuProps) {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-[#E5DFD5] transition-colors"
+        className="flex items-center gap-2 px-2 py-1 hover:bg-[#E5DFD5] transition-colors"
       >
-        <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-          <span className="text-sm font-semibold text-stone-900">{initials}</span>
+        <div className="w-8 h-8 bg-yellow-400 flex items-center justify-center">
+          <span className="font-mono text-xs font-bold text-stone-900">{initials}</span>
         </div>
         <svg
           className={`w-4 h-4 text-stone-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
@@ -53,11 +53,11 @@ export function UserMenu({ profile }: UserMenuProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-[#EDE8DF] rounded-lg shadow-lg border border-[#CFC8BC] py-1 z-50">
+        <div className="absolute right-0 mt-2 w-56 bg-[#EDE8DF] border border-[#CFC8BC] py-1 z-50">
           <div className="px-4 py-3 border-b border-[#CFC8BC]">
-            <p className="text-sm font-medium text-stone-900">{profile.full_name}</p>
-            <p className="text-xs text-stone-500">{profile.email}</p>
-            <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-[#E5DFD5] text-stone-600 rounded">
+            <p className="font-mono text-sm font-bold text-stone-900 truncate">{profile.full_name || profile.email}</p>
+            <p className="font-mono text-xs text-stone-500 truncate">{profile.email}</p>
+            <span className="inline-block mt-2 px-2 py-0.5 font-mono text-[10px] tracking-widest uppercase bg-[#E5DFD5] text-stone-600">
               {profile.role === 'employer' ? 'Employer' : 'Job Seeker'}
             </span>
           </div>
