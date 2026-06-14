@@ -32,7 +32,7 @@ export default function CompaniesPage() {
             Nuclear power companies
           </h1>
           <p className="font-mono text-sm text-stone-400">
-            <strong className="text-stone-900">{companies.length}</strong> employers operating nuclear plants in the US
+            <strong className="text-stone-900">{companies.length}</strong> companies in the US nuclear industry
           </p>
         </div>
       </div>
