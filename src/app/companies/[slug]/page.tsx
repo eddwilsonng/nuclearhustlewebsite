@@ -3,6 +3,15 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getCompanies, getCompanyById, getPlantsByCompany, getJobsByCompany } from '@/lib/data/static';
 import { JobCard } from '@/components/JobCard';
+import {
+  BrowsePageHeader,
+  BrowseBreadcrumb,
+  BrowseBreadcrumbLink,
+  BrowseBreadcrumbCurrent,
+  BrowseLabel,
+  BrowseTitle,
+  BrowseMeta,
+} from '@/components/BrowsePageHeader';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -51,27 +60,22 @@ export default async function CompanyPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-[#EDE8DF]">
-      {/* Header */}
-      <div className="bg-[#EDE8DF] border-b border-[#CFC8BC] py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <nav className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase text-stone-500 mb-6">
-            <Link href="/" className="hover:text-stone-900 transition-colors">Home</Link>
-            <span className="text-stone-400">//</span>
-            <Link href="/companies" className="hover:text-stone-900 transition-colors">Companies</Link>
-            <span className="text-stone-400">//</span>
-            <span className="text-stone-600">{company.name}</span>
-          </nav>
-          <p className="font-mono text-xs tracking-widest uppercase text-yellow-400 mb-2">Company</p>
-          <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 mb-3">
-            {company.name}
-          </h1>
-          <div className="flex flex-wrap items-center gap-2 font-mono text-sm text-stone-400">
-            <span><strong className="text-stone-900">{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}</span>
-            <span className="text-stone-400">//</span>
-            <span><strong className="text-stone-900">{plants.length}</strong> nuclear plant{plants.length !== 1 ? 's' : ''}</span>
-          </div>
-        </div>
-      </div>
+      <BrowsePageHeader>
+        <BrowseBreadcrumb>
+          <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
+          <span className="text-stone-600">//</span>
+          <BrowseBreadcrumbLink href="/companies">Companies</BrowseBreadcrumbLink>
+          <span className="text-stone-600">//</span>
+          <BrowseBreadcrumbCurrent>{company.name}</BrowseBreadcrumbCurrent>
+        </BrowseBreadcrumb>
+        <BrowseLabel>Company</BrowseLabel>
+        <BrowseTitle>{company.name}</BrowseTitle>
+        <BrowseMeta>
+          <strong>{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
+          <span className="text-stone-500 mx-2">//</span>
+          <strong>{plants.length}</strong> nuclear plant{plants.length !== 1 ? 's' : ''}
+        </BrowseMeta>
+      </BrowsePageHeader>
 
       <main className="max-w-6xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-3 gap-12">

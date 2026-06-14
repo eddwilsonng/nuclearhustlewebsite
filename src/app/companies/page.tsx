@@ -1,6 +1,15 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { getCompanies, getPlantsByCompany, getJobsByCompany } from '@/lib/data/static';
+import {
+  BrowsePageHeader,
+  BrowseBreadcrumb,
+  BrowseBreadcrumbLink,
+  BrowseBreadcrumbCurrent,
+  BrowseLabel,
+  BrowseTitle,
+  BrowseMeta,
+} from '@/components/BrowsePageHeader';
 
 export const metadata: Metadata = {
   title: 'Nuclear Power Companies - Employers | Nuclear Hustle',
@@ -19,23 +28,18 @@ export default function CompaniesPage() {
 
   return (
     <div className="min-h-screen bg-[#EDE8DF]">
-      {/* Header */}
-      <div className="bg-[#EDE8DF] border-b border-[#CFC8BC] py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <nav className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase text-stone-500 mb-6">
-            <Link href="/" className="hover:text-stone-900 transition-colors">Home</Link>
-            <span className="text-stone-400">//</span>
-            <span className="text-stone-600">Companies</span>
-          </nav>
-          <p className="font-mono text-xs tracking-widest uppercase text-yellow-400 mb-2">Directory</p>
-          <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 mb-3">
-            Nuclear power companies
-          </h1>
-          <p className="font-mono text-sm text-stone-400">
-            <strong className="text-stone-900">{companies.length}</strong> companies in the US nuclear industry
-          </p>
-        </div>
-      </div>
+      <BrowsePageHeader>
+        <BrowseBreadcrumb>
+          <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
+          <span className="text-stone-600">//</span>
+          <BrowseBreadcrumbCurrent>Companies</BrowseBreadcrumbCurrent>
+        </BrowseBreadcrumb>
+        <BrowseLabel>Directory</BrowseLabel>
+        <BrowseTitle>Nuclear power companies</BrowseTitle>
+        <BrowseMeta>
+          <strong>{companies.length}</strong> companies in the US nuclear industry
+        </BrowseMeta>
+      </BrowsePageHeader>
 
       <main className="max-w-6xl mx-auto px-6 py-8">
         <div className="border border-[#CFC8BC]">

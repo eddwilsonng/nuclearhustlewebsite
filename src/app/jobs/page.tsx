@@ -4,6 +4,12 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { getJobsForList, getActiveStates, getActiveCategories, getCompanies } from '@/lib/data/static';
 import { JobList } from '@/components/JobList';
+import {
+  BrowsePageHeader,
+  BrowseLabel,
+  BrowseTitle,
+  BrowseMeta,
+} from '@/components/BrowsePageHeader';
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
 
@@ -52,24 +58,21 @@ export default async function JobsPage({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-[#EDE8DF]">
-      {/* Header */}
-      <div className="border-b border-[#CFC8BC] py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">Jobs</p>
-          <h1 className="font-mono text-3xl font-bold text-stone-900 mb-3">All Nuclear Jobs</h1>
-          <p className="font-mono text-sm text-stone-500">
-            <strong className="text-stone-900">{jobs.length}</strong> open positions
-            <span className="text-stone-400 mx-2">//</span>
-            <strong className="text-stone-900">{companies.length}</strong> companies
-            {totalPages > 1 && (
-              <>
-                <span className="text-stone-400 mx-2">//</span>
-                <span className="text-stone-400">Page {page} of {totalPages}</span>
-              </>
-            )}
-          </p>
-        </div>
-      </div>
+      <BrowsePageHeader>
+        <BrowseLabel>Jobs</BrowseLabel>
+        <BrowseTitle>All Nuclear Jobs</BrowseTitle>
+        <BrowseMeta>
+          <strong>{jobs.length}</strong> open positions
+          <span className="text-stone-500 mx-2">//</span>
+          <strong>{companies.length}</strong> companies
+          {totalPages > 1 && (
+            <>
+              <span className="text-stone-500 mx-2">//</span>
+              <span>Page {page} of {totalPages}</span>
+            </>
+          )}
+        </BrowseMeta>
+      </BrowsePageHeader>
 
       {/* Quick filters */}
       <div className="border-b border-[#CFC8BC]">

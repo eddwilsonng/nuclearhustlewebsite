@@ -6,7 +6,19 @@ import { getAnyJobBySlug } from '@/lib/data/employer';
 import { getCategoryInfo } from '@/lib/categorize';
 import { getStateBySlug } from '@/lib/states';
 import { parseJobDescription, formatSectionTitle } from '@/lib/parseJobDescription';
+import { JobDescriptionBlock, JobDescriptionSection } from '@/components/job/JobDescriptionBlock';
 import { ApplicationForm } from '@/components/job/ApplicationForm';
+import {
+  BrowsePageHeader,
+  BrowseBreadcrumb,
+  BrowseBreadcrumbLink,
+  BrowseBreadcrumbTruncated,
+  BrowseTitle,
+  BrowseBadge,
+  BrowseTagLink,
+  BrowseChip,
+  BrowseMetaLink,
+} from '@/components/BrowsePageHeader';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -111,97 +123,66 @@ export default async function JobPage({ params }: PageProps) {
 
       <div className="min-h-screen bg-[#EDE8DF]">
 
-        {/* Breadcrumbs */}
-        <div className="border-b border-[#CFC8BC]">
-          <div className="max-w-6xl mx-auto px-6 py-3">
-            <nav className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase text-stone-400">
-              <Link href="/" className="hover:text-stone-900 transition-colors">Home</Link>
-              <span className="text-[#CFC8BC]">//</span>
-              <Link href="/jobs" className="hover:text-stone-900 transition-colors">Jobs</Link>
-              {stateInfo && (
-                <>
-                  <span className="text-[#CFC8BC]">//</span>
-                  <Link href={`/jobs/${stateInfo.slug}`} className="hover:text-stone-900 transition-colors">
-                    {stateInfo.name}
-                  </Link>
-                </>
-              )}
-              <span className="text-[#CFC8BC]">//</span>
-              <span className="text-stone-600 truncate max-w-[200px]">{job.title}</span>
-            </nav>
+        <BrowsePageHeader className="py-8 md:py-10">
+          <BrowseBreadcrumb>
+            <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
+            <span className="text-stone-600">//</span>
+            <BrowseBreadcrumbLink href="/jobs">Jobs</BrowseBreadcrumbLink>
+            {stateInfo && (
+              <>
+                <span className="text-stone-600">//</span>
+                <BrowseBreadcrumbLink href={`/jobs/${stateInfo.slug}`}>
+                  {stateInfo.name}
+                </BrowseBreadcrumbLink>
+              </>
+            )}
+            <span className="text-stone-600">//</span>
+            <BrowseBreadcrumbTruncated>{job.title}</BrowseBreadcrumbTruncated>
+          </BrowseBreadcrumb>
+
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            {isEmployerJob && <BrowseBadge>Direct employer</BrowseBadge>}
+            {categoryInfo.name !== 'Other' && (
+              <BrowseTagLink href={`/jobs/role/${job.category}`}>
+                {categoryInfo.name}
+              </BrowseTagLink>
+            )}
+            {stateInfo && (
+              <BrowseTagLink href={`/jobs/${stateInfo.slug}`}>
+                {stateInfo.name}
+              </BrowseTagLink>
+            )}
           </div>
-        </div>
 
-        {/* Hero strip */}
-        <div className="border-b border-[#CFC8BC] bg-[#EDE8DF]">
-          <div className="max-w-6xl mx-auto px-6 py-8 md:py-10">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+          <BrowseTitle>{job.title}</BrowseTitle>
 
-              {/* Left: title + meta */}
-              <div className="flex-1 min-w-0">
-                {/* Category + employer badge */}
-                <div className="flex flex-wrap items-center gap-2 mb-4">
-                  {isEmployerJob && (
-                    <span className="font-mono text-[10px] tracking-widest uppercase border border-yellow-400 text-yellow-600 bg-yellow-50 px-2.5 py-1">
-                      Direct employer
-                    </span>
-                  )}
-                  {categoryInfo.name !== 'Other' && (
-                    <Link
-                      href={`/jobs/role/${job.category}`}
-                      className="font-mono text-[10px] tracking-widest uppercase border border-[#CFC8BC] text-stone-500 px-2.5 py-1 hover:border-stone-400 hover:text-stone-800 transition-colors"
-                    >
-                      {categoryInfo.name}
-                    </Link>
-                  )}
-                  {stateInfo && (
-                    <Link
-                      href={`/jobs/${stateInfo.slug}`}
-                      className="font-mono text-[10px] tracking-widest uppercase border border-[#CFC8BC] text-stone-500 px-2.5 py-1 hover:border-stone-400 hover:text-stone-800 transition-colors"
-                    >
-                      {stateInfo.name}
-                    </Link>
-                  )}
-                </div>
-
-                <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 mb-3 leading-tight">
-                  {job.title}
-                </h1>
-
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-sm text-stone-500">
-                  {isEmployerJob ? (
-                    <span className="font-semibold text-stone-700">{job.company.name}</span>
-                  ) : (
-                    <Link href={`/companies/${job.company.id}`} className="font-semibold text-stone-700 hover:text-yellow-600 transition-colors">
-                      {job.company.name}
-                    </Link>
-                  )}
-                  <span className="text-[#CFC8BC]">·</span>
-                  <span>{job.location}</span>
-                  <span className="text-[#CFC8BC]">·</span>
-                  <span className="text-stone-400" suppressHydrationWarning>{getPostedLabel(job.scraped_at)}</span>
-                </div>
-
-                {/* Quick-scan chips */}
-                <div className="flex flex-wrap gap-2 mt-4">
-                  <span className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase bg-[#E5DFD5] border border-[#CFC8BC] text-stone-500 px-2.5 py-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                    Nuclear industry
-                  </span>
-                  {job.employment_type && (
-                    <span className="font-mono text-[10px] tracking-widest uppercase bg-[#E5DFD5] border border-[#CFC8BC] text-stone-500 px-2.5 py-1">
-                      {employmentLabel}
-                    </span>
-                  )}
-                  <span className="font-mono text-[10px] tracking-widest uppercase bg-[#E5DFD5] border border-[#CFC8BC] text-stone-500 px-2.5 py-1">
-                    US only
-                  </span>
-                </div>
-              </div>
-
-            </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-sm text-stone-400">
+            {isEmployerJob ? (
+              <span className="font-semibold text-stone-200">{job.company.name}</span>
+            ) : (
+              <BrowseMetaLink href={`/companies/${job.company.id}`}>
+                {job.company.name}
+              </BrowseMetaLink>
+            )}
+            <span className="text-stone-600">·</span>
+            <span>{job.location}</span>
+            <span className="text-stone-600">·</span>
+            <span className="text-stone-500" suppressHydrationWarning>
+              {getPostedLabel(job.scraped_at)}
+            </span>
           </div>
-        </div>
+
+          <div className="flex flex-wrap gap-2 mt-4">
+            <BrowseChip>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+              Nuclear industry
+            </BrowseChip>
+            {job.employment_type && (
+              <BrowseChip>{employmentLabel}</BrowseChip>
+            )}
+            <BrowseChip>US only</BrowseChip>
+          </div>
+        </BrowsePageHeader>
 
         {/* Body */}
         <main className="max-w-6xl mx-auto px-6 py-10">
@@ -210,7 +191,7 @@ export default async function JobPage({ params }: PageProps) {
             {/* Left: description */}
             <div className="md:col-span-2 min-w-0">
               {job.structured_description ? (
-                <div className="space-y-8">
+                <div className="space-y-10">
                   {[
                     { key: 'about', label: 'About this role', value: job.structured_description.about },
                     { key: 'responsibilities', label: 'Responsibilities', value: job.structured_description.responsibilities },
@@ -221,10 +202,9 @@ export default async function JobPage({ params }: PageProps) {
                   ]
                     .filter(({ value }) => value && value.trim())
                     .map(({ key, label, value }) => (
-                      <div key={key}>
-                        <h3 className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-3">{label}</h3>
-                        <div className="text-stone-600 text-sm leading-relaxed whitespace-pre-line">{value}</div>
-                      </div>
+                      <JobDescriptionSection key={key} label={label}>
+                        <JobDescriptionBlock text={value!} />
+                      </JobDescriptionSection>
                     ))}
                 </div>
               ) : job.description ? (
@@ -456,33 +436,25 @@ function StructuredJobDescription({ description, companyName, jobTitle, location
   return (
     <div className="space-y-10">
       {parsed.overview && (
-        <div>
-          <h2 className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">About this role</h2>
-          <p className="text-stone-700 leading-relaxed text-sm">{parsed.overview}</p>
-        </div>
+        <JobDescriptionSection label="About this role">
+          <JobDescriptionBlock text={parsed.overview} />
+        </JobDescriptionSection>
       )}
       {parsed.sections.map((section, index) => (
-        <div key={index}>
-          <h2 className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">
-            {formatSectionTitle(section.title)}
-          </h2>
+        <JobDescriptionSection key={index} label={formatSectionTitle(section.title)}>
           {section.type === 'list' ? (
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {section.content.map((item, itemIndex) => (
-                <li key={itemIndex} className="flex items-start gap-3 text-stone-700 text-sm leading-relaxed">
-                  <span className="text-yellow-400 mt-1.5 flex-shrink-0 font-mono">—</span>
+                <li key={itemIndex} className="flex items-start gap-3 text-stone-600 text-sm leading-relaxed">
+                  <span className="text-yellow-500 mt-[0.35rem] flex-shrink-0 font-mono leading-none">—</span>
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="space-y-3">
-              {section.content.map((paragraph, pIndex) => (
-                <p key={pIndex} className="text-stone-700 leading-relaxed text-sm">{paragraph}</p>
-              ))}
-            </div>
+            <JobDescriptionBlock text={section.content.join('\n\n')} />
           )}
-        </div>
+        </JobDescriptionSection>
       ))}
     </div>
   );

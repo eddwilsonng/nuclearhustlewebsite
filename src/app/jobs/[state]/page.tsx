@@ -5,6 +5,16 @@ import { Suspense } from 'react';
 import { getJobsByState, getAllStateSlugs, getActiveCategories, getActiveStates, toJobListItem } from '@/lib/data/static';
 import { getStateBySlug } from '@/lib/states';
 import { PaginatedJobResults } from '@/components/PaginatedJobResults';
+import {
+  BrowsePageHeader,
+  BrowseBreadcrumb,
+  BrowseBreadcrumbLink,
+  BrowseBreadcrumbCurrent,
+  BrowseLabel,
+  BrowseTitle,
+  BrowseMeta,
+  BrowseAlertLink,
+} from '@/components/BrowsePageHeader';
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
 
@@ -68,43 +78,35 @@ export default async function StatePage({ params, searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-[#EDE8DF]">
 
-      {/* Header */}
-      <div className="border-b border-[#CFC8BC] py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <nav className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase text-stone-400 mb-6">
-            <Link href="/" className="hover:text-stone-900 transition-colors">Home</Link>
-            <span aria-hidden="true">//</span>
-            <Link href="/jobs" className="hover:text-stone-900 transition-colors">Jobs</Link>
-            <span aria-hidden="true">//</span>
-            <span className="text-stone-900">{stateInfo.name}</span>
-          </nav>
+      <BrowsePageHeader>
+        <BrowseBreadcrumb>
+          <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
+          <span className="text-stone-600" aria-hidden="true">//</span>
+          <BrowseBreadcrumbLink href="/jobs">Jobs</BrowseBreadcrumbLink>
+          <span className="text-stone-600" aria-hidden="true">//</span>
+          <BrowseBreadcrumbCurrent>{stateInfo.name}</BrowseBreadcrumbCurrent>
+        </BrowseBreadcrumb>
 
-          <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">Location</p>
-          <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 mb-3">
-            Nuclear jobs in {stateInfo.name}
-          </h1>
+        <BrowseLabel>Location</BrowseLabel>
+        <BrowseTitle>Nuclear jobs in {stateInfo.name}</BrowseTitle>
 
-          <div className="flex flex-wrap items-center gap-4">
-            <p className="font-mono text-sm text-stone-400">
-              <strong className="text-stone-900">{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
-              {totalPages > 1 && (
-                <>
-                  <span className="text-stone-400 mx-2">//</span>
-                  <span>Page {page} of {totalPages}</span>
-                </>
-              )}
-            </p>
-            {jobs.length > 0 && (
-              <Link
-                href="/signup"
-                className="font-mono text-xs tracking-widest uppercase text-yellow-700 border border-yellow-300 bg-yellow-50 hover:bg-yellow-100 px-3 py-1 transition-colors"
-              >
-                ★ Get {stateInfo.name} job alerts →
-              </Link>
+        <div className="flex flex-wrap items-center gap-4">
+          <BrowseMeta>
+            <strong>{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
+            {totalPages > 1 && (
+              <>
+                <span className="text-stone-500 mx-2">//</span>
+                <span>Page {page} of {totalPages}</span>
+              </>
             )}
-          </div>
+          </BrowseMeta>
+          {jobs.length > 0 && (
+            <BrowseAlertLink href="/signup">
+              ★ Get {stateInfo.name} job alerts →
+            </BrowseAlertLink>
+          )}
         </div>
-      </div>
+      </BrowsePageHeader>
 
       {/* Role filter bar */}
       <div className="border-b border-[#CFC8BC]">

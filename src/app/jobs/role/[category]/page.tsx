@@ -6,6 +6,17 @@ import { Suspense } from 'react';
 import { getJobsByCategory, getActiveStates, getActiveCategories, getCompanies } from '@/lib/data/static';
 import { getCategoryInfo, getAllCategories, JobCategory } from '@/lib/categorize';
 import { CategoryJobsList } from '@/components/CategoryJobsList';
+import {
+  BrowsePageHeader,
+  BrowseBreadcrumb,
+  BrowseBreadcrumbLink,
+  BrowseBreadcrumbCurrent,
+  BrowseLabel,
+  BrowseTitle,
+  BrowseMeta,
+  BrowseDescription,
+  BrowseAlertLink,
+} from '@/components/BrowsePageHeader';
 import { generateCategoryPageSchema } from '@/lib/seo/schema';
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
@@ -91,47 +102,39 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
       />
 
-      {/* Header */}
-      <div className="border-b border-[#CFC8BC] py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <nav className="flex items-center gap-2 font-mono text-xs tracking-widest uppercase text-stone-400 mb-6">
-            <Link href="/" className="hover:text-stone-900 transition-colors">Home</Link>
-            <span aria-hidden="true">//</span>
-            <Link href="/jobs" className="hover:text-stone-900 transition-colors">Jobs</Link>
-            <span aria-hidden="true">//</span>
-            <span className="text-stone-900">{categoryInfo.name}</span>
-          </nav>
+      <BrowsePageHeader>
+        <BrowseBreadcrumb>
+          <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
+          <span className="text-stone-600" aria-hidden="true">//</span>
+          <BrowseBreadcrumbLink href="/jobs">Jobs</BrowseBreadcrumbLink>
+          <span className="text-stone-600" aria-hidden="true">//</span>
+          <BrowseBreadcrumbCurrent>{categoryInfo.name}</BrowseBreadcrumbCurrent>
+        </BrowseBreadcrumb>
 
-          <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">Role</p>
-          <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 mb-3">
-            Nuclear {categoryInfo.name} jobs
-          </h1>
+        <BrowseLabel>Role</BrowseLabel>
+        <BrowseTitle>Nuclear {categoryInfo.name} jobs</BrowseTitle>
 
-          <div className="flex flex-wrap items-center gap-4 mb-3">
-            <p className="font-mono text-sm text-stone-400">
-              <strong className="text-stone-900">{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
-              {totalPages > 1 && (
-                <>
-                  <span className="text-stone-400 mx-2">//</span>
-                  <span>Page {page} of {totalPages}</span>
-                </>
-              )}
-            </p>
-            {jobs.length > 0 && (
-              <Link
-                href="/signup"
-                className="font-mono text-xs tracking-widest uppercase text-yellow-700 border border-yellow-300 bg-yellow-50 hover:bg-yellow-100 px-3 py-1 transition-colors"
-              >
-                ★ Get {categoryInfo.name} job alerts →
-              </Link>
+        <div className="flex flex-wrap items-center gap-4 mb-3">
+          <BrowseMeta>
+            <strong>{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
+            {totalPages > 1 && (
+              <>
+                <span className="text-stone-500 mx-2">//</span>
+                <span>Page {page} of {totalPages}</span>
+              </>
             )}
-          </div>
-
-          {categoryInfo.description && (
-            <p className="font-mono text-sm text-stone-400 max-w-xl">{categoryInfo.description}</p>
+          </BrowseMeta>
+          {jobs.length > 0 && (
+            <BrowseAlertLink href="/signup">
+              ★ Get {categoryInfo.name} job alerts →
+            </BrowseAlertLink>
           )}
         </div>
-      </div>
+
+        {categoryInfo.description && (
+          <BrowseDescription>{categoryInfo.description}</BrowseDescription>
+        )}
+      </BrowsePageHeader>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-4 gap-12">
