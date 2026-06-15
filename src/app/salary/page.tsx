@@ -12,9 +12,9 @@ import {
 } from '@/components/BrowsePageHeader';
 
 export const metadata: Metadata = {
-  title: 'Nuclear Industry Salary Guide 2024 | Nuclear Hustle',
+  title: 'Nuclear Industry Salary Guide | Nuclear Hustle',
   description:
-    'Nuclear industry salary data for reactor operators, engineers, and technicians. Median wages, pay ranges, and hiring trends based on BLS 2024 OES data.',
+    'Nuclear industry salary data for reactor operators, engineers, and technicians. Median wages and pay ranges based on BLS OES data.',
   alternates: { canonical: '/salary' },
 };
 
@@ -126,13 +126,13 @@ export default function SalaryPage() {
         <BrowseTitle>Nuclear industry salary guide</BrowseTitle>
 
         <BrowseMeta>
-          Based on <strong>BLS 2024 OES data</strong>
+          Source: <strong>BLS OES, May 2024</strong>
           <span className="text-stone-500 mx-2">//</span>
-          Updated annually
+          Most recent complete survey
         </BrowseMeta>
 
         <BrowseDescription>
-          Median wages, pay ranges, and hiring data for nuclear power plant roles — reactor operators, engineers, and technicians. Source: Bureau of Labor Statistics Occupational Employment and Wage Statistics, May 2024.
+          Median wages and pay ranges for nuclear power plant roles — reactor operators, engineers, and technicians. Based on Bureau of Labor Statistics Occupational Employment and Wage Statistics, May 2024 release (the most recent annual survey).
         </BrowseDescription>
       </BrowsePageHeader>
 
