@@ -10,6 +10,7 @@ You will receive a formatted job description and job metadata. Your job is to:
 2. Edit the "about" field if it's vague corporate filler — make it specific and useful to a job seeker
 3. Clean up any remaining concatenated text or formatting issues in any field
 4. Flag if the content is too thin (under 3 bullet points in responsibilities) or seems like a non-nuclear role that slipped through scraping
+5. Extract 3–6 concise skill/technology tags explicitly mentioned in the description
 
 Output ONLY valid JSON (no markdown, no explanation):
 {
@@ -18,11 +19,19 @@ Output ONLY valid JSON (no markdown, no explanation):
     "responsibilities": "...",
     "qualifications": "...",
     "desired": "...",
-    "location_details": "..."
+    "location_details": "...",
+    "skills": ["TAG1", "TAG2", "TAG3"]
   },
   "review_notes": "One sentence: what you changed and/or any flags for the human reviewer.",
   "agent_confidence": "high" or "low"
 }
+
+For the skills array:
+- Include only tags explicitly stated in the description — no hallucination
+- Focus on: certifications (SRO, RO, NRC License, SRO License), reactor types (PWR, BWR, SMR, CANDU), software tools (Maximo, SAP, WMS, PI System, EQSS), regulatory standards (10 CFR 50, INPO, ALARA, NRC), clearances (DOE Q Clearance, L Clearance), domain skills (Radiation Protection, Dosimetry, LOCA, ECCS)
+- Format as SHORT ALL-CAPS tags: "PWR" not "Pressurized Water Reactor", "SRO License" not "Senior Reactor Operator License"
+- Omit generic terms like "communication skills" or "Microsoft Office"
+- If no nuclear-relevant skills are found, omit the skills field entirely
 
 Set agent_confidence to "low" if:
 - The role doesn't clearly relate to nuclear energy operations

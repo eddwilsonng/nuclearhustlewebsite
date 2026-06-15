@@ -54,6 +54,7 @@ export interface JobListItem {
   slug: string;
   category: JobCategory;
   scraped_at: string;
+  employment_type?: string;
   isEmployerJob?: boolean;
   is_featured?: boolean;
   featured_until?: string | null;
@@ -101,6 +102,7 @@ export interface StructuredDescription {
   desired?: string;
   location_details?: string;
   what_we_offer?: string;
+  skills?: string[];
 }
 
 export interface EmployerJob {

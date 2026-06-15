@@ -274,6 +274,7 @@ export function toJobListItem(job: JobWithCompany): JobListItem {
     slug: job.slug,
     category: job.category,
     scraped_at: job.scraped_at,
+    employment_type: job.employment_type,
     isEmployerJob: job.isEmployerJob,
     is_featured: job.is_featured,
     featured_until: job.featured_until,

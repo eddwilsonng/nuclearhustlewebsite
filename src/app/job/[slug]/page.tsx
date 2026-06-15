@@ -10,6 +10,11 @@ import { generateBreadcrumbSchema } from '@/lib/seo/schema';
 import { JobDescriptionBlock, JobDescriptionSection } from '@/components/job/JobDescriptionBlock';
 import { ApplicationForm } from '@/components/job/ApplicationForm';
 import { ViewTracker } from '@/components/job/ViewTracker';
+import { SaveJobButton } from '@/components/job/SaveJobButton';
+import { FlagJobButton } from '@/components/job/FlagJobButton';
+import { getSkillIconCategory } from '@/lib/seo/skillIcons';
+import { Award, Zap, Monitor, Shield, Tag } from 'lucide-react';
+import { createClient } from '@/lib/supabase/server';
 import {
   BrowsePageHeader,
   BrowseBreadcrumb,
@@ -72,10 +77,27 @@ function getPostedLabel(dateString: string): string {
   return `Posted ${date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
 }
 
+const SKILL_ICONS = { award: Award, zap: Zap, monitor: Monitor, shield: Shield, tag: Tag };
+
 export default async function JobPage({ params }: PageProps) {
   const { slug } = await params;
   const job = await getAnyJobBySlug(slug);
   if (!job) notFound();
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isAuthenticated = !!user;
+
+  let initialSaved = false;
+  if (user) {
+    const { data } = await supabase
+      .from('saved_jobs')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('job_slug', slug)
+      .maybeSingle();
+    initialSaved = !!data;
+  }
 
   const isEmployerJob = job.isEmployerJob;
   const relatedJobs = isEmployerJob ? [] : getRelatedJobs(job, 4);
@@ -230,6 +252,27 @@ export default async function JobPage({ params }: PageProps) {
                         <JobDescriptionBlock text={value} />
                       </JobDescriptionSection>
                     ))}
+
+                  {job.structured_description.skills && job.structured_description.skills.length > 0 && (
+                    <div>
+                      <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-3">Skills &amp; tools</p>
+                      <div className="flex flex-wrap gap-2">
+                        {job.structured_description.skills.map((skill) => {
+                          const iconKey = getSkillIconCategory(skill);
+                          const Icon = SKILL_ICONS[iconKey];
+                          return (
+                            <span
+                              key={skill}
+                              className="flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-stone-600 border border-[#CFC8BC] px-2.5 py-1.5"
+                            >
+                              <Icon size={11} className="text-stone-400 flex-shrink-0" />
+                              {skill}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : job.description ? (
                 <StructuredJobDescription
@@ -285,6 +328,16 @@ export default async function JobPage({ params }: PageProps) {
                       Opens {job.company.name}&apos;s careers page
                     </p>
                   )}
+                  <div className="mt-3 pt-3 border-t border-[#CFC8BC] flex justify-center">
+                    <SaveJobButton
+                      jobSlug={job.slug}
+                      jobId={job.id}
+                      initialSaved={initialSaved}
+                      isAuthenticated={isAuthenticated}
+                      showLabel
+                      className="text-stone-400 hover:text-stone-700"
+                    />
+                  </div>
                 </div>
 
                 {/* Job details */}
@@ -384,6 +437,11 @@ export default async function JobPage({ params }: PageProps) {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Flag listing */}
+          <div className="mt-10 pt-6 border-t border-[#CFC8BC] flex justify-end">
+            <FlagJobButton jobSlug={job.slug} />
           </div>
 
           {/* Related jobs */}

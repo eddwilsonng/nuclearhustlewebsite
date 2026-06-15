@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { JobListItem } from '@/lib/types';
+import { SaveJobButton } from './job/SaveJobButton';
 
 interface JobCardProps {
   job: JobListItem;
@@ -77,6 +78,11 @@ export function JobCard({ job, hideCategory = false }: JobCardProps) {
             Direct
           </span>
         )}
+        {job.employment_type && (
+          <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 border border-[#CFC8BC] px-2 py-0.5">
+            {job.employment_type}
+          </span>
+        )}
         {showCategory && (
           <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 border border-[#CFC8BC] px-2 py-0.5">
             {categoryLabel}
@@ -85,6 +91,11 @@ export function JobCard({ job, hideCategory = false }: JobCardProps) {
         <span className="font-mono text-[10px] text-stone-400 whitespace-nowrap" suppressHydrationWarning>
           {getPostedLabel(job.scraped_at)}
         </span>
+        <SaveJobButton
+          jobSlug={job.slug}
+          jobId={job.id}
+          className="p-1 -mr-1"
+        />
       </div>
     </Link>
   );
