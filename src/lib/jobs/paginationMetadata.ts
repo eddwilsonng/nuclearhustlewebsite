@@ -38,6 +38,11 @@ export function buildJobsPaginationMetadata({
       ? page1Description
       : pagedDescription(safePage, totalPages, totalJobs),
     alternates: { canonical },
-    robots: page > totalPages ? { index: false, follow: true } : undefined,
+    // noindex empty programmatic pages (zero listings) and out-of-range pages —
+    // keep following so crawl equity still flows through their links.
+    robots:
+      totalJobs === 0 || page > totalPages
+        ? { index: false, follow: true }
+        : undefined,
   };
 }

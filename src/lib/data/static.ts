@@ -1,7 +1,7 @@
 import companiesData from '@/data/companies.json';
 import jobsData from '@/data/jobs.json';
 import { Company, Plant, Job, JobWithCompany, JobListItem, Region } from '../types';
-import { JobCategory, getCategoryInfo } from '../categorize';
+import { JobCategory, getCategoryInfo, getEngineeringDisciplineInfo, ENGINEERING_DISCIPLINES } from '../categorize';
 import { getStateBySlug, StateInfo } from '../states';
 
 export function getCompanies(): Company[] {
@@ -135,6 +135,33 @@ export function getActiveStates(): { state: StateInfo; count: number }[] {
     .sort((a, b) => b.count - a.count);
 }
 
+export function getJobsByEngineeringDiscipline(slug: string): JobWithCompany[] {
+  const info = getEngineeringDisciplineInfo(slug);
+  if (!info) return [];
+
+  const jobs = publishedJobs().filter(
+    (j) => j.category === 'engineering' && info.pattern.test(j.title)
+  );
+  const companies = companiesData.companies as Company[];
+
+  return jobs.map((job) => ({
+    ...job,
+    company: companies.find((c) => c.id === job.company_id)!,
+  }));
+}
+
+export function getActiveEngineeringDisciplines(): { slug: string; name: string; count: number }[] {
+  const engineeringJobs = publishedJobs().filter((j) => j.category === 'engineering');
+
+  return ENGINEERING_DISCIPLINES.map((d) => ({
+    slug: d.slug,
+    name: d.name,
+    count: engineeringJobs.filter((j) => d.pattern.test(j.title)).length,
+  }))
+    .filter((d) => d.count > 0)
+    .sort((a, b) => b.count - a.count);
+}
+
 export function getActiveCategories(): { category: JobCategory; name: string; count: number }[] {
   const jobs = publishedJobs();
   const categoryCounts = new Map<JobCategory, number>();
@@ -149,6 +176,69 @@ export function getActiveCategories(): { category: JobCategory; name: string; co
       name: getCategoryInfo(category).name,
       count,
     }))
+    .sort((a, b) => b.count - a.count);
+}
+
+// --- State × category intersections ------------------------------------------
+// Powers the /jobs/[state]/[category] landing pages (e.g. "Engineering jobs in
+// Illinois") — the highest-intent job-board SEO pattern.
+
+export function getJobsByStateAndCategory(
+  stateSlug: string,
+  category: JobCategory
+): JobWithCompany[] {
+  const jobs = publishedJobs().filter(
+    (j) => j.state === stateSlug && j.category === category
+  );
+  const companies = companiesData.companies as Company[];
+
+  return jobs.map((job) => ({
+    ...job,
+    company: companies.find((c) => c.id === job.company_id)!,
+  }));
+}
+
+/** Categories present within a state, with in-state counts (excludes 'other'). */
+export function getActiveCategoriesByState(
+  stateSlug: string
+): { category: JobCategory; name: string; count: number }[] {
+  const counts = new Map<JobCategory, number>();
+  for (const job of publishedJobs()) {
+    if (job.state === stateSlug) {
+      counts.set(job.category, (counts.get(job.category) || 0) + 1);
+    }
+  }
+
+  return Array.from(counts.entries())
+    .filter(([category]) => category !== 'other')
+    .map(([category, count]) => ({
+      category,
+      name: getCategoryInfo(category).name,
+      count,
+    }))
+    .sort((a, b) => b.count - a.count);
+}
+
+/** Every state×category pair that has at least one live job — used to
+ * statically generate (and sitemap) only the intersection pages worth indexing.
+ * Empty combos still resolve on demand but are noindexed by the page metadata. */
+export function getActiveStateCategoryCombos(): {
+  stateSlug: string;
+  category: JobCategory;
+  count: number;
+}[] {
+  const counts = new Map<string, number>();
+  for (const job of publishedJobs()) {
+    if (!job.state || job.category === 'other') continue;
+    const key = `${job.state}|${job.category}`;
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+
+  return Array.from(counts.entries())
+    .map(([key, count]) => {
+      const [stateSlug, category] = key.split('|');
+      return { stateSlug, category: category as JobCategory, count };
+    })
     .sort((a, b) => b.count - a.count);
 }
 

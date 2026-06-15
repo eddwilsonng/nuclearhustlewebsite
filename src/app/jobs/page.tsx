@@ -92,7 +92,9 @@ export default async function JobsPage({ searchParams }: PageProps) {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-xs tracking-widest uppercase text-stone-400">Role</span>
-              {activeCategories.slice(0, 4).map(({ category, name, count }) => (
+              {activeCategories
+                .filter(({ category }) => category !== 'other')
+                .map(({ category, name, count }) => (
                 <Link
                   key={category}
                   href={`/jobs/role/${category}`}

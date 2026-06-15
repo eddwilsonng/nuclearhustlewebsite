@@ -1,96 +1,140 @@
 'use client';
 
-import { Company, Region, REGIONS } from '@/lib/types';
+import { Company } from '@/lib/types';
+import { JobCategory } from '@/lib/categorize';
+
+interface CategoryOption {
+  category: JobCategory;
+  name: string;
+  count: number;
+}
 
 interface FilterSidebarProps {
   companies: Company[];
+  categories: CategoryOption[];
   selectedCompany: string | null;
-  selectedRegion: Region | null;
+  selectedCategory: JobCategory | null;
   searchQuery: string;
+  resultCount: number;
+  totalCount: number;
   onCompanyChange: (companyId: string | null) => void;
-  onRegionChange: (region: Region | null) => void;
+  onCategoryChange: (category: JobCategory | null) => void;
   onSearchChange: (query: string) => void;
 }
 
+const fieldClass =
+  'w-full px-3 py-2 font-mono text-sm border border-[#CFC8BC] bg-[#EDE8DF] text-stone-800 placeholder:text-stone-400 focus:border-yellow-400 focus:outline-none transition-colors';
+
+const labelClass =
+  'block font-mono text-xs tracking-widest uppercase text-stone-500 mb-2';
+
 export function FilterSidebar({
   companies,
+  categories,
   selectedCompany,
-  selectedRegion,
+  selectedCategory,
   searchQuery,
+  resultCount,
+  totalCount,
   onCompanyChange,
-  onRegionChange,
+  onCategoryChange,
   onSearchChange,
 }: FilterSidebarProps) {
+  const hasActiveFilters = Boolean(selectedCompany || selectedCategory || searchQuery);
+
   return (
-    <aside className="w-full lg:w-64 space-y-6">
-      {/* Search */}
-      <div>
-        <label htmlFor="search" className="block text-sm font-medium text-stone-700 mb-2">
-          Search
-        </label>
-        <input
-          type="text"
-          id="search"
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Job title or location..."
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
-        />
-      </div>
+    <aside className="w-full lg:w-64 shrink-0">
+      <div className="border border-[#CFC8BC] lg:sticky lg:top-6">
+        <div className="flex items-center justify-between border-b border-[#CFC8BC] px-4 py-3">
+          <span className="font-mono text-xs tracking-widest uppercase text-stone-500">
+            Filter
+          </span>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={() => {
+                onCompanyChange(null);
+                onCategoryChange(null);
+                onSearchChange('');
+              }}
+              className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
+            >
+              Clear ✕
+            </button>
+          )}
+        </div>
 
-      {/* Company Filter */}
-      <div>
-        <label htmlFor="company" className="block text-sm font-medium text-stone-700 mb-2">
-          Company
-        </label>
-        <select
-          id="company"
-          value={selectedCompany || ''}
-          onChange={(e) => onCompanyChange(e.target.value || null)}
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none bg-[#EDE8DF]"
-        >
-          <option value="">All Companies</option>
-          {companies.map((company) => (
-            <option key={company.id} value={company.id}>
-              {company.name}
-            </option>
-          ))}
-        </select>
-      </div>
+        <div className="space-y-5 p-4">
+          {/* Search */}
+          <div>
+            <label htmlFor="search" className={labelClass}>
+              Search
+            </label>
+            <input
+              type="text"
+              id="search"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Job title or location…"
+              className={fieldClass}
+            />
+          </div>
 
-      {/* Region Filter */}
-      <div>
-        <label htmlFor="region" className="block text-sm font-medium text-stone-700 mb-2">
-          Region
-        </label>
-        <select
-          id="region"
-          value={selectedRegion || ''}
-          onChange={(e) => onRegionChange((e.target.value as Region) || null)}
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none bg-[#EDE8DF]"
-        >
-          <option value="">All Regions</option>
-          {REGIONS.map((region) => (
-            <option key={region} value={region}>
-              {region}
-            </option>
-          ))}
-        </select>
-      </div>
+          {/* Role / Category */}
+          <div>
+            <label htmlFor="category" className={labelClass}>
+              Role
+            </label>
+            <select
+              id="category"
+              value={selectedCategory || ''}
+              onChange={(e) => onCategoryChange((e.target.value as JobCategory) || null)}
+              className={fieldClass}
+            >
+              <option value="">All roles</option>
+              {categories.map(({ category, name, count }) => (
+                <option key={category} value={category}>
+                  {name} ({count})
+                </option>
+              ))}
+            </select>
+          </div>
 
-      {/* Clear Filters */}
-      {(selectedCompany || selectedRegion || searchQuery) && (
-        <button
-          onClick={() => {
-            onCompanyChange(null);
-            onRegionChange(null);
-            onSearchChange('');
-          }}
-          className="w-full px-4 py-2 text-sm text-stone-600 hover:text-stone-900 border border-stone-300 rounded-lg hover:bg-[#E5DFD5] transition-colors"
-        >
-          Clear Filters
-        </button>
-      )}
+          {/* Company */}
+          <div>
+            <label htmlFor="company" className={labelClass}>
+              Company
+            </label>
+            <select
+              id="company"
+              value={selectedCompany || ''}
+              onChange={(e) => onCompanyChange(e.target.value || null)}
+              className={fieldClass}
+            >
+              <option value="">All companies</option>
+              {companies.map((company) => (
+                <option key={company.id} value={company.id}>
+                  {company.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="border-t border-[#CFC8BC] px-4 py-3">
+          <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
+            {hasActiveFilters ? (
+              <>
+                <span className="text-stone-700">{resultCount}</span> of {totalCount} jobs
+              </>
+            ) : (
+              <>
+                <span className="text-stone-700">{totalCount}</span> jobs
+              </>
+            )}
+          </p>
+        </div>
+      </div>
     </aside>
   );
 }

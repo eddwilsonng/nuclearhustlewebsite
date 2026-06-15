@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { getJobsByState, getAllStateSlugs, getActiveCategories, getActiveStates, toJobListItem } from '@/lib/data/static';
+import { getJobsByState, getAllStateSlugs, getActiveCategoriesByState, getActiveStates, toJobListItem } from '@/lib/data/static';
 import { getStateBySlug } from '@/lib/states';
 import { PaginatedJobResults } from '@/components/PaginatedJobResults';
 import {
@@ -67,8 +67,9 @@ export default async function StatePage({ params, searchParams }: PageProps) {
   if (page > totalPages) {
     redirect(buildJobsPageUrl(basePath, totalPages));
   }
-  // Exclude 'other' category from the role filter chips
-  const categories = getActiveCategories().filter((c) => c.category !== 'other');
+  // Role chips show in-state counts and deep-link to the state×role page, so
+  // the number on the chip matches what you see after clicking.
+  const categories = getActiveCategoriesByState(state);
 
   // Build sidebar: other states with job counts, sorted by count desc
   const allActiveStates = getActiveStates()
@@ -111,11 +112,11 @@ export default async function StatePage({ params, searchParams }: PageProps) {
       {/* Role filter bar */}
       <div className="border-b border-[#CFC8BC]">
         <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center gap-2">
-          <span className="font-mono text-xs tracking-widest uppercase text-stone-500 mr-1">Filter by role</span>
+          <span className="font-mono text-xs tracking-widest uppercase text-stone-500 mr-1">Browse by role</span>
           {categories.map(({ category, name, count }) => (
             <Link
               key={category}
-              href={`/jobs/role/${category}`}
+              href={`/jobs/${state}/${category}`}
               className="font-mono text-xs tracking-widest uppercase border border-[#CFC8BC] px-3 py-1 text-stone-500 hover:border-yellow-400 hover:text-stone-900 transition-colors"
             >
               {name}

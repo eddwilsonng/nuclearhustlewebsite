@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { JobListItem, Company, Region } from '@/lib/types';
+import { JobListItem, Company } from '@/lib/types';
+import { JobCategory, getCategoryInfo } from '@/lib/categorize';
 import { FilterSidebar } from './FilterSidebar';
 import { PaginatedJobResults } from './PaginatedJobResults';
 
@@ -13,8 +14,25 @@ interface JobListProps {
 
 export function JobList({ jobs, companies, initialPage = 1 }: JobListProps) {
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
-  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<JobCategory | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Role options derived from the full job set so counts stay stable as other
+  // filters change. 'other' is hidden to match the role chips above the list.
+  const categoryOptions = useMemo(() => {
+    const counts = new Map<JobCategory, number>();
+    for (const job of jobs) {
+      counts.set(job.category, (counts.get(job.category) || 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .filter(([category]) => category !== 'other')
+      .map(([category, count]) => ({
+        category,
+        name: getCategoryInfo(category).name,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [jobs]);
 
   const filteredJobs = useMemo(() => {
     let result = jobs;
@@ -23,11 +41,8 @@ export function JobList({ jobs, companies, initialPage = 1 }: JobListProps) {
       result = result.filter((job) => job.company_id === selectedCompany);
     }
 
-    if (selectedRegion) {
-      result = result.filter((job) => {
-        const company = companies.find((c) => c.id === job.company_id);
-        return company !== undefined;
-      });
+    if (selectedCategory) {
+      result = result.filter((job) => job.category === selectedCategory);
     }
 
     if (searchQuery) {
@@ -45,19 +60,22 @@ export function JobList({ jobs, companies, initialPage = 1 }: JobListProps) {
       const bFeatured = b.is_featured && b.featured_until && new Date(b.featured_until) > new Date() ? 1 : 0;
       return bFeatured - aFeatured;
     });
-  }, [jobs, companies, selectedCompany, selectedRegion, searchQuery]);
+  }, [jobs, selectedCompany, selectedCategory, searchQuery]);
 
-  const resetKey = `${selectedCompany ?? ''}|${selectedRegion ?? ''}|${searchQuery}`;
+  const resetKey = `${selectedCompany ?? ''}|${selectedCategory ?? ''}|${searchQuery}`;
 
   return (
     <div className="flex flex-col lg:flex-row gap-8">
       <FilterSidebar
         companies={companies}
+        categories={categoryOptions}
         selectedCompany={selectedCompany}
-        selectedRegion={selectedRegion}
+        selectedCategory={selectedCategory}
         searchQuery={searchQuery}
+        resultCount={filteredJobs.length}
+        totalCount={jobs.length}
         onCompanyChange={setSelectedCompany}
-        onRegionChange={setSelectedRegion}
+        onCategoryChange={setSelectedCategory}
         onSearchChange={setSearchQuery}
       />
 

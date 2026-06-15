@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import Script from 'next/script';
 import { Suspense } from 'react';
-import { getJobsByCategory, getActiveStates, getActiveCategories, getCompanies } from '@/lib/data/static';
+import { getJobsByCategory, getActiveStates, getActiveCategories, getActiveEngineeringDisciplines, getCompanies } from '@/lib/data/static';
 import { getCategoryInfo, getAllCategories, JobCategory } from '@/lib/categorize';
 import { CategoryJobsList } from '@/components/CategoryJobsList';
 import {
@@ -88,6 +88,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const activeCategories = getActiveCategories().filter(
     (c) => c.category !== category && c.category !== 'other'
   );
+  // Engineering exposes discipline sub-facets (electrical, mechanical, …).
+  const engineeringDisciplines =
+    category === 'engineering' ? getActiveEngineeringDisciplines() : [];
 
   // Get company names for schema
   const companies = getCompanies();
@@ -146,6 +149,27 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           <BrowseDescription>{categoryInfo.description}</BrowseDescription>
         )}
       </BrowsePageHeader>
+
+      {/* Engineering discipline sub-nav */}
+      {engineeringDisciplines.length > 0 && (
+        <div className="border-b border-[#CFC8BC]">
+          <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center gap-2">
+            <span className="font-mono text-xs tracking-widest uppercase text-stone-500 mr-1">
+              Discipline
+            </span>
+            {engineeringDisciplines.map(({ slug, name, count }) => (
+              <Link
+                key={slug}
+                href={`/jobs/role/engineering/${slug}`}
+                className="font-mono text-xs tracking-widest uppercase border border-[#CFC8BC] px-3 py-1 text-stone-500 hover:border-yellow-400 hover:text-stone-900 transition-colors"
+              >
+                {name}
+                <span className="ml-1.5 text-stone-400">{count}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-4 gap-12">

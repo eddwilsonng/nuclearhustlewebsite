@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { ConditionalFooter } from "@/components/ConditionalFooter";
+import { ConditionalClicky } from "@/components/ConditionalClicky";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -65,6 +66,7 @@ export default function RootLayout({
           {children}
         </main>
         <ConditionalFooter />
+        <ConditionalClicky />
       </body>
     </html>
   );

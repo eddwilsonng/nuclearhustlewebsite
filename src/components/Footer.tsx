@@ -1,15 +1,33 @@
 import Link from 'next/link';
+import { getActiveStates } from '@/lib/data/static';
 
 const YEAR = new Date().getFullYear();
 
+// Descriptive anchors that match real search intent (e.g. "nuclear engineering
+// jobs") — better for SEO than bare category names, without keyword stuffing.
+const ROLE_LINKS: { href: string; label: string }[] = [
+  { href: '/jobs', label: 'All nuclear jobs' },
+  { href: '/jobs/role/engineering', label: 'Nuclear engineering jobs' },
+  { href: '/jobs/role/operations', label: 'Nuclear operations jobs' },
+  { href: '/jobs/role/maintenance', label: 'Maintenance technician jobs' },
+  { href: '/jobs/role/health-physics', label: 'Health physics jobs' },
+  { href: '/jobs/role/administrative', label: 'Administrative & support jobs' },
+  { href: '/companies', label: 'Browse employers' },
+];
+
+const linkClass =
+  'font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors';
+
 export function Footer() {
+  const topStates = getActiveStates().slice(0, 6);
+
   return (
     <footer className="border-t border-[#CFC8BC] bg-[#EDE8DF] mt-auto">
       <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 mb-12">
 
           {/* Brand */}
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <span className="font-mono text-stone-400 text-sm select-none">##</span>
               <span className="font-mono font-bold text-xs tracking-widest uppercase text-stone-900">
@@ -21,38 +39,34 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Jobs */}
+          {/* Jobs by role */}
           <div>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Browse</p>
+            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Jobs by role</p>
             <ul className="space-y-2.5">
+              {ROLE_LINKS.map(({ href, label }) => (
+                <li key={href}>
+                  <Link href={href} className={linkClass}>
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Jobs by location */}
+          <div>
+            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Jobs by location</p>
+            <ul className="space-y-2.5">
+              {topStates.map(({ state }) => (
+                <li key={state.slug}>
+                  <Link href={`/jobs/${state.slug}`} className={linkClass}>
+                    Nuclear jobs in {state.name}
+                  </Link>
+                </li>
+              ))}
               <li>
-                <Link href="/jobs" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
-                  All jobs
-                </Link>
-              </li>
-              <li>
-                <Link href="/jobs/role/operations" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
-                  Operations
-                </Link>
-              </li>
-              <li>
-                <Link href="/jobs/role/engineering" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
-                  Engineering
-                </Link>
-              </li>
-              <li>
-                <Link href="/jobs/role/maintenance" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
-                  Maintenance
-                </Link>
-              </li>
-              <li>
-                <Link href="/jobs/role/health-physics" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
-                  Health Physics
-                </Link>
-              </li>
-              <li>
-                <Link href="/companies" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
-                  Companies
+                <Link href="/status" className={linkClass}>
+                  US reactor fleet map
                 </Link>
               </li>
             </ul>
@@ -63,17 +77,17 @@ export function Footer() {
             <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Employers</p>
             <ul className="space-y-2.5">
               <li>
-                <Link href="/signup/employer" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
-                  Post a job
+                <Link href="/signup/employer" className={linkClass}>
+                  Post a nuclear job
                 </Link>
               </li>
               <li>
-                <Link href="/signup/employer" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
-                  Create account
+                <Link href="/signup/employer" className={linkClass}>
+                  Create employer account
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
+                <Link href="/login" className={linkClass}>
                   Log in
                 </Link>
               </li>

@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import type { JobWithCompany } from '@/lib/types';
-import { getActiveStates, toJobListItem } from '@/lib/data/static';
+import { toJobListItem } from '@/lib/data/static';
+import { getStateBySlug } from '@/lib/states';
 import { PaginatedJobResults } from './PaginatedJobResults';
 
 type SortOption = 'recent' | 'featured' | 'alphabetical';
@@ -26,7 +27,18 @@ export function CategoryJobsList({
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [showAllStates, setShowAllStates] = useState(false);
 
-  const allStates = getActiveStates();
+  // Derive state chips from THIS list's jobs so the chip count matches what
+  // filtering actually returns (e.g. engineering∩Illinois, not all-Illinois).
+  const allStates = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const job of jobs) {
+      if (job.state) counts.set(job.state, (counts.get(job.state) || 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .map(([slug, count]) => ({ state: getStateBySlug(slug)!, count }))
+      .filter((s) => s.state)
+      .sort((a, b) => b.count - a.count);
+  }, [jobs]);
 
   const filteredJobs = useMemo(
     () => (selectedState ? jobs.filter((j) => j.state === selectedState) : jobs),
