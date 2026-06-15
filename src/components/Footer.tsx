@@ -29,7 +29,6 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <span className="font-mono text-stone-400 text-sm select-none">##</span>
               <span className="font-mono font-bold text-xs tracking-widest uppercase text-stone-900">
                 nuclearhustle
               </span>

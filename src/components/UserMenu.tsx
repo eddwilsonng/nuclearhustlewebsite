@@ -65,7 +65,7 @@ export function UserMenu({ profile }: UserMenuProps) {
           <Link
             href="/dashboard"
             onClick={() => setIsOpen(false)}
-            className="block px-4 py-2 text-sm text-stone-700 hover:bg-[#E5DFD5]"
+            className="block px-4 py-2.5 font-mono text-xs tracking-widest uppercase text-stone-700 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
           >
             Dashboard
           </Link>
@@ -73,7 +73,7 @@ export function UserMenu({ profile }: UserMenuProps) {
           <Link
             href="/dashboard/profile"
             onClick={() => setIsOpen(false)}
-            className="block px-4 py-2 text-sm text-stone-700 hover:bg-[#E5DFD5]"
+            className="block px-4 py-2.5 font-mono text-xs tracking-widest uppercase text-stone-700 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
           >
             Edit Profile
           </Link>
@@ -82,7 +82,7 @@ export function UserMenu({ profile }: UserMenuProps) {
             <Link
               href="/dashboard/jobs"
               onClick={() => setIsOpen(false)}
-              className="block px-4 py-2 text-sm text-stone-700 hover:bg-[#E5DFD5]"
+              className="block px-4 py-2.5 font-mono text-xs tracking-widest uppercase text-stone-700 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
             >
               Manage Jobs
             </Link>
@@ -92,7 +92,7 @@ export function UserMenu({ profile }: UserMenuProps) {
             <form action={signOut}>
               <button
                 type="submit"
-                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                className="w-full text-left px-4 py-2.5 font-mono text-xs tracking-widest uppercase text-red-600 hover:bg-[#E5DFD5] transition-colors"
               >
                 Sign Out
               </button>

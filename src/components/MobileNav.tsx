@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { signOut } from '@/lib/auth/actions';
 
 const PRIMARY_LINKS = [
@@ -23,6 +24,7 @@ const LOGGED_IN_LINKS = [
 
 export function MobileNav({ isAuthed = false }: { isAuthed?: boolean }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -30,6 +32,8 @@ export function MobileNav({ isAuthed = false }: { isAuthed?: boolean }) {
   }, [open]);
 
   const close = () => setOpen(false);
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <>
@@ -54,7 +58,6 @@ export function MobileNav({ isAuthed = false }: { isAuthed?: boolean }) {
         {/* Header — matches the main site header exactly */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#CFC8BC]">
           <Link href="/" onClick={close} className="flex items-center gap-2">
-            <span className="font-mono text-stone-500 text-sm select-none" aria-hidden="true">##</span>
             <span className="font-mono font-bold text-xs tracking-widest uppercase text-stone-900">nuclearhustle</span>
           </Link>
           <button
@@ -68,22 +71,33 @@ export function MobileNav({ isAuthed = false }: { isAuthed?: boolean }) {
 
         {/* Primary links */}
         <nav className="flex-1 flex flex-col px-6 pt-2 overflow-y-auto">
-          {PRIMARY_LINKS.map(({ href, label, num }) => (
-            <Link
-              key={href}
-              href={href}
-              onClick={close}
-              className="group flex items-baseline justify-between py-6 border-b border-[#CFC8BC]"
-            >
-              <div className="flex items-baseline gap-4">
-                <span className="font-mono text-[10px] tracking-widest text-stone-400">{num}</span>
-                <span className="font-mono text-base font-bold tracking-widest uppercase text-stone-900 group-hover:text-yellow-500 transition-colors">
-                  {label}
-                </span>
-              </div>
-              <span className="font-mono text-xs text-stone-400 group-hover:text-yellow-500 transition-colors">→</span>
-            </Link>
-          ))}
+          {PRIMARY_LINKS.map(({ href, label, num }, i) => {
+            const active = isActive(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                onClick={close}
+                aria-current={active ? 'page' : undefined}
+                style={{ transitionDelay: open ? `${120 + i * 50}ms` : '0ms' }}
+                className={`group flex items-baseline justify-between py-6 border-b border-[#CFC8BC] transform transition-all duration-300 ${
+                  open ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+                }`}
+              >
+                <div className="flex items-baseline gap-4">
+                  <span className={`font-mono text-[10px] tracking-widest ${active ? 'text-yellow-500' : 'text-stone-400'}`}>{num}</span>
+                  <span className={`font-mono text-base font-bold tracking-widest uppercase transition-colors ${
+                    active ? 'text-yellow-500' : 'text-stone-900 group-hover:text-yellow-500'
+                  }`}>
+                    {label}
+                  </span>
+                </div>
+                <span className={`font-mono text-xs transition-colors ${
+                  active ? 'text-yellow-500' : 'text-stone-400 group-hover:text-yellow-500'
+                }`}>→</span>
+              </Link>
+            );
+          })}
 
           {/* Secondary links */}
           <div className="mt-6 flex flex-col">
