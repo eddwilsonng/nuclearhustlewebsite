@@ -132,7 +132,7 @@ export function Footer() {
             © {YEAR} Nuclear Hustle. All rights reserved.
           </p>
           <p className="font-mono text-[10px] text-stone-300">
-            Data sourced from NRC &amp; public operator listings.
+            Reactor data from the U.S. NRC. Job listings aggregated from public employer career sites.
           </p>
         </div>
       </div>

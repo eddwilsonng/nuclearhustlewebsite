@@ -23,7 +23,7 @@ import {
   BrowseMeta,
   BrowseAlertLink,
 } from '@/components/BrowsePageHeader';
-import { generateCategoryPageSchema } from '@/lib/seo/schema';
+import { generateCategoryPageSchema, generateBreadcrumbSchema } from '@/lib/seo/schema';
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
 
@@ -111,12 +111,24 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
     url,
   });
 
+  const breadcrumbData = generateBreadcrumbSchema([
+    { name: 'Home', url: 'https://www.nuclearhustle.com/' },
+    { name: 'Jobs', url: 'https://www.nuclearhustle.com/jobs' },
+    { name: `${stateInfo.name} Jobs`, url: `https://www.nuclearhustle.com/jobs/${state}` },
+    { name: `${categoryInfo.name} Jobs in ${stateInfo.name}`, url },
+  ]);
+
   return (
     <div className="min-h-screen bg-[#EDE8DF]">
       <Script
         id="state-category-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
       />
 
       <BrowsePageHeader>

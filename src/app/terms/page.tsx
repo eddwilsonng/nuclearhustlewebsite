@@ -18,7 +18,7 @@ export default function TermsPage() {
             Terms of Service
           </h1>
           <p className="mt-6 text-stone-500 text-sm font-mono">
-            Last updated: January 2025
+            Last updated: June 2026
           </p>
         </div>
       </section>
@@ -98,21 +98,40 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-4">9. Governing law</h2>
+              <h2 className="font-mono text-xl font-bold text-stone-900 mb-4">9. Aggregated job listings</h2>
+              <p className="text-stone-500 text-sm leading-relaxed mb-3">
+                In addition to jobs posted directly by employers, the platform aggregates job listings from publicly available employer career sites and other public sources. For these aggregated listings:
+              </p>
+              <ul className="space-y-2 text-sm text-stone-500">
+                <li className="flex gap-3"><span className="font-mono text-gray-200 flex-shrink-0">—</span>They are provided &ldquo;as is&rdquo; and may be incomplete, out of date, or no longer open</li>
+                <li className="flex gap-3"><span className="font-mono text-gray-200 flex-shrink-0">—</span>Applications are completed on the employer&apos;s own site; we are not involved in and do not control that process</li>
+                <li className="flex gap-3"><span className="font-mono text-gray-200 flex-shrink-0">—</span>Each listing remains the intellectual property of the employer that published it, and we display it to direct interested candidates to the source</li>
+              </ul>
+              <p className="text-stone-500 text-sm leading-relaxed mt-4">
+                If you are an employer and want a listing removed or corrected, email us at{' '}
+                <a href="mailto:hello@nuclearhustle.com" className="text-stone-900 underline hover:text-yellow-500 transition-colors">
+                  hello@nuclearhustle.com
+                </a>{' '}
+                and we will action it promptly.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="font-mono text-xl font-bold text-stone-900 mb-4">10. Governing law</h2>
               <p className="text-stone-500 text-sm leading-relaxed">
                 These terms are governed by the laws of the United States. Any disputes arising from use of the platform shall be resolved in the applicable federal or state courts.
               </p>
             </div>
 
             <div>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-4">10. Changes to these terms</h2>
+              <h2 className="font-mono text-xl font-bold text-stone-900 mb-4">11. Changes to these terms</h2>
               <p className="text-stone-500 text-sm leading-relaxed">
                 We may update these terms at any time. Continued use of the platform after changes are posted constitutes acceptance. We will notify registered users of material changes by email.
               </p>
             </div>
 
             <div>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-4">11. Contact</h2>
+              <h2 className="font-mono text-xl font-bold text-stone-900 mb-4">12. Contact</h2>
               <p className="text-stone-500 text-sm leading-relaxed">
                 Questions about these terms? Contact us at{' '}
                 <a href="mailto:hello@nuclearhustle.com" className="text-stone-900 underline hover:text-yellow-500 transition-colors">

@@ -1,5 +1,56 @@
 import type { Job } from '@/lib/types';
 
+const SITE_URL = 'https://www.nuclearhustle.com';
+
+export function generateOrganizationSchema(): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Nuclear Hustle',
+    url: SITE_URL,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${SITE_URL}/favicon.svg`,
+      width: 512,
+      height: 512,
+    },
+    description: 'Specialist job board for US nuclear power plant professionals — operators, engineers, health physicists, and maintenance crews.',
+    sameAs: ['https://x.com/nuclearhustle'],
+  };
+}
+
+export function generateWebSiteSchema(): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Nuclear Hustle',
+    url: SITE_URL,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${SITE_URL}/jobs?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+}
+
+export function generateBreadcrumbSchema(
+  items: Array<{ name: string; url: string }>
+): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}
+
 export function generateJobPostingSchema(
   job: Job,
   company: { name: string; id: string }

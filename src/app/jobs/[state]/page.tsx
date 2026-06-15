@@ -17,6 +17,8 @@ import {
 } from '@/components/BrowsePageHeader';
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
+import Script from 'next/script';
+import { generateBreadcrumbSchema } from '@/lib/seo/schema';
 
 interface PageProps {
   params: Promise<{ state: string }>;
@@ -76,8 +78,19 @@ export default async function StatePage({ params, searchParams }: PageProps) {
     .filter(({ state: s }) => s.slug !== state)
     .slice(0, 12);
 
+  const breadcrumbData = generateBreadcrumbSchema([
+    { name: 'Home', url: 'https://www.nuclearhustle.com/' },
+    { name: 'Jobs', url: 'https://www.nuclearhustle.com/jobs' },
+    { name: `${stateInfo.name} Jobs`, url: `https://www.nuclearhustle.com/jobs/${state}` },
+  ]);
+
   return (
     <div className="min-h-screen bg-[#EDE8DF]">
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
+      />
 
       <BrowsePageHeader>
         <BrowseBreadcrumb>

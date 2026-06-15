@@ -6,6 +6,7 @@ import { getAnyJobBySlug } from '@/lib/data/employer';
 import { getCategoryInfo } from '@/lib/categorize';
 import { getStateBySlug } from '@/lib/states';
 import { parseJobDescription, formatSectionTitle } from '@/lib/parseJobDescription';
+import { generateBreadcrumbSchema } from '@/lib/seo/schema';
 import { JobDescriptionBlock, JobDescriptionSection } from '@/components/job/JobDescriptionBlock';
 import { ApplicationForm } from '@/components/job/ApplicationForm';
 import { ViewTracker } from '@/components/job/ViewTracker';
@@ -130,9 +131,17 @@ export default async function JobPage({ params }: PageProps) {
   const applyHref = isEmployerJob && job.application_type === 'form' ? '#apply' : applyUrl;
   const applyExternal = !(isEmployerJob && job.application_type === 'form');
 
+  const breadcrumbItems = [
+    { name: 'Home', url: `${siteUrl}/` },
+    { name: 'Jobs', url: `${siteUrl}/jobs` },
+    ...(stateInfo ? [{ name: stateInfo.name, url: `${siteUrl}/jobs/${stateInfo.slug}` }] : []),
+    { name: job.title, url: `${siteUrl}/job/${job.slug}` },
+  ];
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateBreadcrumbSchema(breadcrumbItems)) }} />
 
       {isEmployerJob && <ViewTracker jobId={job.id.replace(/^employer-/, '')} />}
 
