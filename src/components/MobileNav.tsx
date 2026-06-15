@@ -12,6 +12,10 @@ const PRIMARY_LINKS = [
   { href: '/about',     label: 'About',       num: '04' },
 ];
 
+const RESOURCES_LINKS = [
+  { href: '/salary', label: 'Nuclear Salary Guide' },
+];
+
 const LOGGED_OUT_LINKS = [
   { href: '/login',  label: 'Log In' },
   { href: '/signup', label: 'Sign Up' },
@@ -98,6 +102,24 @@ export function MobileNav({ isAuthed = false }: { isAuthed?: boolean }) {
               </Link>
             );
           })}
+
+          {/* Resources */}
+          <div className="mt-2 flex flex-col">
+            <p className="font-mono text-[9px] tracking-widest uppercase text-stone-400 pt-6 pb-2">Resources</p>
+            {RESOURCES_LINKS.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={close}
+                className="group flex items-center justify-between py-4 border-b border-[#CFC8BC]/60"
+              >
+                <span className="font-mono text-xs tracking-widest uppercase text-stone-500 group-hover:text-stone-900 transition-colors">
+                  {label}
+                </span>
+                <span className="font-mono text-xs text-stone-400 group-hover:text-stone-900 transition-colors">→</span>
+              </Link>
+            ))}
+          </div>
 
           {/* Secondary links */}
           <div className="mt-6 flex flex-col">
