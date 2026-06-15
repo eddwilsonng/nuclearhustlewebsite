@@ -1,14 +1,15 @@
 import { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import Link from 'next/link';
 import plantsData from '@/data/plants.json';
 import MapLoader from '@/components/status/MapLoader';
-import StateCapacityChart from '@/components/status/StateCapacityChart';
 import { US_STATES } from '@/lib/states';
+import { getActiveStates } from '@/lib/data/static';
 
 export const metadata: Metadata = {
   title: 'US Nuclear Fleet Status — Nuclear Hustle',
   description: 'Live power output status for every commercial nuclear reactor in the United States, updated daily from NRC data.',
-  alternates: { canonical: 'https://nuclearhustle.com/status' },
+  alternates: { canonical: '/status' },
 };
 
 // Revalidate every hour
@@ -29,7 +30,9 @@ export interface PlantWithStatus {
   lng: number;
   units: UnitStatus[];
   avgPower: number | null;
-  status: 'full' | 'reduced' | 'offline' | 'unknown';
+  status: 'full' | 'reduced' | 'offline' | 'unknown' | 'restarting';
+  jobCount: number;          // open jobs in this plant's state (0 = none)
+  stateSlug: string | null;  // /jobs/[stateSlug], null if unmapped
 }
 
 export interface FleetStats {
@@ -39,58 +42,62 @@ export interface FleetStats {
   reduced: number;
   offline: number;
   unknown: number;
+  restarting: number;
   fleetCapacity: number | null;
 }
 
-async function getNrcStatus(): Promise<{ statusMap: Map<string, number>; reportDate: string }> {
-  const statusMap = new Map<string, number>();
-  let reportDate = '';
-  try {
-    const res = await fetch(
-      'https://www.nrc.gov/reading-rm/doc-collections/event-status/reactor-status/PowerReactorStatusForLast365Days.txt',
-      { next: { revalidate: 3600 } }
-    );
-    if (!res.ok) return { statusMap, reportDate };
+// Fetch + parse the NRC feed at most hourly, caching ONLY the small parsed
+// result (unit -> power for the latest report date). The raw 365-day file is
+// ~1.3MB; fetching it with `no-store` inside unstable_cache keeps that body out
+// of the page's serialized RSC payload — otherwise it inflated /status past 2MB.
+const getNrcStatus = unstable_cache(
+  async (): Promise<{ status: Record<string, number>; reportDate: string }> => {
+    let status: Record<string, number> = {};
+    let reportDate = '';
+    try {
+      const res = await fetch(
+        'https://www.nrc.gov/reading-rm/doc-collections/event-status/reactor-status/PowerReactorStatusForLast365Days.txt',
+        { cache: 'no-store' }
+      );
+      if (!res.ok) return { status, reportDate };
 
-    const text = await res.text();
-    const lines = text.trim().split(/\r?\n/);
+      const text = await res.text();
+      const lines = text.trim().split(/\r?\n/);
 
-    // Find the latest date by scanning from the end (data is chronological)
-    let latestDate = '';
-    for (let i = lines.length - 1; i >= 1; i--) {
-      const date = lines[i].split('|')[0]?.trim();
-      if (date) {
-        if (!latestDate) {
-          latestDate = date;
-        } else if (date !== latestDate) {
-          break;
+      // The NRC feed is ordered newest-first, but we don't rely on ordering:
+      // single pass that tracks the maximum report date and collects the units
+      // belonging to it. (A previous version assumed oldest-first and silently
+      // served year-old data.) Skips line 0 (the "ReportDt|Unit|Power" header).
+      let maxTime = -Infinity;
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split('|');
+        if (parts.length < 3) continue;
+        const date = parts[0]?.trim();
+        if (!date) continue;
+        const time = Date.parse(date);
+        if (isNaN(time)) continue;
+
+        const unit = parts[1]?.trim();
+        const power = parseInt(parts[2]?.trim() ?? '', 10);
+
+        if (time > maxTime) {
+          // Newer report date than anything seen — reset and start collecting.
+          maxTime = time;
+          reportDate = date;
+          status = {};
+        }
+        if (date === reportDate && unit && !isNaN(power)) {
+          status[unit] = power;
         }
       }
+    } catch {
+      // NRC fetch failed — page will show "unknown" status
     }
-
-    if (!latestDate) return { statusMap, reportDate };
-    reportDate = latestDate;
-
-    // Only parse entries matching the latest date
-    for (let i = lines.length - 1; i >= 1; i--) {
-      const parts = lines[i].split('|');
-      if (parts.length < 3) continue;
-      const date = parts[0]?.trim();
-      if (date !== latestDate) {
-        if (statusMap.size > 0) break;
-        continue;
-      }
-      const unit = parts[1]?.trim();
-      const power = parseInt(parts[2]?.trim() ?? '', 10);
-      if (unit && !isNaN(power)) {
-        statusMap.set(unit, power);
-      }
-    }
-  } catch {
-    // NRC fetch failed — page will show "unknown" status
-  }
-  return { statusMap, reportDate };
-}
+    return { status, reportDate };
+  },
+  ['nrc-power-status'],
+  { revalidate: 3600 }
+);
 
 function getPlantStatus(avgPower: number | null): PlantWithStatus['status'] {
   if (avgPower === null) return 'unknown';
@@ -100,13 +107,20 @@ function getPlantStatus(avgPower: number | null): PlantWithStatus['status'] {
 }
 
 export default async function StatusPage() {
-  const { statusMap: nrcStatus, reportDate } = await getNrcStatus();
+  const { status: nrcStatus, reportDate } = await getNrcStatus();
+
+  // Open-job counts per state, so we only link plants where work actually
+  // exists (most reactor states have no listings — linking them all dead-ends).
+  const jobCountByCode = new Map<string, number>();
+  for (const { state, count } of getActiveStates()) {
+    if (state?.code) jobCountByCode.set(state.code, count);
+  }
 
   // Enrich plant data with live status
   const plants: PlantWithStatus[] = plantsData.plants.map(plant => {
     const units: UnitStatus[] = plant.units.map(u => ({
       nrcName: u.nrcName,
-      power: nrcStatus.has(u.nrcName) ? nrcStatus.get(u.nrcName)! : null,
+      power: u.nrcName in nrcStatus ? nrcStatus[u.nrcName] : null,
     }));
 
     const knownUnits = units.filter(u => u.power !== null);
@@ -114,32 +128,60 @@ export default async function StatusPage() {
       ? Math.round(knownUnits.reduce((s, u) => s + u.power!, 0) / knownUnits.length)
       : null;
 
+    // Plants flagged as restarting (shut down, returning to service) aren't in
+    // the NRC operating feed — surface them explicitly rather than as "unknown".
+    const isRestarting = (plant as { restarting?: boolean }).restarting === true;
+
     return {
       ...plant,
       units,
       avgPower,
-      status: getPlantStatus(avgPower),
+      status: isRestarting ? 'restarting' : getPlantStatus(avgPower),
+      jobCount: jobCountByCode.get(plant.state) ?? 0,
+      stateSlug: US_STATES.find(s => s.code === plant.state)?.slug ?? null,
     };
   });
 
-  // Fleet-wide stats
-  const allUnits = plants.flatMap(p => p.units);
-  const knownUnits = allUnits.filter(u => u.power !== null);
+  // "Hiring now" summary — distinct reactor states that have open roles.
+  const hiringByState = new Map<string, { slug: string; name: string; count: number }>();
+  for (const p of plants) {
+    if (p.jobCount > 0 && p.stateSlug && !hiringByState.has(p.state)) {
+      hiringByState.set(p.state, {
+        slug: p.stateSlug,
+        name: US_STATES.find(s => s.code === p.state)?.name ?? p.state,
+        count: p.jobCount,
+      });
+    }
+  }
+  const hiringChips = [...hiringByState.values()].sort((a, b) => b.count - a.count);
+  const hiringJobTotal = hiringChips.reduce((s, c) => s + c.count, 0);
+
+  // Fleet-wide stats are computed over OPERATING plants only (restarting plants
+  // are tracked separately so the totals match the NRC operating fleet).
+  const operatingUnits = plants
+    .filter(p => p.status !== 'restarting')
+    .flatMap(p => p.units);
+  const restartingUnits = plants
+    .filter(p => p.status === 'restarting')
+    .flatMap(p => p.units);
+
+  const knownUnits = operatingUnits.filter(u => u.power !== null);
   const fullPower = knownUnits.filter(u => u.power! >= 95).length;
   const reduced = knownUnits.filter(u => u.power! > 0 && u.power! < 95).length;
   const offline = knownUnits.filter(u => u.power === 0).length;
-  const unknown = allUnits.length - knownUnits.length;
+  const unknown = operatingUnits.length - knownUnits.length;
   const fleetCapacity = knownUnits.length > 0
     ? Math.round(knownUnits.reduce((s, u) => s + u.power!, 0) / knownUnits.length)
     : null;
 
   const stats: FleetStats = {
     reportDate,
-    totalUnits: allUnits.length,
+    totalUnits: operatingUnits.length,
     fullPower,
     reduced,
     offline,
     unknown,
+    restarting: restartingUnits.length,
     fleetCapacity,
   };
 
@@ -156,7 +198,7 @@ export default async function StatusPage() {
             </h1>
             {stats.reportDate && (
               <p className="font-mono text-xs text-stone-400 mt-2">
-                NRC report date: {stats.reportDate}
+                NRC report date: {stats.reportDate.split(' ')[0]}
               </p>
             )}
           </div>
@@ -164,16 +206,10 @@ export default async function StatusPage() {
           {/* Jump links */}
           <div className="flex items-center gap-3">
             <a
-              href="#by-state"
-              className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] text-stone-600 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
-            >
-              By state ↓
-            </a>
-            <a
               href="#all-reactors"
               className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] text-stone-600 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
             >
-              All {stats.totalUnits} reactors ↓
+              All reactors ↓
             </a>
           </div>
         </div>
@@ -182,7 +218,7 @@ export default async function StatusPage() {
       {/* Stats bar */}
       <div className="border-b border-[#CFC8BC]">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-y md:divide-y-0 divide-[#CFC8BC]">
+          <div className="grid grid-cols-2 md:grid-cols-6 divide-x divide-y md:divide-y-0 divide-[#CFC8BC]">
             <div className="px-6 py-5">
               <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-1">Fleet Capacity</p>
               <p className="font-mono text-3xl font-bold text-stone-900">
@@ -202,54 +238,87 @@ export default async function StatusPage() {
               <p className="font-mono text-3xl font-bold text-red-500">{stats.offline}</p>
             </div>
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-1">Total Reactors</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-1">Restarting</p>
+              <p className="font-mono text-3xl font-bold text-blue-500">{stats.restarting}</p>
+            </div>
+            <div className="px-6 py-5">
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-1">Operating</p>
               <p className="font-mono text-3xl font-bold text-stone-900">{stats.totalUnits}</p>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Hiring-now summary — links only to states that actually have openings */}
+      {hiringChips.length > 0 && (
+        <div className="border-b border-[#CFC8BC] bg-[#E5DFD5]">
+          <div className="max-w-6xl mx-auto px-6 py-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <p className="font-mono text-xs tracking-widest uppercase text-stone-500 shrink-0">
+              <span className="text-yellow-600 font-bold">Hiring now</span>
+              <span className="text-stone-300 mx-2">{'//'}</span>
+              {hiringJobTotal} roles at plants in {hiringChips.length} states
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {hiringChips.map(chip => (
+                <Link
+                  key={chip.slug}
+                  href={`/jobs/${chip.slug}`}
+                  className="font-mono text-xs tracking-wide px-3 py-1.5 border border-[#CFC8BC] bg-[#EDE8DF] text-stone-700 hover:bg-yellow-400 hover:text-stone-900 hover:border-yellow-400 transition-colors"
+                >
+                  {chip.name}
+                  <span className="text-stone-400 mx-1.5">·</span>
+                  <span className="font-bold">{chip.count}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Map */}
       <MapLoader plants={plants} />
-
-      {/* State capacity chart */}
-      <div id="by-state" className="border-b border-[#CFC8BC] scroll-mt-4">
-        <StateCapacityChart plants={plants} />
-      </div>
 
       {/* Plant-by-plant breakdown */}
       <div id="all-reactors" className="max-w-6xl mx-auto px-6 py-12 scroll-mt-4">
         <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">Plant breakdown</p>
-        <h2 className="font-mono text-xl font-bold text-stone-900 mb-6">All {stats.totalUnits} reactors</h2>
+        <h2 className="font-mono text-xl font-bold text-stone-900 mb-1">All reactors</h2>
+        <p className="font-mono text-xs text-stone-400 mb-6">
+          {stats.totalUnits} operating
+          {stats.restarting > 0 && ` · ${stats.restarting} restarting`}
+        </p>
 
         <div className="border border-[#CFC8BC]">
           {plants
             .sort((a, b) => {
-              const order = { offline: 0, reduced: 1, full: 2, unknown: 3 };
+              const order = { restarting: -1, offline: 0, reduced: 1, full: 2, unknown: 3 };
               return order[a.status] - order[b.status];
             })
             .map((plant) => {
-              const stateInfo = US_STATES.find(s => s.code === plant.state);
-              const jobsHref = stateInfo ? `/jobs/${stateInfo.slug}` : '/jobs';
-              return (
-              <Link
-                key={plant.id}
-                href={jobsHref}
-                className="flex items-center justify-between gap-4 px-5 py-4 border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors group"
-              >
+              const hasJobs = plant.jobCount > 0 && plant.stateSlug;
+              const rowClass = 'flex items-center justify-between gap-4 px-5 py-4 border-b border-[#CFC8BC] last:border-b-0';
+              const inner = (
+                <>
                   <div className="flex items-center gap-3 min-w-0">
                     {/* Status dot */}
                     <div className={`w-2 h-2 rounded-full shrink-0 ${
-                      plant.status === 'full'    ? 'bg-green-500' :
-                      plant.status === 'reduced' ? 'bg-yellow-400' :
-                      plant.status === 'offline' ? 'bg-red-500' :
+                      plant.status === 'full'       ? 'bg-green-500' :
+                      plant.status === 'reduced'    ? 'bg-yellow-400' :
+                      plant.status === 'offline'    ? 'bg-red-500' :
+                      plant.status === 'restarting' ? 'bg-blue-500' :
                       'bg-[#CFC8BC]'
                     }`} />
                     <div className="min-w-0">
-                      <p className="font-mono text-sm font-bold text-stone-900 truncate group-hover:underline underline-offset-2">{plant.name}</p>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <p className="font-mono text-sm font-bold text-stone-900 truncate group-hover:underline underline-offset-2">{plant.name}</p>
+                        {plant.status === 'restarting' && (
+                          <span className="shrink-0 font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 border border-blue-200 text-blue-600 bg-blue-50">
+                            Restarting
+                          </span>
+                        )}
+                      </div>
                       <p className="font-mono text-xs text-stone-400 mt-0.5">
                         {plant.city}, {plant.state}
-                        <span className="text-stone-300 mx-1.5">//</span>
+                        <span className="text-stone-300 mx-1.5">{'//'}</span>
                         {plant.operator}
                       </p>
                     </div>
@@ -302,8 +371,32 @@ export default async function StatusPage() {
                     }`}>
                       {plant.avgPower !== null ? `${plant.avgPower}%` : '—'}
                     </p>
+
+                    {/* Jobs badge — fixed-width slot so the avg % column stays
+                        aligned whether or not a row has openings */}
+                    <div className="w-24 shrink-0 flex justify-end">
+                      {hasJobs && (
+                        <span className="font-mono text-[10px] tracking-widest uppercase px-2 py-1 bg-yellow-400 text-stone-900 font-bold whitespace-nowrap">
+                          {plant.jobCount} job{plant.jobCount === 1 ? '' : 's'} →
+                        </span>
+                      )}
+                    </div>
                   </div>
-              </Link>
+                </>
+              );
+
+              return hasJobs ? (
+                <Link
+                  key={plant.id}
+                  href={`/jobs/${plant.stateSlug}`}
+                  className={`${rowClass} hover:bg-[#E5DFD5] transition-colors group`}
+                >
+                  {inner}
+                </Link>
+              ) : (
+                <div key={plant.id} className={rowClass}>
+                  {inner}
+                </div>
               );
             })}
         </div>

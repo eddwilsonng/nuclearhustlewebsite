@@ -119,6 +119,44 @@ NEXT_PUBLIC_SUPABASE_URL=https://qwxcwzxnomzusuztemyb.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 ```
 
+## Email Strategy (Resend)
+
+All email runs through **Resend** — transactional (application notifications, alert
+welcome) and marketing (weekly digest). Self-hosting was rejected; beehiiv was evaluated
+and declined (no transactional sends, read-only MCP). **Free tier now, Pro later.**
+
+**Flows:** [apply notifications](src/app/api/apply/route.ts),
+[alert welcome](src/app/api/alerts/route.ts),
+[weekly digest cron](src/app/api/cron/weekly-digest/route.ts).
+
+**Deliverability:**
+- Bulk/marketing sends emit `List-Unsubscribe` + `List-Unsubscribe-Post` headers
+  (Gmail/Yahoo one-click requirement, RFC 8058). The one-click probe is handled by the
+  `POST` in [unsubscribe route](src/app/api/alerts/unsubscribe/route.ts).
+- DNS checklist (Resend dashboard, do before any volume): verify domain → add SPF + DKIM,
+  add a custom MAIL FROM subdomain (e.g. `send.nuclearhustle.com`), publish DMARC at
+  `_dmarc.nuclearhustle.com` (start `p=none`, then `p=quarantine`).
+- `CRON_SECRET` seeds the unsubscribe-token HMAC — **must stay stable** (rotating it breaks
+  all outstanding unsubscribe links).
+
+**Data visibility (free tier):** open/click analytics are Pro-only. To get deliverability
+data for free, the [Resend webhook](src/app/api/webhooks/resend/route.ts) writes
+delivery/bounce/complaint events to the `email_events` table
+(`supabase/email-events-migration.sql`). Needs `RESEND_WEBHOOK_SECRET` + a webhook
+registered in the Resend dashboard pointing at `/api/webhooks/resend`.
+
+**Pro upgrade trigger ($20/mo):** flip when approaching the free cap (3k/mo or 100/day)
+or when you need open/click data to optimize subject lines / digest content. No code change
+— Pro just unlocks tracking on existing sends.
+
+**Agentic / MCP:** the official Resend MCP (`resend-mcp`) gives Claude full send / broadcast
+/ audience / analytics control. Add to `.mcp.json` at the repo root (uses `${RESEND_API_KEY}`
+from env):
+```json
+{ "mcpServers": { "resend": { "command": "npx", "args": ["-y", "resend-mcp"],
+  "env": { "RESEND_API_KEY": "${RESEND_API_KEY}" } } } }
+```
+
 ## Supabase Project
 
 - Project: Nuclearhustle

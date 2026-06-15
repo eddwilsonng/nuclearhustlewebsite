@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Terms of Service — Nuclear Hustle',
   description: 'Nuclear Hustle terms of service. Rules and conditions governing use of the platform by job seekers and employers.',
-  alternates: { canonical: 'https://nuclearhustle.com/terms' },
+  alternates: { canonical: '/terms' },
 };
 
 export default function TermsPage() {

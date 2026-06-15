@@ -6,6 +6,7 @@ import { TVAScraper } from './tva';
 import { GreenhouseScraper } from './greenhouse';
 import { LeverScraper } from './lever';
 import { PhenomScraper } from './phenom';
+import { SuccessFactorsScraper } from './successfactors';
 import { CompanyConfig } from '../types';
 
 export function createScraper(config: CompanyConfig): BaseScraper {
@@ -19,6 +20,8 @@ export function createScraper(config: CompanyConfig): BaseScraper {
       return new PhenomScraper(config);
     case 'workday':
       return new WorkdayScraper(config);
+    case 'successfactors':
+      return new SuccessFactorsScraper(config);
   }
 
   // Company-specific custom scrapers (legacy fallbacks).
@@ -42,5 +45,6 @@ export {
   TVAScraper,
   GreenhouseScraper,
   LeverScraper,
-  PhenomScraper
+  PhenomScraper,
+  SuccessFactorsScraper
 };

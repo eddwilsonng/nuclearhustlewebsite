@@ -9,7 +9,6 @@ interface JobsPaginationMetadataOptions {
   pageParam?: string;
   totalJobs: number;
   basePath: string;
-  siteOrigin?: string;
   page1Title: string;
   page1Description: string;
   pagedTitle: (page: number, totalPages: number) => string;
@@ -20,7 +19,6 @@ export function buildJobsPaginationMetadata({
   pageParam,
   totalJobs,
   basePath,
-  siteOrigin = 'https://nuclearhustle.com',
   page1Title,
   page1Description,
   pagedTitle,
@@ -29,8 +27,8 @@ export function buildJobsPaginationMetadata({
   const page = parsePageParam(pageParam);
   const totalPages = getTotalPages(totalJobs);
   const safePage = Math.min(page, totalPages);
-  const canonicalPath = buildJobsPageUrl(basePath, safePage);
-  const canonical = `${siteOrigin}${canonicalPath}`;
+  // Relative canonical — resolved against metadataBase (www) by Next.
+  const canonical = buildJobsPageUrl(basePath, safePage);
 
   const isFirstPage = safePage === 1;
 

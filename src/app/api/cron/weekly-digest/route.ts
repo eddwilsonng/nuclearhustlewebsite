@@ -8,6 +8,7 @@ import {
   weeklyDigestPreheader,
   weeklyDigestSubject,
 } from '@/lib/email/weeklyDigest';
+import { unsubscribeUrl } from '@/lib/email/unsubscribe';
 
 const BATCH_SIZE = 50;
 const DIGEST_COOLDOWN_MS = 6 * 24 * 60 * 60 * 1000;
@@ -72,6 +73,9 @@ export async function GET(request: NextRequest) {
         text: weeklyDigestPlainText(jobs, sub.email),
         headers: {
           'X-Entity-Ref-ID': `weekly-digest-${Date.now()}`,
+          // Gmail/Yahoo bulk-sender rules require one-click list-unsubscribe.
+          'List-Unsubscribe': `<${unsubscribeUrl(sub.email)}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
         },
       }));
 

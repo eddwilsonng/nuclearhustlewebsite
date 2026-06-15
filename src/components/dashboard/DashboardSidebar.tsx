@@ -73,6 +73,7 @@ export function DashboardSidebar({ profile, isAdmin }: DashboardSidebarProps) {
     { href: '/dashboard/admin/review', label: 'Content Review' },
     { href: '/dashboard/admin/scrape', label: 'Scraper' },
     { href: '/dashboard/admin/jobs', label: 'Manage Jobs' },
+    { href: '/dashboard/admin/email', label: 'Email Health' },
   ];
 
   const links = profile.role === 'employer' ? employerLinks : jobSeekerLinks;

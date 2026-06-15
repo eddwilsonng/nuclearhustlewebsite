@@ -19,14 +19,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://nuclearhustle.com"),
-  title: {
-    default: "Nuclear Hustle — Nuclear Power Plant Jobs",
-    template: "%s | Nuclear Hustle",
-  },
+  metadataBase: new URL("https://www.nuclearhustle.com"),
+  // Plain string (no template): every page sets its own full title including the
+  // brand, so a "%s | Nuclear Hustle" template would append the brand a second
+  // time (double brand). Title-less pages fall back to this string.
+  title: "Nuclear Hustle — Nuclear Power Plant Jobs",
   description: "Find nuclear power plant jobs across the US. Updated daily from major operators.",
   keywords: ["nuclear jobs", "nuclear power plant careers", "nuclear engineer jobs", "reactor operator jobs"],
-  alternates: { canonical: "https://nuclearhustle.com" },
+  alternates: { canonical: "/" },
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
     shortcut: "/favicon.svg",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "Nuclear Hustle",
     locale: "en_US",
-    url: "https://nuclearhustle.com",
+    url: "https://www.nuclearhustle.com",
     title: "Nuclear Hustle — Nuclear Power Plant Jobs",
     description: "Find nuclear power plant jobs across the US. Updated daily from major operators.",
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Nuclear Hustle — Nuclear Power Plant Jobs" }],

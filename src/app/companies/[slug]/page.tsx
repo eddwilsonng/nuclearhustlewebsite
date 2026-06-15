@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getCompanies, getCompanyById, getPlantsByCompany, getJobsByCompany } from '@/lib/data/static';
+import { getCompanies, getCompanyById, getPlantsByCompany, getJobsByCompany, toJobListItem } from '@/lib/data/static';
 import { JobCard } from '@/components/JobCard';
 import {
   BrowsePageHeader,
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = `${company.name} Nuclear Jobs — ${jobs.length} Positions | Nuclear Hustle`;
   const description = `Find ${jobs.length} nuclear jobs at ${company.name}. Browse open positions and apply today.`;
 
-  const url = `https://nuclearhustle.com/companies/${slug}`;
+  const url = `/companies/${slug}`;
   return {
     title,
     description,
@@ -86,7 +86,7 @@ export default async function CompanyPage({ params }: PageProps) {
             {jobs.length > 0 ? (
               <div className="border border-[#CFC8BC]">
                 {jobs.map((job) => (
-                  <JobCard key={job.id} job={job} />
+                  <JobCard key={job.id} job={toJobListItem(job)} />
                 ))}
               </div>
             ) : (

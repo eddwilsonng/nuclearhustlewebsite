@@ -19,7 +19,7 @@ export function generateJobPostingSchema(
     },
     datePosted: job.scraped_at || new Date().toISOString(),
     employmentType: 'FULL_TIME',
-    url: `https://nuclearhustle.com/job/${job.slug}`,
+    url: `https://www.nuclearhustle.com/job/${job.slug}`,
   };
 }
 

@@ -6,6 +6,7 @@ import {
   welcomeEmailPlainText,
   welcomeEmailSubject,
 } from '@/lib/email/templates/welcomeEmail';
+import { unsubscribeUrl } from '@/lib/email/unsubscribe';
 
 const schema = z.object({
   email: z.string().email().max(320),
@@ -43,6 +44,11 @@ export async function POST(request: NextRequest) {
         subject: welcomeEmailSubject(),
         html: buildWelcomeEmailHtml(email),
         text: welcomeEmailPlainText(email),
+        headers: {
+          // Gmail/Yahoo bulk-sender rules require one-click list-unsubscribe.
+          'List-Unsubscribe': `<${unsubscribeUrl(email)}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
       });
     }
 

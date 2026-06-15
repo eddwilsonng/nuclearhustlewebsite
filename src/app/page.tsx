@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: 'Nuclear Hustle — Nuclear Power Plant Jobs',
   description: 'Find nuclear power plant jobs across the US. Browse reactor operator, engineering, and health physics roles at top operators. Updated daily.',
   keywords: ['nuclear jobs', 'nuclear power plant jobs', 'reactor operator jobs', 'nuclear engineer jobs', 'nuclear careers'],
-  alternates: { canonical: 'https://nuclearhustle.com' },
+  alternates: { canonical: '/' },
 };
 
 

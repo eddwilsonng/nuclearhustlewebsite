@@ -28,7 +28,7 @@ function unsubscribePage(message: string): NextResponse {
           <p style="font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #999; margin-bottom: 16px;">Nuclear Hustle</p>
           <h1>Job alerts</h1>
           <p>${message}</p>
-          <a href="https://nuclearhustle.com/jobs">Browse open roles &rarr;</a>
+          <a href="https://www.nuclearhustle.com/jobs">Browse open roles &rarr;</a>
         </div>
       </body>
     </html>
@@ -38,6 +38,23 @@ function unsubscribePage(message: string): NextResponse {
     status: 200,
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
+}
+
+// Performs the unsubscribe for a verified email. Returns null on success,
+// or an error message string to surface to the caller.
+async function performUnsubscribe(normalizedEmail: string): Promise<string | null> {
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from('job_alert_subscribers')
+    .update({ unsubscribed_at: new Date().toISOString() })
+    .eq('email', normalizedEmail);
+
+  if (error) {
+    console.error('[unsubscribe] DB error:', error);
+    return 'Something went wrong. Please try again.';
+  }
+
+  return null;
 }
 
 export async function GET(request: NextRequest) {
@@ -56,20 +73,40 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const admin = createAdminClient();
-    const { error } = await admin
-      .from('job_alert_subscribers')
-      .update({ unsubscribed_at: new Date().toISOString() })
-      .eq('email', normalizedEmail);
-
-    if (error) {
-      console.error('[unsubscribe] DB error:', error);
-      return unsubscribePage('Something went wrong. Please try again.');
-    }
-
+    const errorMessage = await performUnsubscribe(normalizedEmail);
+    if (errorMessage) return unsubscribePage(errorMessage);
     return unsubscribePage("You've been unsubscribed. You won't receive weekly job alerts anymore.");
   } catch (err) {
     console.error('[unsubscribe] Error:', err);
     return unsubscribePage('Something went wrong. Please try again.');
+  }
+}
+
+// One-click unsubscribe (RFC 8058). Gmail/Yahoo POST `List-Unsubscribe=One-Click`
+// to the List-Unsubscribe URL — the email + token stay in the query string.
+export async function POST(request: NextRequest) {
+  const params = Object.fromEntries(request.nextUrl.searchParams);
+  const parsed = schema.safeParse(params);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid unsubscribe link.' }, { status: 400 });
+  }
+
+  const { email, token } = parsed.data;
+  const normalizedEmail = email.toLowerCase();
+
+  if (!verifyUnsubscribeToken(normalizedEmail, token)) {
+    return NextResponse.json({ error: 'Invalid or expired unsubscribe link.' }, { status: 400 });
+  }
+
+  try {
+    const errorMessage = await performUnsubscribe(normalizedEmail);
+    if (errorMessage) {
+      return NextResponse.json({ error: errorMessage }, { status: 500 });
+    }
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error('[unsubscribe] Error:', err);
+    return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
   }
 }

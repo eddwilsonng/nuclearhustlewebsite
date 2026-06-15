@@ -8,7 +8,7 @@ import { escapeHtml } from '../escapeHtml';
 import { formatPostedLabel, isNewThisWeek } from '../formatPostedLabel';
 import { unsubscribeUrl } from '../unsubscribe';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nuclearhustle.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.nuclearhustle.com';
 const MAX_PER_CATEGORY = 5;
 const MAX_FEATURED = 3;
 

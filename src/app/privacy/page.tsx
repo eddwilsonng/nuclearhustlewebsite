@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Privacy Policy — Nuclear Hustle',
   description: 'Nuclear Hustle privacy policy. How we collect, use, and protect your personal data.',
-  alternates: { canonical: 'https://nuclearhustle.com/privacy' },
+  alternates: { canonical: '/privacy' },
 };
 
 export default function PrivacyPage() {

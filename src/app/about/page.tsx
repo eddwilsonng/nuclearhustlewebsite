@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'About — Nuclear Hustle',
   description: 'Nuclear Hustle is the job board built specifically for the US nuclear energy industry. Learn about our mission and how we connect nuclear professionals with top employers.',
-  alternates: { canonical: 'https://nuclearhustle.com/about' },
+  alternates: { canonical: '/about' },
 };
 
 export default function AboutPage() {

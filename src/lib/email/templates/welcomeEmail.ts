@@ -1,7 +1,7 @@
 import { emailBodyOnly, emailPreheader, emailPrimaryCta } from '../emailShell';
 import { unsubscribeUrl } from '../unsubscribe';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nuclearhustle.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.nuclearhustle.com';
 
 export function buildWelcomeEmailHtml(email: string): string {
   const unsub = unsubscribeUrl(email);

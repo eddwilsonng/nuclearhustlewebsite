@@ -21,6 +21,18 @@ import {
   BrowseMetaLink,
 } from '@/components/BrowsePageHeader';
 
+// Some scraped/AI rows store structured-description fields as arrays (e.g.
+// responsibilities as a list) instead of strings. Coerce safely so rendering
+// never calls a string method on a non-string — which 500s the whole page.
+function asText(value: unknown): string {
+  if (value == null) return '';
+  if (Array.isArray(value)) {
+    return value.map((v) => (typeof v === 'string' ? v : String(v))).join('\n');
+  }
+  if (typeof value === 'string') return value;
+  return '';
+}
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -34,7 +46,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const titleCore = `${job.title} — ${job.company.name}`;
   const title = titleCore.length <= 50 ? `${titleCore} | Nuclear Hustle` : `${titleCore.slice(0, 47)}…`;
   const description = `${job.title} at ${job.company.name} in ${job.location}. Apply now on Nuclear Hustle.`;
-  const url = `https://nuclearhustle.com/job/${slug}`;
+  const url = `/job/${slug}`;
 
   return {
     title,
@@ -77,7 +89,7 @@ export default async function JobPage({ params }: PageProps) {
   const validThrough = new Date(postedDate);
   validThrough.setDate(validThrough.getDate() + 30);
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nuclearhustle.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.nuclearhustle.com';
   const employmentTypeMap: Record<string, string> = {
     'full-time': 'FULL_TIME', 'part-time': 'PART_TIME', 'contract': 'CONTRACTOR',
     'temporary': 'TEMPORARY', 'internship': 'INTERN',
@@ -196,17 +208,17 @@ export default async function JobPage({ params }: PageProps) {
               {job.structured_description ? (
                 <div className="space-y-10">
                   {[
-                    { key: 'about', label: 'About this role', value: job.structured_description.about },
-                    { key: 'responsibilities', label: 'Responsibilities', value: job.structured_description.responsibilities },
-                    { key: 'qualifications', label: 'Qualifications', value: job.structured_description.qualifications },
-                    { key: 'desired', label: 'Desired', value: job.structured_description.desired },
-                    { key: 'location_details', label: 'Location', value: job.structured_description.location_details },
-                    { key: 'what_we_offer', label: 'What we offer', value: job.structured_description.what_we_offer },
+                    { key: 'about', label: 'About this role', value: asText(job.structured_description.about) },
+                    { key: 'responsibilities', label: 'Responsibilities', value: asText(job.structured_description.responsibilities) },
+                    { key: 'qualifications', label: 'Qualifications', value: asText(job.structured_description.qualifications) },
+                    { key: 'desired', label: 'Desired', value: asText(job.structured_description.desired) },
+                    { key: 'location_details', label: 'Location', value: asText(job.structured_description.location_details) },
+                    { key: 'what_we_offer', label: 'What we offer', value: asText(job.structured_description.what_we_offer) },
                   ]
-                    .filter(({ value }) => value && value.trim())
+                    .filter(({ value }) => value.trim())
                     .map(({ key, label, value }) => (
                       <JobDescriptionSection key={key} label={label}>
-                        <JobDescriptionBlock text={value!} />
+                        <JobDescriptionBlock text={value} />
                       </JobDescriptionSection>
                     ))}
                 </div>

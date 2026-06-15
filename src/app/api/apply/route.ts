@@ -228,7 +228,7 @@ export async function POST(request: Request) {
             </div>` : ''}
 
             <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
-              <p style="font-size: 11px; color: #bbb;">Sent via <a href="https://nuclearhustle.com" style="color: #bbb;">Nuclear Hustle</a>. Reply directly to this email to contact the applicant.</p>
+              <p style="font-size: 11px; color: #bbb;">Sent via <a href="https://www.nuclearhustle.com" style="color: #bbb;">Nuclear Hustle</a>. Reply directly to this email to contact the applicant.</p>
             </div>
           </div>
         `,

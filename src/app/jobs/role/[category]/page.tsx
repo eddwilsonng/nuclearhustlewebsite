@@ -66,6 +66,17 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   if (!allCategories.includes(category as JobCategory)) notFound();
 
   const jobs = getJobsByCategory(category as JobCategory);
+  // CategoryJobsList is a client component, so anything passed to it is
+  // serialized into the page HTML. Strip the heavy description fields (not used
+  // by listing cards, which need `state` for filtering so toJobListItem won't
+  // fit) to keep paginated category pages well under Google's 2MB indexing
+  // limit — full descriptions only belong on the job detail page.
+  const listJobs = jobs.map((j) => {
+    const copy = { ...j };
+    delete copy.description;
+    delete copy.structured_description;
+    return copy;
+  });
   const basePath = `/jobs/role/${category}`;
   const totalPages = getTotalPages(jobs.length);
 
@@ -83,7 +94,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const companyMap = new Map(companies.map((c) => [c.id, c.name]));
 
   // Generate schema markup
-  const url = `https://nuclearhustle.com/jobs/role/${category}`;
+  const url = `https://www.nuclearhustle.com/jobs/role/${category}`;
   const schemaData = generateCategoryPageSchema({
     categoryName: categoryInfo.name,
     categoryDescription: categoryInfo.description || '',
@@ -150,7 +161,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                 }
               >
                 <CategoryJobsList
-                  jobs={jobs}
+                  jobs={listJobs}
                   categoryName={categoryInfo.name}
                   hideCategory
                   initialPage={page}

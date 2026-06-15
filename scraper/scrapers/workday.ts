@@ -1,4 +1,5 @@
-import { BrowserBaseScraper } from './base';
+import axios from 'axios';
+import { BaseScraper } from './base';
 import { ScrapedJob, ScraperResult } from '../types';
 
 interface WorkdayJob {
@@ -12,209 +13,106 @@ interface WorkdayResponse {
   total?: number;
 }
 
-// Workday job board scraper using network interception
-// Works for: Duke Energy, Talen Energy, Energy Northwest, Ameren
-export class WorkdayScraper extends BrowserBaseScraper {
-  private interceptedJobs: WorkdayJob[] = [];
-
+/**
+ * Workday scraper using the public CXS JSON API — no browser required.
+ *
+ * Endpoint: POST https://{host}/wday/cxs/{tenant}/{site}/jobs
+ *   body: { appliedFacets: {}, limit, offset, searchText }
+ *   → { total, jobPostings: [{ title, locationsText, externalPath }] }
+ *
+ * `tenant` is the first label of the Workday host; `site` is the last path
+ * segment of careersUrl (e.g. dukeenergy.wd1.myworkdayjobs.com/search → "search").
+ * Public job URL is {origin}/{site}{externalPath}. Descriptions are fetched later
+ * by the central enrichment step (Workday list responses omit them).
+ *
+ * Used by: Duke Energy, Ameren, Energy Northwest, Talen Energy.
+ */
+export class WorkdayScraper extends BaseScraper {
   async scrape(): Promise<ScraperResult> {
     try {
-      console.log(`Scraping ${this.config.name} (Workday)...`);
+      const { host, tenant, site } = this.resolveTenant();
+      const endpoint = `https://${host}/wday/cxs/${tenant}/${site}/jobs`;
+      const origin = `https://${host}`;
+      const searchText = this.config.searchKeyword ?? 'nuclear';
+      console.log(`Scraping ${this.config.name} (Workday API: "${searchText}")...`);
 
-      await this.initBrowser();
-      const page = this.page!;
+      const jobs: ScrapedJob[] = [];
+      const limit = 20;
+      const maxPages = 50; // safety cap (1000 jobs)
+      let total = Infinity;
 
-      // Set up network interception to capture job API responses
-      this.interceptedJobs = [];
+      for (let page = 0; page < maxPages; page++) {
+        const offset = page * limit;
+        const data = await this.postJson<WorkdayResponse>(endpoint, {
+          appliedFacets: {},
+          limit,
+          offset,
+          searchText,
+        });
 
-      await page.route('**/jobs**', async (route) => {
-        const response = await route.fetch();
-        const contentType = response.headers()['content-type'] || '';
+        if (typeof data.total === 'number') total = data.total;
+        const batch = data.jobPostings ?? [];
+        if (batch.length === 0) break;
 
-        if (contentType.includes('application/json')) {
-          try {
-            const json = await response.json() as WorkdayResponse;
-            if (json.jobPostings && Array.isArray(json.jobPostings)) {
-              this.interceptedJobs.push(...json.jobPostings);
-              console.log(`Intercepted ${json.jobPostings.length} jobs from API`);
-            }
-          } catch {
-            // Not valid JSON, ignore
-          }
+        for (const posting of batch) {
+          jobs.push({
+            title: (posting.title || 'Untitled').trim(),
+            location: posting.locationsText?.trim() || 'Location not specified',
+            url: `${origin}/${site}${posting.externalPath}`,
+          });
         }
 
-        await route.continue();
-      });
-
-      // Navigate to the Workday job search page
-      await this.navigateWithRetry(this.config.careersUrl);
-      await this.randomDelay(2000, 4000);
-
-      // If we have a VISIBLE search box, search for nuclear jobs
-      const searchSelectors = [
-        'input[data-automation-id="searchBox"]:visible',
-        'input[placeholder*="Search"]:visible',
-        'input[type="search"]:visible'
-      ];
-
-      let searchFound = false;
-      for (const selector of searchSelectors) {
-        const searchInput = page.locator(selector);
-        try {
-          if (await searchInput.count() > 0 && await searchInput.first().isVisible()) {
-            await searchInput.first().fill('nuclear', { timeout: 5000 });
-            await page.keyboard.press('Enter');
-            await this.randomDelay(3000, 5000);
-            searchFound = true;
-            break;
-          }
-        } catch {
-          // Continue to next selector
-        }
+        if (offset + limit >= total) break;
+        await this.sleep(400);
       }
 
-      if (!searchFound) {
-        console.log(`  No visible search input found for ${this.config.name}, using API interception`);
-      }
-
-      // Wait for job listings to load
-      await page.waitForSelector('[data-automation-id="jobTitle"], .css-19uc56f, a[data-automation-id]', { timeout: 10000 }).catch(() => {});
-      await this.randomDelay(1000, 2000);
-
-      let jobs: ScrapedJob[] = [];
-
-      // First, use intercepted API data if available (deduplicate first)
-      if (this.interceptedJobs.length > 0) {
-        const uniqueJobs = this.deduplicateInterceptedJobs(this.interceptedJobs);
-        jobs = uniqueJobs.map((posting) => ({
-          title: posting.title,
-          location: posting.locationsText || 'Location not specified',
-          url: this.buildJobUrl(posting.externalPath),
-        }));
-      }
-
-      // Fallback: scrape from DOM if no API data intercepted
-      if (jobs.length === 0) {
-        jobs = await this.scrapeFromDOM();
-      }
-
-      await this.closeBrowser();
-
-      // Relevance filtering happens centrally in the enrichment loop (scraper/relevance.ts),
-      // scored on title + description + department — not here on title alone.
       console.log(`Found ${jobs.length} jobs from ${this.config.name}`);
-      return this.createResult(jobs);
+      return this.createResult(dedupe(jobs));
     } catch (error) {
-      await this.closeBrowser();
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error(`Error scraping ${this.config.name}: ${message}`);
       return this.createResult([], message);
     }
   }
 
-  private async scrapeFromDOM(): Promise<ScrapedJob[]> {
-    const page = this.page!;
-    const jobs: ScrapedJob[] = [];
+  /** Derive {host, tenant, site} from workdayHost + careersUrl. */
+  private resolveTenant(): { host: string; tenant: string; site: string } {
+    const url = new URL(this.config.careersUrl);
+    const host = this.config.workdayHost ?? url.host;
+    const tenant = host.split('.')[0];
+    const site = url.pathname.split('/').filter(Boolean).pop() ?? 'External';
+    return { host, tenant, site };
+  }
 
-    // Workday uses specific data-automation-id attributes
-    const jobElements = await page.$$('[data-automation-id="jobTitle"], a[data-automation-id="jobTitle"]');
-
-    for (const element of jobElements) {
+  private async postJson<T>(url: string, body: unknown): Promise<T> {
+    let lastError: Error | null = null;
+    for (let i = 0; i < this.maxRetries; i++) {
       try {
-        const title = await element.textContent();
-        const href = await element.getAttribute('href');
-
-        // Try to find location in parent/sibling elements
-        const parent = await element.evaluateHandle((el) => el.closest('li, article, div[data-automation-id="compositeContainer"]'));
-        let location = '';
-        if (parent) {
-          const locationEl = await (parent as any).$$('[data-automation-id="locations"], .css-129m7dg');
-          if (locationEl.length > 0) {
-            location = await locationEl[0].textContent() || '';
-          }
-        }
-
-        if (title && title.trim()) {
-          jobs.push({
-            title: title.trim(),
-            location: location?.trim() || 'See posting for location',
-            url: href ? this.buildJobUrl(href) : this.config.careersUrl,
-          });
-        }
-      } catch {
-        // Skip this element on error
+        const res = await axios.post<T>(url, body, {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'User-Agent':
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          },
+          timeout: 30000,
+        });
+        return res.data;
+      } catch (error) {
+        lastError = error as Error;
+        console.log(`Retry ${i + 1}/${this.maxRetries} for ${url}: ${lastError.message}`);
+        await this.sleep(this.retryDelay);
       }
     }
-
-    // Alternative: try generic selectors
-    if (jobs.length === 0) {
-      const $ = await this.getPageContent();
-      $('a[href*="/job/"]').each((_, element) => {
-        const $el = $(element);
-        const title = $el.text().trim();
-        const href = $el.attr('href');
-
-        if (title && title.length > 5 && title.length < 150) {
-          jobs.push({
-            title,
-            location: 'See posting for location',
-            url: href ? this.buildJobUrl(href) : this.config.careersUrl,
-          });
-        }
-      });
-    }
-
-    return this.deduplicateJobs(jobs);
+    throw lastError || new Error('Failed to fetch Workday API');
   }
+}
 
-  private buildJobUrl(path: string): string {
-    if (path.startsWith('http')) return path;
-
-    // Prefer explicit workdayHost; otherwise derive base domain from careers URL.
-    // e.g., https://dukeenergy.wd1.myworkdayjobs.com/search -> https://dukeenergy.wd1.myworkdayjobs.com
-    const urlMatch = this.config.careersUrl.match(/(https:\/\/[^/]+)/);
-    const baseDomain = this.config.workdayHost
-      ? `https://${this.config.workdayHost}`
-      : urlMatch
-        ? urlMatch[1]
-        : this.config.careersUrl.replace('/search', '');
-
-    // Workday paths from API typically start with /en-US/
-    // If path doesn't include language prefix, add /en-US/search
-    if (path.startsWith('/en-US/') || path.startsWith('/en/')) {
-      return `${baseDomain}${path}`;
-    }
-
-    // Path likely is just the job portion like /job/Location/Title_ID
-    // Construct full URL with /en-US/search prefix
-    if (path.startsWith('/job/')) {
-      return `${baseDomain}/en-US/search${path}`;
-    }
-
-    if (path.startsWith('/')) {
-      return `${baseDomain}/en-US/search${path}`;
-    }
-
-    return `${baseDomain}/en-US/search/job/${path}`;
-  }
-
-  private deduplicateInterceptedJobs(jobs: WorkdayJob[]): WorkdayJob[] {
-    const seen = new Set<string>();
-    return jobs.filter((job) => {
-      const key = job.externalPath;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
-
-  private deduplicateJobs(jobs: ScrapedJob[]): ScrapedJob[] {
-    const seen = new Set<string>();
-    return jobs.filter((job) => {
-      const key = `${job.title}|${job.url}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
+function dedupe(jobs: ScrapedJob[]): ScrapedJob[] {
+  const seen = new Set<string>();
+  return jobs.filter((j) => {
+    if (seen.has(j.url)) return false;
+    seen.add(j.url);
+    return true;
+  });
 }

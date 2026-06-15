@@ -22,9 +22,10 @@ interface ReactorMapProps {
 }
 
 function markerColor(status: PlantWithStatus['status'], avgPower: number | null) {
-  if (status === 'unknown') return '#CFC8BC';
+  if (status === 'restarting') return '#3b82f6';        // blue — returning to service
+  if (status === 'unknown' || avgPower === null) return '#CFC8BC';
   if (avgPower === 0)       return '#ef4444';
-  if (avgPower !== null && avgPower >= 95) return '#22c55e';
+  if (avgPower >= 95)       return '#22c55e';
   return '#eab308';
 }
 
@@ -75,6 +76,9 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
           {plants.map(plant => {
             const fill = markerColor(plant.status, plant.avgPower);
             const r    = markerRadius(plant.units.length);
+            // Only plants in states with open roles are clickable — a yellow
+            // ring marks them so the map doesn't lead anywhere empty.
+            const hasJobs = plant.jobCount > 0;
             return (
               <Marker
                 key={plant.id}
@@ -83,19 +87,19 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
                   setTooltip({ plant, x: e.clientX, y: e.clientY });
                 }}
                 onMouseLeave={() => setTooltip(null)}
-                onClick={() => {
-                  const slug = STATE_SLUGS[plant.state];
-                  router.push(slug ? `/jobs/${slug}` : '/jobs');
-                }}
+                onClick={hasJobs ? () => router.push(`/jobs/${STATE_SLUGS[plant.state] ?? ''}`) : undefined}
                 tabIndex={-1}
               >
+                {hasJobs && (
+                  <circle r={r + 3} fill="none" stroke="#facc15" strokeWidth={2} />
+                )}
                 <circle
                   r={r}
                   fill={fill}
                   fillOpacity={0.9}
                   stroke="#EDE8DF"
                   strokeWidth={1.5}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: hasJobs ? 'pointer' : 'default' }}
                 />
               </Marker>
             );
@@ -111,7 +115,7 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
           <p className="font-mono text-xs font-bold text-stone-900 mb-0.5">{tooltip.plant.name}</p>
           <p className="font-mono text-[10px] text-stone-400 mb-2">
             {tooltip.plant.city}, {tooltip.plant.state}
-            <span className="mx-1 text-[#CFC8BC]">//</span>
+            <span className="mx-1 text-[#CFC8BC]">{'//'}</span>
             {tooltip.plant.operator}
           </p>
           <div className="border-t border-[#CFC8BC] pt-1.5 space-y-0.5 mb-2">
@@ -131,9 +135,15 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
             })}
           </div>
           <div className="border-t border-[#CFC8BC] pt-1.5">
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
-              Click to view jobs in {tooltip.plant.state} →
-            </p>
+            {tooltip.plant.jobCount > 0 ? (
+              <p className="font-mono text-[10px] tracking-widest uppercase text-yellow-600 font-bold">
+                {tooltip.plant.jobCount} job{tooltip.plant.jobCount === 1 ? '' : 's'} in {tooltip.plant.state} — view →
+              </p>
+            ) : (
+              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
+                No current openings
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -151,7 +161,13 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />Offline
           </span>
           <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />Restarting
+          </span>
+          <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#CFC8BC] inline-block" />No data
+          </span>
+          <span className="flex items-center gap-1.5 border-l border-[#CFC8BC] pl-5">
+            <span className="w-2.5 h-2.5 rounded-full border-2 border-yellow-400 inline-block" />Hiring
           </span>
         </div>
       </div>

@@ -582,6 +582,7 @@
       "operator": "Constellation",
       "lat": 40.1528,
       "lng": -76.7239,
+      "restarting": true,
       "units": [
         { "nrcName": "Three Mile Island 1" }
       ]
@@ -684,6 +685,7 @@
       "operator": "Holtec International",
       "lat": 42.3278,
       "lng": -86.3156,
+      "restarting": true,
       "units": [
         { "nrcName": "Palisades" }
       ]

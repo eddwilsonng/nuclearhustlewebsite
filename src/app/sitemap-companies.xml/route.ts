@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCompanies } from '@/lib/data/static';
 
-const BASE_URL = 'https://nuclearhustle.com';
+const BASE_URL = 'https://www.nuclearhustle.com';
 const lastmod = new Date().toISOString().split('T')[0];
 
 export function GET() {

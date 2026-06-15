@@ -14,7 +14,7 @@ import {
 export const metadata: Metadata = {
   title: 'Nuclear Power Companies - Employers | Nuclear Hustle',
   description: 'Browse nuclear power companies hiring in the United States. Find job opportunities at major nuclear plant operators.',
-  alternates: { canonical: 'https://nuclearhustle.com/companies' },
+  alternates: { canonical: '/companies' },
 };
 
 export default function CompaniesPage() {

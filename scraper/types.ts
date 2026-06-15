@@ -18,7 +18,8 @@ export type ScraperType =
   | 'workday'
   | 'greenhouse'
   | 'lever'
-  | 'phenom';
+  | 'phenom'
+  | 'successfactors';
 
 export interface CompanyConfig {
   id: string;

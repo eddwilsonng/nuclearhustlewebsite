@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Contact — Nuclear Hustle',
   description: 'Get in touch with the Nuclear Hustle team. Questions about job listings, employer accounts, or partnerships — we\'re happy to help.',
-  alternates: { canonical: 'https://nuclearhustle.com/contact' },
+  alternates: { canonical: '/contact' },
 };
 
 export default function ContactPage() {
