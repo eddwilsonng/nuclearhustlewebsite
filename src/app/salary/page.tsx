@@ -18,14 +18,17 @@ export const metadata: Metadata = {
   alternates: { canonical: '/salary' },
 };
 
-// BLS May 2024 OES data — source: Bureau of Labor Statistics
+// BLS May 2025 OES data — sourced directly from BLS API (series OEUN*)
 // https://www.bls.gov/oes/current/
 const BLS_ROLES = [
   {
     title: 'Nuclear Engineer',
     socCode: '17-2161',
-    median: 127520,
-    hourlyMedian: 61.31,
+    p10: 92960,
+    p25: 108690,
+    median: 133970,
+    p75: 163630,
+    p90: 196290,
     employment: 15400,
     blsUrl: 'https://www.bls.gov/oes/current/oes172161.htm',
     category: 'engineering',
@@ -35,8 +38,11 @@ const BLS_ROLES = [
   {
     title: 'Nuclear Power Reactor Operator',
     socCode: '51-8011',
-    median: 122610,
-    hourlyMedian: 58.95,
+    p10: 98640,
+    p25: 109440,
+    median: 122890,
+    p75: 130490,
+    p90: 149310,
     employment: 5700,
     blsUrl: 'https://www.bls.gov/oes/current/oes518011.htm',
     category: 'operations',
@@ -46,8 +52,11 @@ const BLS_ROLES = [
   {
     title: 'Nuclear Technician',
     socCode: '19-4051',
-    median: 104240,
-    hourlyMedian: 50.11,
+    p10: 73150,
+    p25: 99110,
+    median: 110240,
+    p75: 123990,
+    p90: 133600,
     employment: 6000,
     blsUrl: 'https://www.bls.gov/oes/current/oes194051.htm',
     category: 'health-physics',
@@ -70,19 +79,19 @@ const LISTING_RANGES = [
 const FAQS = [
   {
     q: 'How much do nuclear engineers make?',
-    a: 'Nuclear engineers earn a median annual salary of $127,520 according to BLS 2024 OES data, with the top 10% earning over $188,000. Entry-level roles typically start around $80,000–$99,000.',
+    a: 'Nuclear engineers earn a median annual salary of $133,970 according to BLS 2025 OES data, with the top 10% earning over $196,000. Entry-level roles typically start around $93,000–$109,000.',
   },
   {
     q: 'What is the salary for a nuclear reactor operator?',
-    a: 'Nuclear power reactor operators earn a median of $122,610 per year ($58.95/hour). This reflects experienced, licensed operators. Senior reactor operators (SRO license holders) command higher pay.',
+    a: 'Nuclear power reactor operators earn a median of $122,890 per year. This reflects experienced, licensed operators — the range runs from $98,640 at the 10th percentile to $149,310 at the 90th. Senior reactor operators (SRO license holders) command higher pay.',
   },
   {
     q: 'How much do nuclear technicians earn?',
-    a: 'Nuclear technicians — including health physics techs, instrumentation techs, and chemistry techs — earn a median of $104,240 annually. The range typically spans $56,000–$140,000 depending on experience and specialisation.',
+    a: 'Nuclear technicians — including health physics techs, instrumentation techs, and chemistry techs — earn a median of $110,240 annually. The range runs from $73,150 at the 10th percentile to $133,600 at the 90th.',
   },
   {
     q: 'Do nuclear power plant jobs pay well?',
-    a: 'Yes. Nuclear industry wages are well above national medians. The median nuclear engineer salary ($127,520) is roughly 20% above the median for all engineers. Reactor operators ($122,610) earn nearly double the national median wage across all occupations.',
+    a: 'Yes. Nuclear industry wages are well above national medians. The median nuclear engineer salary ($133,970) is roughly 25% above the median for all engineers. Reactor operators ($122,890) earn nearly double the national median wage across all occupations.',
   },
   {
     q: 'Which nuclear jobs pay the most?',
@@ -102,11 +111,36 @@ function formatSalary(n: number) {
   return '$' + n.toLocaleString('en-US');
 }
 
-function SalaryBar({ value, max }: { value: number; max: number }) {
-  const pct = Math.round((value / max) * 100);
+function PercentileBar({ p10, p25, median, p75, p90, max }: {
+  p10: number; p25: number; median: number; p75: number; p90: number; max: number;
+}) {
+  const pct = (v: number) => `${((v / max) * 100).toFixed(1)}%`;
   return (
-    <div className="w-full h-1.5 bg-[#CFC8BC] mt-2">
-      <div className="h-full bg-yellow-400" style={{ width: `${pct}%` }} />
+    <div className="mt-4 space-y-2">
+      <div className="relative h-3 bg-[#CFC8BC]">
+        {/* p25–p75 band */}
+        <div
+          className="absolute h-full bg-yellow-200"
+          style={{ left: pct(p25), width: `${((p75 - p25) / max) * 100}%` }}
+        />
+        {/* p10–p90 thin line */}
+        <div
+          className="absolute top-1 h-1 bg-[#CFC8BC]"
+          style={{ left: pct(p10), width: `${((p90 - p10) / max) * 100}%` }}
+        />
+        {/* median tick */}
+        <div
+          className="absolute top-0 h-full w-0.5 bg-yellow-500"
+          style={{ left: pct(median) }}
+        />
+      </div>
+      <div className="flex justify-between font-mono text-[9px] text-stone-400">
+        <span>${Math.round(p10 / 1000)}k<br /><span className="text-stone-300">10th</span></span>
+        <span className="text-right">${Math.round(p25 / 1000)}k<br /><span className="text-stone-300">25th</span></span>
+        <span className="text-center font-bold text-stone-600">${Math.round(median / 1000)}k<br /><span className="text-stone-400 font-normal">median</span></span>
+        <span className="text-right">${Math.round(p75 / 1000)}k<br /><span className="text-stone-300">75th</span></span>
+        <span className="text-right">${Math.round(p90 / 1000)}k<br /><span className="text-stone-300">90th</span></span>
+      </div>
     </div>
   );
 }
@@ -127,13 +161,13 @@ export default function SalaryPage() {
         <BrowseTitle>Nuclear industry salary guide</BrowseTitle>
 
         <BrowseMeta>
-          Source: <strong>BLS OES, May 2024</strong>
+          Source: <strong>BLS OES, May 2025</strong>
           <span className="text-stone-500 mx-2">//</span>
           Most recent complete survey
         </BrowseMeta>
 
         <BrowseDescription>
-          Median wages and pay ranges for nuclear power plant roles — reactor operators, engineers, and technicians. Based on Bureau of Labor Statistics Occupational Employment and Wage Statistics, May 2024 release (the most recent annual survey).
+          Median wages and full pay distributions for nuclear power plant roles — reactor operators, engineers, and technicians. Sourced directly from Bureau of Labor Statistics Occupational Employment and Wage Statistics, May 2025 release.
         </BrowseDescription>
       </BrowsePageHeader>
 
@@ -176,10 +210,10 @@ export default function SalaryPage() {
                       <div className="shrink-0 sm:text-right">
                         <p className="font-mono text-2xl font-bold text-stone-900">{formatSalary(role.median)}</p>
                         <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400">median / year</p>
-                        <p className="font-mono text-xs text-stone-500 mt-0.5">${role.hourlyMedian}/hr</p>
+                        <p className="font-mono text-xs text-stone-500 mt-0.5">${Math.round(role.p90 / 1000)}k at 90th pct</p>
                       </div>
                     </div>
-                    <SalaryBar value={role.median} max={highestMedian * 1.1} />
+                    <PercentileBar p10={role.p10} p25={role.p25} median={role.median} p75={role.p75} p90={role.p90} max={220000} />
                     <div className="mt-3 flex items-center justify-between">
                       <Link
                         href={`/jobs/role/${role.category}`}
@@ -252,7 +286,7 @@ export default function SalaryPage() {
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-3">Methodology</p>
               <div className="space-y-2 font-mono text-xs text-stone-500 leading-relaxed">
                 <p>
-                  <strong className="text-stone-700">BLS figures</strong> are from the Bureau of Labor Statistics Occupational Employment and Wage Statistics (OEWS) survey, May 2024 release. Wages are national medians across all industries and experience levels employing each occupation.
+                  <strong className="text-stone-700">BLS figures</strong> are from the Bureau of Labor Statistics Occupational Employment and Wage Statistics (OEWS) survey, May 2025 release, sourced directly from the BLS public API (series OEUN*). Wages are national figures across all industries and experience levels employing each occupation.
                 </p>
                 <p>
                   <strong className="text-stone-700">Listing ranges</strong> are extracted from job descriptions on Nuclear Hustle that explicitly stated a compensation or salary range. Only labeled ranges (e.g. &quot;Compensation Range: $X – $Y&quot;) are included. Hourly rates are annualised at 2,080 hours.
