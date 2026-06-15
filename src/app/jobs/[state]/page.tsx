@@ -187,20 +187,6 @@ export default async function StatePage({ params, searchParams }: PageProps) {
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-8">
 
-            {/* Job alert CTA */}
-            <div className="border border-yellow-300 bg-yellow-50 p-5">
-              <p className="font-mono text-[10px] tracking-widest uppercase text-yellow-700 mb-2">Free job alerts</p>
-              <p className="font-mono text-xs text-stone-600 leading-relaxed mb-4">
-                Be first to hear about new nuclear roles in {stateInfo.name}.
-              </p>
-              <Link
-                href="/signup"
-                className="block text-center font-mono text-xs tracking-widest uppercase px-4 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
-              >
-                Create free alert →
-              </Link>
-            </div>
-
             {/* Other states */}
             <div>
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Other states</p>

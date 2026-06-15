@@ -253,26 +253,6 @@ export default async function JobPage({ params }: PageProps) {
                       </JobDescriptionSection>
                     ))}
 
-                  {job.structured_description.skills && job.structured_description.skills.length > 0 && (
-                    <div>
-                      <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-3">Skills &amp; tools</p>
-                      <div className="flex flex-wrap gap-2">
-                        {job.structured_description.skills.map((skill) => {
-                          const iconKey = getSkillIconCategory(skill);
-                          const Icon = SKILL_ICONS[iconKey];
-                          return (
-                            <span
-                              key={skill}
-                              className="flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-stone-600 border border-[#CFC8BC] px-2.5 py-1.5"
-                            >
-                              <Icon size={11} className="text-stone-400 flex-shrink-0" />
-                              {skill}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
                 </div>
               ) : job.description ? (
                 <StructuredJobDescription
@@ -383,6 +363,31 @@ export default async function JobPage({ params }: PageProps) {
                     </div>
                   </div>
                 </div>
+
+                {/* Skills & Tools */}
+                {(() => {
+                  const skills = job.structured_description?.skills;
+                  if (!skills || skills.length === 0) return null;
+                  return (
+                    <div className="border border-[#CFC8BC] p-5">
+                      <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-3">Skills &amp; tools</p>
+                      <div className="flex flex-wrap gap-2">
+                        {skills.map((skill) => {
+                          const Icon = SKILL_ICONS[getSkillIconCategory(skill)];
+                          return (
+                            <span
+                              key={skill}
+                              className="flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-stone-700 border border-[#CFC8BC] bg-[#E5DFD5] px-2.5 py-1.5"
+                            >
+                              <Icon size={11} className="text-stone-500 flex-shrink-0" />
+                              {skill}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Company card */}
                 <div className="border border-[#CFC8BC] p-5">
