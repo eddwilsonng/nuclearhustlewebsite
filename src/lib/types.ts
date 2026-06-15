@@ -29,6 +29,7 @@ export interface Job {
   category: JobCategory;
   description?: string;
   structured_description?: StructuredDescription | null;
+  skills?: string[];
   status?: 'pending_review' | 'published' | 'rejected';
   agent_confidence?: 'high' | 'low';
   review_notes?: string;
@@ -55,6 +56,7 @@ export interface JobListItem {
   category: JobCategory;
   scraped_at: string;
   employment_type?: string;
+  skills?: string[];
   isEmployerJob?: boolean;
   is_featured?: boolean;
   featured_until?: string | null;

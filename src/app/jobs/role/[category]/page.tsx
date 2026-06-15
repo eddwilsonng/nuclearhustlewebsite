@@ -73,6 +73,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   // limit — full descriptions only belong on the job detail page.
   const listJobs = jobs.map((j) => {
     const copy = { ...j };
+    if (!copy.skills && copy.structured_description?.skills) {
+      copy.skills = copy.structured_description.skills;
+    }
     delete copy.description;
     delete copy.structured_description;
     return copy;

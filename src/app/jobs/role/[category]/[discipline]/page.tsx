@@ -86,6 +86,9 @@ export default async function DisciplinePage({ params, searchParams }: PageProps
   // would bloat the serialized client payload past Google's 2MB indexing limit.
   const listJobs = jobs.map((j) => {
     const copy = { ...j };
+    if (!copy.skills && copy.structured_description?.skills) {
+      copy.skills = copy.structured_description.skills;
+    }
     delete copy.description;
     delete copy.structured_description;
     return copy;
