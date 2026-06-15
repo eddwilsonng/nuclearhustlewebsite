@@ -56,14 +56,15 @@ const BLS_ROLES = [
   },
 ];
 
-// Salary ranges extracted from job listings that disclosed compensation
+// Salary ranges extracted from job listings that disclosed compensation.
+// Only rows with n >= 4 have enough data to be directionally meaningful.
 const LISTING_RANGES = [
-  { category: 'Engineering', n: 27, medianK: 147, minK: 71, maxK: 252 },
-  { category: 'Operations', n: 3, medianK: 133, minK: 92, maxK: 163 },
-  { category: 'Training & Licensing', n: 4, medianK: 124, minK: 84, maxK: 163 },
-  { category: 'Health Physics', n: 2, medianK: 134, minK: 84, maxK: 172 },
-  { category: 'Maintenance', n: 3, medianK: 110, minK: 64, maxK: 177 },
-  { category: 'Administrative', n: 33, medianK: 147, minK: 63, maxK: 325 },
+  { category: 'Administrative', n: 33, medianK: 147, minK: 63, maxK: 325, reliable: true },
+  { category: 'Engineering', n: 27, medianK: 147, minK: 71, maxK: 252, reliable: true },
+  { category: 'Training & Licensing', n: 4, medianK: 124, minK: 84, maxK: 163, reliable: true },
+  { category: 'Operations', n: 2, medianK: 134, minK: 105, maxK: 163, reliable: false },
+  { category: 'Health Physics', n: 2, medianK: 134, minK: 84, maxK: 172, reliable: false },
+  { category: 'Maintenance', n: 2, medianK: 147, minK: 88, maxK: 177, reliable: false },
 ];
 
 const FAQS = [
@@ -205,7 +206,7 @@ export default function SalaryPage() {
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">From current listings</p>
               <h2 className="font-mono text-xl font-bold text-stone-900 mb-2">What employers are advertising</h2>
               <p className="font-mono text-xs text-stone-500 mb-6 leading-relaxed">
-                Based on {LISTING_RANGES.reduce((a, b) => a + b.n, 0)} job listings on Nuclear Hustle that disclosed a compensation range. Coverage is partial — most nuclear employers do not post salary ranges publicly.
+                Based on {LISTING_RANGES.reduce((a, b) => a + b.n, 0)} job listings on Nuclear Hustle that disclosed a compensation range. Coverage is partial — most nuclear employers do not post salary ranges publicly. Rows marked * have fewer than 4 listings and should be treated as illustrative only.
               </p>
 
               <div className="border border-[#CFC8BC]">
@@ -216,10 +217,12 @@ export default function SalaryPage() {
                   <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400 text-right">High</span>
                 </div>
                 {LISTING_RANGES.map((row) => (
-                  <div key={row.category} className="grid grid-cols-4 gap-4 px-4 py-3 border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors">
+                  <div key={row.category} className={`grid grid-cols-4 gap-4 px-4 py-3 border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors ${!row.reliable ? 'opacity-50' : ''}`}>
                     <div>
-                      <span className="font-mono text-xs text-stone-700 font-semibold">{row.category}</span>
-                      <span className="block font-mono text-[10px] text-stone-400">{row.n} listings</span>
+                      <span className="font-mono text-xs text-stone-700 font-semibold">
+                        {row.category}{!row.reliable && '*'}
+                      </span>
+                      <span className="block font-mono text-[10px] text-stone-400">{row.n} listing{row.n !== 1 ? 's' : ''}</span>
                     </div>
                     <span className="font-mono text-xs text-stone-900 font-bold text-right self-center">${row.medianK}k</span>
                     <span className="font-mono text-xs text-stone-500 text-right self-center">${row.minK}k</span>
