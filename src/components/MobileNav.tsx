@@ -13,7 +13,8 @@ const PRIMARY_LINKS = [
 ];
 
 const RESOURCES_LINKS = [
-  { href: '/salary', label: 'Nuclear Salary Guide' },
+  { href: '/nuclear-salary', label: 'Nuclear Salary Guide' },
+  { href: '/nuclear-skills', label: 'Nuclear Skills Report' },
 ];
 
 const LOGGED_OUT_LINKS = [

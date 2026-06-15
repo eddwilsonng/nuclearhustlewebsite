@@ -98,8 +98,13 @@ export function Footer() {
             <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Site</p>
             <ul className="space-y-2.5">
               <li>
-                <Link href="/salary" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
+                <Link href="/nuclear-salary" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
                   Salary guide
+                </Link>
+              </li>
+              <li>
+                <Link href="/nuclear-skills" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
+                  Skills report
                 </Link>
               </li>
               <li>

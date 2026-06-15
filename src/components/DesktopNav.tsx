@@ -12,7 +12,8 @@ const BROWSE_LINKS = [
 ];
 
 const RESOURCES_LINKS = [
-  { href: '/salary', label: 'Nuclear Salary Guide', desc: 'BLS wages by role' },
+  { href: '/nuclear-salary', label: 'Nuclear Salary Guide', desc: 'Pay ranges by role & state' },
+  { href: '/nuclear-skills', label: 'Nuclear Skills Report', desc: 'Most in-demand skills & certs' },
 ];
 
 function ResourcesDropdown({ active }: { active: boolean }) {
