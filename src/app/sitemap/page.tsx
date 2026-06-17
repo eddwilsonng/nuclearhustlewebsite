@@ -108,7 +108,7 @@ export default function SitemapPage() {
             <ul className="columns-2 gap-x-8 space-y-3">
               {companies.map((company) => (
                 <li key={company.id} className="break-inside-avoid">
-                  <Link href={`/companies/${company.slug}`} className={linkClass}>
+                  <Link href={`/companies/${company.id}`} className={linkClass}>
                     {company.name}
                   </Link>
                 </li>
