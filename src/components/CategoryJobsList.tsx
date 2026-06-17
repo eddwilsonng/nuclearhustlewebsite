@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import type { JobWithCompany } from '@/lib/types';
-import { toJobListItem } from '@/lib/data/static';
+import { toJobListItem } from '@/lib/jobUtils';
 import { getStateBySlug } from '@/lib/states';
 import { PaginatedJobResults } from './PaginatedJobResults';
 

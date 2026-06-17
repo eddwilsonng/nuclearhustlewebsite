@@ -33,14 +33,14 @@ export function Footer() {
                 nuclearhustle
               </span>
             </Link>
-            <p className="font-mono text-xs text-stone-400 leading-relaxed max-w-[200px]">
+            <p className="font-mono text-xs text-stone-600 leading-relaxed max-w-[200px]">
               The specialist job board for nuclear energy professionals.
             </p>
           </div>
 
           {/* Jobs by role */}
           <div>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Jobs by role</p>
+            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-600 mb-4">Jobs by role</p>
             <ul className="space-y-2.5">
               {ROLE_LINKS.map(({ href, label }) => (
                 <li key={href}>
@@ -54,7 +54,7 @@ export function Footer() {
 
           {/* Jobs by location */}
           <div>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Jobs by location</p>
+            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-600 mb-4">Jobs by location</p>
             <ul className="space-y-2.5">
               {topStates.map(({ state }) => (
                 <li key={state.slug}>
@@ -73,7 +73,7 @@ export function Footer() {
 
           {/* Employers */}
           <div>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Employers</p>
+            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-600 mb-4">Employers</p>
             <ul className="space-y-2.5">
               <li>
                 <Link href="/signup/employer" className={linkClass}>
@@ -95,7 +95,7 @@ export function Footer() {
 
           {/* Site */}
           <div>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Site</p>
+            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-600 mb-4">Site</p>
             <ul className="space-y-2.5">
               <li>
                 <Link href="/nuclear-salary" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
@@ -143,10 +143,10 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-[#CFC8BC] pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
+          <p className="font-mono text-[10px] tracking-widest uppercase text-stone-600">
             © {YEAR} Nuclear Hustle. All rights reserved.
           </p>
-          <p className="font-mono text-[10px] text-stone-300">
+          <p className="font-mono text-[10px] text-stone-500">
             Reactor data from the U.S. NRC. Job listings aggregated from public employer career sites.
           </p>
         </div>

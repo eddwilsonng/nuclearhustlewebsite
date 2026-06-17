@@ -94,8 +94,8 @@ export default async function Home() {
           <Image
             src="/hero-banner.webp"
             alt="Nuclear power plant"
-            width={1200}
-            height={900}
+            width={640}
+            height={357}
             priority
             quality={80}
             sizes="58vw"
