@@ -3,12 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { signOut } from '@/lib/auth/actions';
+import { signOut, setAdminViewRole } from '@/lib/auth/actions';
 import type { Profile } from '@/lib/types';
+import type { AdminViewRole } from '@/lib/admin';
 
 interface DashboardSidebarProps {
   profile: Profile;
   isAdmin?: boolean;
+  viewRole?: AdminViewRole;
 }
 
 type NavLink = { href: string; label: string; exact?: boolean };
@@ -45,7 +47,7 @@ function NavLinks({
   );
 }
 
-export function DashboardSidebar({ profile, isAdmin }: DashboardSidebarProps) {
+export function DashboardSidebar({ profile, isAdmin, viewRole }: DashboardSidebarProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -59,6 +61,7 @@ export function DashboardSidebar({ profile, isAdmin }: DashboardSidebarProps) {
   const jobSeekerLinks: NavLink[] = [
     { href: '/dashboard', label: 'Overview', exact: true },
     { href: '/dashboard/profile', label: 'My Profile' },
+    { href: '/dashboard/saved', label: 'Saved Jobs' },
   ];
 
   const employerLinks: NavLink[] = [
@@ -76,14 +79,15 @@ export function DashboardSidebar({ profile, isAdmin }: DashboardSidebarProps) {
     { href: '/dashboard/admin/email', label: 'Email Health' },
   ];
 
-  const links = profile.role === 'employer' ? employerLinks : jobSeekerLinks;
+  const effectiveRole = isAdmin ? (viewRole ?? profile.role) : profile.role;
+  const links = effectiveRole === 'employer' ? employerLinks : jobSeekerLinks;
   const close = () => setOpen(false);
 
   const sidebarContent = (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6 md:block">
         <p className="font-mono text-xs tracking-widest uppercase text-stone-300">
-          {profile.role === 'employer' ? 'Employer' : 'Job Seeker'}
+          {effectiveRole === 'employer' ? 'Employer' : 'Job Seeker'}
         </p>
         <button
           type="button"
@@ -94,6 +98,29 @@ export function DashboardSidebar({ profile, isAdmin }: DashboardSidebarProps) {
           Close
         </button>
       </div>
+
+      {isAdmin && (
+        <div className="mb-6 border border-[#CFC8BC] p-1 flex gap-1">
+          <button
+            type="button"
+            onClick={() => setAdminViewRole('employer', pathname)}
+            className={`flex-1 font-mono text-[10px] tracking-widest uppercase py-1.5 transition-colors ${
+              effectiveRole === 'employer' ? 'bg-yellow-400 text-stone-900' : 'text-stone-400 hover:text-stone-900'
+            }`}
+          >
+            Employer
+          </button>
+          <button
+            type="button"
+            onClick={() => setAdminViewRole('job_seeker', pathname)}
+            className={`flex-1 font-mono text-[10px] tracking-widest uppercase py-1.5 transition-colors ${
+              effectiveRole === 'job_seeker' ? 'bg-yellow-400 text-stone-900' : 'text-stone-400 hover:text-stone-900'
+            }`}
+          >
+            Job Seeker
+          </button>
+        </div>
+      )}
 
       <nav className="space-y-1">
         <NavLinks links={links} pathname={pathname} onNavigate={close} />

@@ -2,9 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { createFeaturedCheckoutSession } from "@/lib/stripe/featured";
 import { expiryFromNow } from "@/lib/jobs/expiry";
+import { isAdmin, ADMIN_VIEW_COOKIE, type AdminViewRole } from "@/lib/admin";
 
 // Validation schemas
 const loginSchema = z.object({
@@ -17,6 +19,7 @@ const jobSeekerSignupSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
   fullName: z.string().min(2, "Name must be at least 2 characters"),
   location: z.string().optional(),
+  state: z.string().max(2).optional().or(z.literal("")),
 });
 
 const employerSignupSchema = z.object({
@@ -90,6 +93,7 @@ export async function signUpJobSeeker(
     password: formData.get("password") as string,
     fullName: formData.get("fullName") as string,
     location: formData.get("location") as string,
+    state: formData.get("state") as string,
   };
 
   const validatedFields = jobSeekerSignupSchema.safeParse(rawData);
@@ -140,6 +144,7 @@ export async function signUpJobSeeker(
     .insert({
       user_id: authData.user.id,
       location: validatedFields.data.location || null,
+      state: validatedFields.data.state || null,
     });
 
   if (jobSeekerError) {
@@ -334,6 +339,23 @@ export async function signOut() {
   redirect("/");
 }
 
+export async function setAdminViewRole(role: AdminViewRole, redirectTo: string = "/dashboard") {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!isAdmin(user?.email)) return;
+
+  const cookieStore = await cookies();
+  cookieStore.set(ADMIN_VIEW_COOKIE, role, {
+    path: "/dashboard",
+    httpOnly: false, // read client-side by the dashboard profile page
+    sameSite: "lax",
+  });
+  redirect(redirectTo);
+}
+
 export async function getUser() {
   const supabase = await createClient();
   const {
@@ -396,6 +418,8 @@ export async function getEmployerProfile() {
 const jobSeekerProfileSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters").max(200),
   location: z.string().max(200).optional().or(z.literal("")),
+  state: z.string().max(2).optional().or(z.literal("")),
+  phone: z.string().max(20).optional().or(z.literal("")),
 });
 
 export async function updateJobSeekerProfile(
@@ -414,11 +438,15 @@ export async function updateJobSeekerProfile(
   const parsed = jobSeekerProfileSchema.safeParse({
     fullName: formData.get("fullName"),
     location: formData.get("location"),
+    state: formData.get("state"),
+    phone: formData.get("phone"),
   });
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
   }
+
+  const isActivelyLooking = formData.get("isActivelyLooking") === "true";
 
   const { error: profileError } = await supabase
     .from("profiles")
@@ -431,7 +459,12 @@ export async function updateJobSeekerProfile(
 
   const { error: jobSeekerError } = await supabase
     .from("job_seeker_profiles")
-    .update({ location: parsed.data.location || null })
+    .update({
+      location: parsed.data.location || null,
+      state: parsed.data.state || null,
+      phone: parsed.data.phone || null,
+      is_actively_looking: isActivelyLooking,
+    })
     .eq("user_id", user.id);
 
   if (jobSeekerError) {

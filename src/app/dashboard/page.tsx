@@ -1,5 +1,9 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { Search, FileText, Heart, Check, X as XIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
+import { isAdmin, ADMIN_VIEW_COOKIE, type AdminViewRole } from '@/lib/admin';
+import { getStateByCode } from '@/lib/states';
 import type { Profile, EmployerProfile, JobSeekerProfile, EmployerJob } from '@/lib/types';
 
 export const metadata = {
@@ -21,8 +25,17 @@ export default async function DashboardPage() {
   if (!profile) return null;
 
   const typedProfile = profile as Profile;
+  let viewRole: AdminViewRole = typedProfile.role as AdminViewRole;
 
-  if (typedProfile.role === 'employer') {
+  if (isAdmin(user.email)) {
+    const cookieStore = await cookies();
+    const override = cookieStore.get(ADMIN_VIEW_COOKIE)?.value as AdminViewRole | undefined;
+    if (override === 'employer' || override === 'job_seeker') {
+      viewRole = override;
+    }
+  }
+
+  if (viewRole === 'employer') {
     return <EmployerDashboard userId={user.id} profile={typedProfile} />;
   }
 
@@ -39,99 +52,80 @@ async function JobSeekerDashboard({ userId, profile }: { userId: string; profile
     .single();
 
   const typedJobSeekerProfile = jobSeekerProfile as JobSeekerProfile | null;
+  const isActivelyLooking = typedJobSeekerProfile?.is_actively_looking ?? true;
+  const stateName = typedJobSeekerProfile?.state ? getStateByCode(typedJobSeekerProfile.state)?.name : null;
+
+  const statusRows = [
+    { label: 'Full Name', complete: true },
+    { label: 'City & State', complete: !!(typedJobSeekerProfile?.location || stateName) },
+    { label: 'Phone', complete: !!typedJobSeekerProfile?.phone },
+    { label: 'Resume', complete: !!typedJobSeekerProfile?.resume_url },
+  ];
+
+  const quickActions = [
+    { href: '/jobs', label: 'Browse Jobs', description: 'Find your next opportunity', Icon: Search },
+    { href: '/dashboard/profile', label: 'Upload Resume', description: 'Keep your resume up to date', Icon: FileText },
+    { href: '/dashboard/saved', label: 'Saved Jobs', description: "Jobs you've bookmarked", Icon: Heart },
+  ];
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-2xl font-bold text-stone-900 mb-6">
-        Welcome back, {profile.full_name.split(' ')[0]}!
-      </h1>
+      <div className="flex items-center gap-3 mb-6">
+        <h1 className="font-mono text-2xl font-bold text-stone-900">
+          Welcome back, {profile.full_name.split(' ')[0]}!
+        </h1>
+        <span
+          className={`font-mono text-[10px] tracking-widest uppercase border px-2 py-0.5 ${
+            isActivelyLooking
+              ? 'border-yellow-400 bg-yellow-50 text-yellow-700'
+              : 'border-[#CFC8BC] text-stone-400'
+          }`}
+        >
+          {isActivelyLooking ? 'Open to opportunities' : 'Not looking'}
+        </span>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Profile Completeness */}
-        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
-          <h2 className="text-lg font-semibold text-stone-900 mb-4">Profile Status</h2>
+        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-6">
+          <h2 className="font-mono text-sm font-bold tracking-widest uppercase text-stone-900 mb-4">Profile Status</h2>
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-stone-600">Full Name</span>
-              <span className="text-green-600">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-stone-600">Location</span>
-              {typedJobSeekerProfile?.location ? (
-                <span className="text-green-600">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+            {statusRows.map((row) => (
+              <div key={row.label} className="flex items-center justify-between">
+                <span className="font-mono text-xs text-stone-600">{row.label}</span>
+                <span className={row.complete ? 'text-green-600' : 'text-stone-300'}>
+                  {row.complete ? <Check size={16} /> : <XIcon size={16} />}
                 </span>
-              ) : (
-                <span className="text-yellow-600">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </span>
-              )}
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-stone-600">Resume</span>
-              {typedJobSeekerProfile?.resume_url ? (
-                <span className="text-green-600">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                </span>
-              ) : (
-                <span className="text-yellow-600">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </span>
-              )}
-            </div>
+              </div>
+            ))}
           </div>
           <Link
             href="/dashboard/profile"
-            className="mt-4 block text-center py-2 px-4 bg-[#E5DFD5] hover:bg-[#CFC8BC] text-stone-700 font-medium rounded-md transition-colors"
+            className="mt-4 block text-center py-2 px-4 border border-[#CFC8BC] bg-[#E5DFD5] hover:bg-[#CFC8BC] font-mono text-xs tracking-widest uppercase text-stone-700 transition-colors"
           >
             Complete Profile
           </Link>
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
-          <h2 className="text-lg font-semibold text-stone-900 mb-4">Quick Actions</h2>
+        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-6">
+          <h2 className="font-mono text-sm font-bold tracking-widest uppercase text-stone-900 mb-4">Quick Actions</h2>
           <div className="space-y-3">
-            <Link
-              href="/jobs"
-              className="flex items-center gap-3 p-3 rounded-md hover:bg-[#E5DFD5] transition-colors"
-            >
-              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-medium text-stone-900">Browse Jobs</p>
-                <p className="text-sm text-stone-500">Find your next opportunity</p>
-              </div>
-            </Link>
-            <Link
-              href="/dashboard/profile"
-              className="flex items-center gap-3 p-3 rounded-md hover:bg-[#E5DFD5] transition-colors"
-            >
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-medium text-stone-900">Upload Resume</p>
-                <p className="text-sm text-stone-500">Keep your resume up to date</p>
-              </div>
-            </Link>
+            {quickActions.map(({ href, label, description, Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-3 p-3 hover:bg-[#E5DFD5] transition-colors"
+              >
+                <div className="w-10 h-10 border border-[#CFC8BC] flex items-center justify-center shrink-0">
+                  <Icon size={18} className="text-stone-600" />
+                </div>
+                <div>
+                  <p className="font-mono text-sm font-semibold text-stone-900">{label}</p>
+                  <p className="font-mono text-xs text-stone-500">{description}</p>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>

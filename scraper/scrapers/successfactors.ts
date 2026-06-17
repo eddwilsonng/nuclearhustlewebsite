@@ -23,17 +23,23 @@ export class SuccessFactorsScraper extends BaseScraper {
       const kw = encodeURIComponent(this.config.searchKeyword ?? 'nuclear');
       console.log(`Scraping ${this.config.name} (SuccessFactors)...`);
 
-      const variants = [
-        (n: number) => `${origin}/search-results?keyword=${kw}&startrow=${n}`,
-        (n: number) => `${origin}/go/search/?q=${kw}&startrow=${n}`,
-      ];
+      const csbBase = this.config.careersUrl.replace(/\/?$/, '');
 
-      // Pick whichever layout returns jobs on page 1.
-      let buildUrl = variants[0];
-      let firstPage = await this.parsePage(buildUrl(0), origin);
-      if (firstPage.length === 0) {
-        buildUrl = variants[1];
+      let buildUrl: (n: number) => string;
+      let firstPage: ScrapedJob[];
+
+      if (this.config.csbPathPagination) {
+        // Path-offset CSB variant (e.g. Westinghouse: /go/All-Careers/8736400/25/)
+        buildUrl = (n) => `${csbBase}${n > 0 ? '/' + n : ''}/`;
         firstPage = await this.parsePage(buildUrl(0), origin);
+      } else {
+        // Classic layout first, fall back to CSB search query-param layout.
+        buildUrl = (n) => `${origin}/search-results?keyword=${kw}&startrow=${n}`;
+        firstPage = await this.parsePage(buildUrl(0), origin);
+        if (firstPage.length === 0) {
+          buildUrl = (n) => `${origin}/go/search/?q=${kw}&startrow=${n}`;
+          firstPage = await this.parsePage(buildUrl(0), origin);
+        }
       }
 
       const seen = new Set<string>();

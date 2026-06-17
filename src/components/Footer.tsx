@@ -132,6 +132,11 @@ export function Footer() {
                   Terms of use
                 </Link>
               </li>
+              <li>
+                <Link href="/sitemap" className="font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors">
+                  Sitemap
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

@@ -9,6 +9,8 @@ const SKILL_ICONS = { award: Award, zap: Zap, monitor: Monitor, shield: Shield, 
 interface JobCardProps {
   job: JobListItem;
   hideCategory?: boolean; // suppress redundant tag when already on a category page
+  isAuthenticated?: boolean;
+  initialSaved?: boolean;
 }
 
 function getPostedLabel(dateString: string): string {
@@ -16,7 +18,6 @@ function getPostedLabel(dateString: string): string {
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
   if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return `${diffDays}d ago`;
   // Neutral month/year for anything a week+ old — no stale "17w ago" signals
   return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
@@ -37,7 +38,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   'other':         'Other',
 };
 
-export function JobCard({ job, hideCategory = false }: JobCardProps) {
+export function JobCard({ job, hideCategory = false, isAuthenticated = false, initialSaved = false }: JobCardProps) {
   const categoryLabel = CATEGORY_LABELS[job.category] || job.category;
   const isEmployerJob = job.isEmployerJob;
   const isFeatured = job.is_featured && job.featured_until && new Date(job.featured_until) > new Date();
@@ -102,6 +103,8 @@ export function JobCard({ job, hideCategory = false }: JobCardProps) {
           <SaveJobButton
             jobSlug={job.slug}
             jobId={job.id}
+            isAuthenticated={isAuthenticated}
+            initialSaved={initialSaved}
             className="p-1 -mr-1"
           />
         </div>

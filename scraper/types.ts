@@ -42,4 +42,10 @@ export interface CompanyConfig {
    * (e.g. Phenom `?keywords=nuclear`). Central relevance filtering still applies.
    */
   searchKeyword?: string;
+  /**
+   * For SuccessFactors CSB sites that paginate via path offset rather than
+   * ?startrow=n (e.g. /go/All-Careers/8736400/25/). When set, careersUrl
+   * must point to the category listing page and the scraper appends /{offset}/.
+   */
+  csbPathPagination?: boolean;
 }

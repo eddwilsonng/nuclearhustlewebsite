@@ -79,7 +79,10 @@ export interface Profile {
 export interface JobSeekerProfile {
   id: string;
   user_id: string;
-  location: string | null;
+  location: string | null; // city
+  state: string | null; // state code, e.g. "IL"
+  is_actively_looking: boolean;
+  phone: string | null;
   resume_url: string | null;
   resume_filename: string | null;
   created_at: string;

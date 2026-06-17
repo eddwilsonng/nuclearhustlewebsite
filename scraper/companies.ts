@@ -77,6 +77,15 @@ export const COMPANIES: ScrapeSource[] = [
 
   // ---- SuccessFactors / jobs2web operators (HTML tile parsing, no browser) ----
   {
+    id: 'westinghouse',
+    name: 'Westinghouse Electric',
+    careersUrl: 'https://careers.westinghousenuclear.com/go/All-Careers/8736400/',
+    scraperType: 'successfactors',
+    searchKeyword: 'nuclear',
+    csbPathPagination: true,
+    verified: true,
+  },
+  {
     id: 'dominion',
     name: 'Dominion Energy',
     careersUrl: 'https://careers.dominionenergy.com/',

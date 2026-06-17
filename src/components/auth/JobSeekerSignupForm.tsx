@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { signUpJobSeeker, signInWithGoogle, type ActionState } from "@/lib/auth/actions";
+import { US_STATES } from "@/lib/states";
 
 export function JobSeekerSignupForm() {
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
@@ -85,17 +86,37 @@ export function JobSeekerSignupForm() {
           <p className="mt-1.5 font-mono text-[10px] text-stone-400">Min. 8 characters</p>
         </div>
 
-        <div>
-          <label htmlFor="location" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">
-            Location <span className="text-stone-300 normal-case tracking-normal">(optional)</span>
-          </label>
-          <input
-            id="location"
-            name="location"
-            type="text"
-            className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-300"
-            placeholder="Chicago, IL"
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="location" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">
+              City <span className="text-stone-300 normal-case tracking-normal">(optional)</span>
+            </label>
+            <input
+              id="location"
+              name="location"
+              type="text"
+              className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-300"
+              placeholder="Chicago"
+            />
+          </div>
+          <div>
+            <label htmlFor="state" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">
+              State <span className="text-stone-300 normal-case tracking-normal">(optional)</span>
+            </label>
+            <select
+              id="state"
+              name="state"
+              defaultValue=""
+              className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors"
+            >
+              <option value="">Select a state</option>
+              {US_STATES.map((s) => (
+                <option key={s.code} value={s.code}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <button
