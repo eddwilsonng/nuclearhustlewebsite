@@ -9,6 +9,7 @@ const sitemaps = [
   'sitemap-states.xml',
   'sitemap-categories.xml',
   'sitemap-companies.xml',
+  'sitemap-plants.xml',
 ];
 
 export function GET() {

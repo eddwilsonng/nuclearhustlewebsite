@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getActiveStates, getActiveCategories, getCompanies } from '@/lib/data/static';
+import plantsData from '@/data/plants.json';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -110,6 +111,23 @@ export default function SitemapPage() {
                 <li key={company.id} className="break-inside-avoid">
                   <Link href={`/companies/${company.id}`} className={linkClass}>
                     {company.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Plants */}
+          <div className="lg:col-span-3">
+            <span className={labelClass}>Nuclear power plants</span>
+            <ul className="columns-2 md:columns-3 gap-x-8 space-y-3">
+              <li className="break-inside-avoid">
+                <Link href="/plants" className={linkClass}>All plants directory</Link>
+              </li>
+              {plantsData.plants.map((plant) => (
+                <li key={plant.id} className="break-inside-avoid">
+                  <Link href={`/plants/${plant.id}`} className={linkClass}>
+                    {plant.name}
                   </Link>
                 </li>
               ))}

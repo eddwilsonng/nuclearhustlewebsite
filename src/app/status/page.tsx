@@ -1,10 +1,13 @@
 import { Metadata } from 'next';
-import { unstable_cache } from 'next/cache';
 import Link from 'next/link';
 import plantsData from '@/data/plants.json';
 import MapLoader from '@/components/status/MapLoader';
 import { US_STATES } from '@/lib/states';
 import { getActiveStates } from '@/lib/data/static';
+import { getNrcStatus, getPlantStatus } from '@/lib/nrc';
+import type { UnitStatus } from '@/lib/nrc';
+
+export type { UnitStatus } from '@/lib/nrc';
 
 export const metadata: Metadata = {
   title: 'US Nuclear Fleet Status — Nuclear Hustle',
@@ -14,11 +17,6 @@ export const metadata: Metadata = {
 
 // Revalidate every hour
 export const revalidate = 3600;
-
-export interface UnitStatus {
-  nrcName: string;
-  power: number | null; // 0–100, null = no data
-}
 
 export interface PlantWithStatus {
   id: string;
@@ -46,65 +44,6 @@ export interface FleetStats {
   fleetCapacity: number | null;
 }
 
-// Fetch + parse the NRC feed at most hourly, caching ONLY the small parsed
-// result (unit -> power for the latest report date). The raw 365-day file is
-// ~1.3MB; fetching it with `no-store` inside unstable_cache keeps that body out
-// of the page's serialized RSC payload — otherwise it inflated /status past 2MB.
-const getNrcStatus = unstable_cache(
-  async (): Promise<{ status: Record<string, number>; reportDate: string }> => {
-    let status: Record<string, number> = {};
-    let reportDate = '';
-    try {
-      const res = await fetch(
-        'https://www.nrc.gov/reading-rm/doc-collections/event-status/reactor-status/PowerReactorStatusForLast365Days.txt',
-        { cache: 'no-store' }
-      );
-      if (!res.ok) return { status, reportDate };
-
-      const text = await res.text();
-      const lines = text.trim().split(/\r?\n/);
-
-      // The NRC feed is ordered newest-first, but we don't rely on ordering:
-      // single pass that tracks the maximum report date and collects the units
-      // belonging to it. (A previous version assumed oldest-first and silently
-      // served year-old data.) Skips line 0 (the "ReportDt|Unit|Power" header).
-      let maxTime = -Infinity;
-      for (let i = 1; i < lines.length; i++) {
-        const parts = lines[i].split('|');
-        if (parts.length < 3) continue;
-        const date = parts[0]?.trim();
-        if (!date) continue;
-        const time = Date.parse(date);
-        if (isNaN(time)) continue;
-
-        const unit = parts[1]?.trim();
-        const power = parseInt(parts[2]?.trim() ?? '', 10);
-
-        if (time > maxTime) {
-          // Newer report date than anything seen — reset and start collecting.
-          maxTime = time;
-          reportDate = date;
-          status = {};
-        }
-        if (date === reportDate && unit && !isNaN(power)) {
-          status[unit] = power;
-        }
-      }
-    } catch {
-      // NRC fetch failed — page will show "unknown" status
-    }
-    return { status, reportDate };
-  },
-  ['nrc-power-status'],
-  { revalidate: 3600 }
-);
-
-function getPlantStatus(avgPower: number | null): PlantWithStatus['status'] {
-  if (avgPower === null) return 'unknown';
-  if (avgPower === 0) return 'offline';
-  if (avgPower >= 95) return 'full';
-  return 'reduced';
-}
 
 export default async function StatusPage() {
   const { status: nrcStatus, reportDate } = await getNrcStatus();
@@ -295,11 +234,12 @@ export default async function StatusPage() {
             })
             .map((plant) => {
               const hasJobs = plant.jobCount > 0 && plant.stateSlug;
-              const rowClass = 'flex items-center justify-between gap-4 px-5 py-4 border-b border-[#CFC8BC] last:border-b-0';
-              const inner = (
-                <>
-                  <div className="flex items-center gap-3 min-w-0">
-                    {/* Status dot */}
+              const rowClass = 'flex items-center justify-between gap-4 px-5 py-4 border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors group';
+
+              return (
+                <div key={plant.id} className={rowClass}>
+                  {/* Left: name + meta — entire left section links to plant profile */}
+                  <Link href={`/plants/${plant.id}`} className="flex items-center gap-3 min-w-0 flex-1">
                     <div className={`w-2 h-2 rounded-full shrink-0 ${
                       plant.status === 'full'       ? 'bg-green-500' :
                       plant.status === 'reduced'    ? 'bg-yellow-400' :
@@ -322,11 +262,10 @@ export default async function StatusPage() {
                         {plant.operator}
                       </p>
                     </div>
-                  </div>
+                  </Link>
 
-                  {/* Right: power bar + avg */}
+                  {/* Right: power data + jobs badge (not part of the plant link) */}
                   <div className="shrink-0 flex items-center gap-4">
-                    {/* Per-unit badges */}
                     <div className="hidden md:flex items-center gap-2">
                       {plant.units.map(unit => {
                         const match = unit.nrcName.match(/\s(\d+)$/);
@@ -347,7 +286,6 @@ export default async function StatusPage() {
                       })}
                     </div>
 
-                    {/* Power bar */}
                     <div className="hidden sm:block w-24">
                       <div className="h-1 bg-[#CFC8BC] rounded-full overflow-hidden">
                         <div
@@ -362,7 +300,6 @@ export default async function StatusPage() {
                       </div>
                     </div>
 
-                    {/* Avg % */}
                     <p className={`font-mono text-sm font-bold w-12 text-right ${
                       plant.status === 'full'    ? 'text-green-600' :
                       plant.status === 'reduced' ? 'text-yellow-500' :
@@ -372,30 +309,17 @@ export default async function StatusPage() {
                       {plant.avgPower !== null ? `${plant.avgPower}%` : '—'}
                     </p>
 
-                    {/* Jobs badge — fixed-width slot so the avg % column stays
-                        aligned whether or not a row has openings */}
                     <div className="w-24 shrink-0 flex justify-end">
-                      {hasJobs && (
-                        <span className="font-mono text-[10px] tracking-widest uppercase px-2 py-1 bg-yellow-400 text-stone-900 font-bold whitespace-nowrap">
+                      {hasJobs ? (
+                        <Link
+                          href={`/jobs/${plant.stateSlug}`}
+                          className="font-mono text-[10px] tracking-widest uppercase px-2 py-1 bg-yellow-400 text-stone-900 font-bold whitespace-nowrap hover:bg-yellow-300 transition-colors"
+                        >
                           {plant.jobCount} job{plant.jobCount === 1 ? '' : 's'} →
-                        </span>
-                      )}
+                        </Link>
+                      ) : null}
                     </div>
                   </div>
-                </>
-              );
-
-              return hasJobs ? (
-                <Link
-                  key={plant.id}
-                  href={`/jobs/${plant.stateSlug}`}
-                  className={`${rowClass} hover:bg-[#E5DFD5] transition-colors group`}
-                >
-                  {inner}
-                </Link>
-              ) : (
-                <div key={plant.id} className={rowClass}>
-                  {inner}
                 </div>
               );
             })}

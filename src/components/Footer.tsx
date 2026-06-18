@@ -24,7 +24,7 @@ export function Footer() {
   return (
     <footer className="border-t border-[#CFC8BC] bg-[#EDE8DF] mt-auto">
       <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-12">
 
           {/* Brand */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
@@ -89,6 +89,34 @@ export function Footer() {
                 <Link href="/login" className={linkClass}>
                   Log in
                 </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Plants */}
+          <div>
+            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-600 mb-4">Plants</p>
+            <ul className="space-y-2.5">
+              <li>
+                <Link href="/plants" className={linkClass}>All plants directory</Link>
+              </li>
+              <li>
+                <Link href="/plants/palo-verde" className={linkClass}>Palo Verde</Link>
+              </li>
+              <li>
+                <Link href="/plants/vogtle" className={linkClass}>Vogtle</Link>
+              </li>
+              <li>
+                <Link href="/plants/diablo-canyon" className={linkClass}>Diablo Canyon</Link>
+              </li>
+              <li>
+                <Link href="/plants/three-mile-island" className={linkClass}>Crane Clean Energy Center</Link>
+              </li>
+              <li>
+                <Link href="/plants/turkey-point" className={linkClass}>Turkey Point</Link>
+              </li>
+              <li>
+                <Link href="/plants/north-anna" className={linkClass}>North Anna</Link>
               </li>
             </ul>
           </div>
