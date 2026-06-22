@@ -54,7 +54,7 @@
       "careers_url": "https://southerncompany-nuclear.jobs/jobs/",
       "scraper_type": "custom",
       "last_scraped": "2026-06-22T09:15:29.883Z",
-      "description": "Operator of Southern Company's nuclear fleet, including Plant Vogtle Units 3 and 4 — the first newly constructed reactors in the U.S. in over three decades — plus Hatch and Farley."
+      "description": "Operator of Southern Company's nuclear fleet, including Plant Vogtle Units 3 and 4 \u2014 the first newly constructed reactors in the U.S. in over three decades \u2014 plus Hatch and Farley."
     },
     {
       "id": "ameren",
@@ -191,6 +191,14 @@
       "scraper_type": "greenhouse",
       "last_scraped": "2026-06-22T08:27:11.506Z",
       "description": "A developer of the fluoride salt-cooled, high-temperature reactor (KP-FHR), building the Hermes demonstration reactor in Oak Ridge, Tennessee."
+    },
+    {
+      "id": "urenco-usa",
+      "name": "Urenco USA",
+      "careers_url": "https://www.urenco.com/careers/vacancies",
+      "scraper_type": "custom",
+      "last_scraped": "2026-06-22T09:14:05.925Z",
+      "description": "Operator of the only commercial uranium enrichment facility in the US, the National Enrichment Facility in Eunice, New Mexico."
     }
   ],
   "plants": [
