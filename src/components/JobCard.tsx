@@ -3,6 +3,7 @@ import { JobListItem } from '@/lib/types';
 import { SaveJobButton } from './job/SaveJobButton';
 import { getSkillIconCategory } from '@/lib/seo/skillIcons';
 import { Award, Zap, Monitor, Shield, Tag } from 'lucide-react';
+import { formatSalary } from '@/lib/salary';
 
 const SKILL_ICONS = { award: Award, zap: Zap, monitor: Monitor, shield: Shield, tag: Tag };
 
@@ -43,6 +44,7 @@ export function JobCard({ job, hideCategory = false, isAuthenticated = false, in
   const isEmployerJob = job.isEmployerJob;
   const isFeatured = job.is_featured && job.featured_until && new Date(job.featured_until) > new Date();
   const showCategory = !hideCategory && job.category !== 'other';
+  const salaryLabel = formatSalary(job.salary);
 
   const hasSkills = job.skills && job.skills.length > 0;
 
@@ -95,6 +97,11 @@ export function JobCard({ job, hideCategory = false, isAuthenticated = false, in
           {showCategory && (
             <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 border border-[#CFC8BC] px-2 py-0.5">
               {categoryLabel}
+            </span>
+          )}
+          {salaryLabel && (
+            <span className="font-mono text-[10px] font-semibold text-stone-700 border border-[#CFC8BC] px-2 py-0.5 whitespace-nowrap">
+              {salaryLabel}
             </span>
           )}
           <span className="font-mono text-[10px] text-stone-400 whitespace-nowrap" suppressHydrationWarning>

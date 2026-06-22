@@ -204,6 +204,15 @@ export const COMPANIES: ScrapeSource[] = [
     careersUrl: 'https://www.nppd.com/careers',
     scraperType: 'custom',
   },
+
+  // ---- Uranium enrichment operator ----
+  {
+    id: 'urenco-usa',
+    name: 'Urenco USA',
+    careersUrl: 'https://www.urenco.com/careers/vacancies',
+    scraperType: 'urenco',
+    verified: true,
+  },
 ];
 
 export function getCompany(id: string): ScrapeSource | undefined {

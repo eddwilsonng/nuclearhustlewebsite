@@ -279,6 +279,7 @@ export function toJobListItem(job: JobWithCompany): JobListItem {
     isEmployerJob: job.isEmployerJob,
     is_featured: job.is_featured,
     featured_until: job.featured_until,
+    salary: job.salary,
     company: { id: job.company.id, name: job.company.name },
   };
 }

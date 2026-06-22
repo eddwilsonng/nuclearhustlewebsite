@@ -1,9 +1,14 @@
+import type { Salary } from '../src/lib/types';
+
 export interface ScrapedJob {
   title: string;
   location: string;
   url: string;
   description?: string;
   department?: string;
+  /** Structured salary from the ATS, when the adapter can read one. Preferred
+   *  over description parsing. Left unset by adapters that have no such field. */
+  salary?: Salary | null;
 }
 
 export interface ScraperResult {
@@ -19,7 +24,8 @@ export type ScraperType =
   | 'greenhouse'
   | 'lever'
   | 'phenom'
-  | 'successfactors';
+  | 'successfactors'
+  | 'urenco';
 
 export interface CompanyConfig {
   id: string;

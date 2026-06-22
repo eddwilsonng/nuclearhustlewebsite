@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import jobsData from '@/data/jobs.json';
+import { groupSkills } from '@/lib/skills/taxonomy';
 import {
   BrowsePageHeader,
   BrowseBreadcrumb,
@@ -8,48 +9,51 @@ import {
   BrowseBreadcrumbCurrent,
   BrowseLabel,
   BrowseTitle,
-  BrowseMeta,
   BrowseDescription,
 } from '@/components/BrowsePageHeader';
-
-export const metadata: Metadata = {
-  title: 'Most In-Demand Nuclear Industry Skills 2026 | Nuclear Hustle',
-  description:
-    'See which skills nuclear employers ask for most. SRO License, PWR/BWR, ASME NQA-1, radiation protection, and more — ranked by 434 real job listings.',
-  alternates: { canonical: '/nuclear-skills' },
-};
 
 // ── Data computation (runs at build time) ────────────────────────────────────
 
 type Job = {
+  status?: string;
   category?: string;
   structured_description?: { skills?: string[] };
 };
 
-const jobs: Job[] = (jobsData as { jobs: Job[] }).jobs;
+const jobs: Job[] = (jobsData as { jobs: Job[] }).jobs.filter(
+  (j) => !j.status || j.status === 'published'
+);
 
-function normalizeSkills(jobs: Job[]) {
-  const variants: Record<string, Record<string, number>> = {};
-  jobs.forEach((j) => {
-    (j.structured_description?.skills ?? []).forEach((s) => {
-      const key = s.toLowerCase().trim();
-      if (!variants[key]) variants[key] = {};
-      variants[key][s] = (variants[key][s] ?? 0) + 1;
-    });
-  });
-  return Object.entries(variants)
-    .map(([, v]) => {
-      const total = Object.values(v).reduce((a, b) => a + b, 0);
-      const canonical = Object.entries(v).sort((a, b) => b[1] - a[1])[0][0];
-      return { skill: canonical, count: total };
-    })
-    .sort((a, b) => b.count - a.count);
+type Ranked = { name: string; count: number };
+
+/**
+ * Count canonical certifications / clearances / skills across a job set, using
+ * the shared taxonomy so variants collapse and facets stay separate. Counts are
+ * per-job (deduped within a job), so a count is "listings that asked for it".
+ */
+function aggregateFacets(set: Job[]) {
+  const certs = new Map<string, number>();
+  const clears = new Map<string, number>();
+  const skills = new Map<string, number>();
+  const bump = (m: Map<string, number>, n: string) => m.set(n, (m.get(n) ?? 0) + 1);
+
+  for (const j of set) {
+    const g = groupSkills(j.structured_description?.skills ?? []);
+    g.certifications.forEach((n) => bump(certs, n));
+    g.clearances.forEach((n) => bump(clears, n));
+    g.skills.forEach((n) => bump(skills, n));
+  }
+
+  const rank = (m: Map<string, number>): Ranked[] =>
+    [...m.entries()].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+
+  return { certifications: rank(certs), clearances: rank(clears), skills: rank(skills) };
 }
 
 const jobsWithSkills = jobs.filter((j) => (j.structured_description?.skills?.length ?? 0) > 0);
-const allSkills = normalizeSkills(jobs);
-const topSkills = allSkills.slice(0, 20);
-const maxCount = topSkills[0].count;
+const { certifications, clearances, skills } = aggregateFacets(jobs);
+const topSkills = skills.slice(0, 20);
+const topCert = certifications[0];
 
 const CATEGORIES: Record<string, string> = {
   engineering: 'Engineering',
@@ -60,46 +64,56 @@ const CATEGORIES: Record<string, string> = {
   training: 'Training & Licensing',
 };
 
-function topSkillsForCategory(cat: string, n = 6) {
+function topSkillsForCategory(cat: string, n = 5): Ranked[] {
   const catJobs = jobs.filter((j) => j.category === cat);
-  return normalizeSkills(catJobs).slice(0, n);
+  return aggregateFacets(catJobs).skills.slice(0, n);
 }
 
-const SKILL_GROUPS = [
-  {
-    label: 'Licenses & Certifications',
-    desc: 'Formal credentials required or preferred — NRC, PE, and project management.',
-    skills: ['SRO License', 'RO License', 'NRC License', 'PE License', 'PE Registration', 'EIT Certification', 'PMP'],
-  },
-  {
-    label: 'Reactor Technology',
-    desc: 'Plant type knowledge and operations experience.',
-    skills: ['PWR', 'BWR', 'Nuclear Power Plant Operations', 'Nuclear Engineering', 'Reactor Operations', 'NUCLEAR OPERATIONS'],
-  },
-  {
-    label: 'Standards & Regulatory',
-    desc: 'Codes, standards, and regulatory frameworks cited in job requirements.',
-    skills: ['ANSI/ANS-3.1-2014', 'ASME NQA-1', 'NQA-1', 'NRC REGULATIONS', 'ASME Section III', 'INPO', 'SAT', 'ALARA'],
-  },
-  {
-    label: 'Safety & Access',
-    desc: 'Radiation protection, site access, and clearance requirements.',
-    skills: ['RADIATION PROTECTION', 'HEALTH PHYSICS', 'Security Clearance', 'Unescorted Access', 'DOE', 'POSS'],
-  },
-  {
-    label: 'Software & Analysis',
-    desc: 'Specialist tools and simulation codes that appear in nuclear job postings.',
-    skills: ['MCNP', 'ETAP', 'PLC', 'CAD', 'PRA', 'SCALE'],
-  },
-];
+const pctOfSkilled = (count: number) => Math.round((count / jobsWithSkills.length) * 100);
 
-// Enrich groups with live counts
-const skillCountMap = Object.fromEntries(
-  allSkills.map(({ skill, count }) => [skill.toLowerCase(), count])
-);
+// ── Metadata ──────────────────────────────────────────────────────────────────
 
-function getCount(skill: string) {
-  return skillCountMap[skill.toLowerCase()] ?? 0;
+export const metadata: Metadata = {
+  title: 'Most In-Demand Nuclear Skills & Certifications 2026 | Nuclear Hustle',
+  description:
+    `Which certifications and skills nuclear employers ask for most — SRO/RO licenses, PE, ` +
+    `NRC regulations, ASME/ANSI standards, radiation protection — ranked from ${jobsWithSkills.length} real job listings.`,
+  alternates: { canonical: '/nuclear-skills' },
+};
+
+// ── Ranked bar list ─────────────────────────────────────────────────────────
+
+function RankedList({
+  items,
+  showShare = false,
+  numbered = false,
+}: {
+  items: Ranked[];
+  showShare?: boolean;
+  numbered?: boolean;
+}) {
+  const max = items[0]?.count ?? 1;
+  return (
+    <div className="border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
+      {items.map(({ name, count }, i) => (
+        <div key={name} className="flex items-center gap-4 px-4 py-3 hover:bg-[#E5DFD5] transition-colors">
+          {numbered && <span className="font-mono text-[10px] text-stone-300 w-5 shrink-0">{i + 1}</span>}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-mono text-xs font-semibold text-stone-900">{name}</span>
+              <span className="font-mono text-[10px] text-stone-500 shrink-0 ml-3">
+                {count} job{count !== 1 ? 's' : ''}
+                {showShare ? ` · ${pctOfSkilled(count)}%` : ''}
+              </span>
+            </div>
+            <div className="h-1.5 bg-[#CFC8BC]">
+              <div className="h-full bg-yellow-400" style={{ width: `${(count / max) * 100}%` }} />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -117,10 +131,10 @@ export default function SkillsReportPage() {
         </BrowseBreadcrumb>
 
         <BrowseLabel>Nuclear skills report</BrowseLabel>
-        <BrowseTitle>What skills do nuclear employers actually ask for?</BrowseTitle>
+        <BrowseTitle>What skills and certifications do nuclear employers ask for?</BrowseTitle>
 
         <BrowseDescription>
-          We analysed {jobsWithSkills.length} real nuclear job postings to find out which certifications, reactor knowledge, and tools employers actually list.
+          We analysed {jobsWithSkills.length} real nuclear job postings to see which certifications, security clearances, and skills employers list most.
         </BrowseDescription>
       </BrowsePageHeader>
 
@@ -133,15 +147,15 @@ export default function SkillsReportPage() {
             <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mt-1">Listings total</p>
           </div>
           <div className="bg-[#EDE8DF] p-6">
-            <p className="font-mono text-3xl font-bold text-stone-900">{jobsWithSkills.length}</p>
+            <p className="font-mono text-3xl font-bold text-stone-900">{coverage}%</p>
             <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mt-1">With skills data</p>
           </div>
           <div className="bg-[#EDE8DF] p-6">
-            <p className="font-mono text-3xl font-bold text-stone-900">{coverage}%</p>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mt-1">Coverage rate</p>
+            <p className="font-mono text-3xl font-bold text-stone-900">{certifications.length}</p>
+            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mt-1">Certifications tracked</p>
           </div>
           <div className="bg-[#EDE8DF] p-6">
-            <p className="font-mono text-3xl font-bold text-stone-900">{allSkills.length}</p>
+            <p className="font-mono text-3xl font-bold text-stone-900">{skills.length}</p>
             <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mt-1">Unique skills</p>
           </div>
         </div>
@@ -149,76 +163,44 @@ export default function SkillsReportPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2 space-y-12">
 
-            {/* Top 20 chart */}
+            {/* Certifications */}
+            <section>
+              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">Credentials</p>
+              <h2 className="font-mono text-xl font-bold text-stone-900 mb-3">Most-requested training &amp; certifications</h2>
+              <p className="font-mono text-xs text-stone-700 leading-relaxed mb-6">
+                {topCert && (
+                  <>
+                    {topCert.name} leads — required or preferred in {topCert.count} of {jobsWithSkills.length} skilled listings ({pctOfSkilled(topCert.count)}%).{' '}
+                  </>
+                )}
+                Operating licenses (SRO, RO, NRC) dominate, alongside professional engineering (PE) and project management (PMP) credentials. An active SRO or RO license keeps you competitive across the widest range of plant roles.
+              </p>
+              <RankedList items={certifications} showShare />
+            </section>
+
+            {/* Clearances */}
+            {clearances.length > 0 && (
+              <section>
+                <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">Access</p>
+                <h2 className="font-mono text-xl font-bold text-stone-900 mb-3">Security clearance &amp; site access</h2>
+                <p className="font-mono text-xs text-stone-700 leading-relaxed mb-6">
+                  Most plant roles require unescorted site access — granted after a background check and fitness-for-duty screening. A handful of roles also call for DOE clearances.
+                </p>
+                <RankedList items={clearances} showShare />
+              </section>
+            )}
+
+            {/* Skills */}
             <section>
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">Most in demand</p>
               <h2 className="font-mono text-xl font-bold text-stone-900 mb-3">Top 20 skills across all listings</h2>
               <p className="font-mono text-xs text-stone-700 leading-relaxed mb-6">
-                SRO License appears in nearly 1 in 4 postings — more than three times the next-ranked skill. Beyond licensing, employers consistently expect reactor type knowledge (PWR or BWR), radiation protection awareness, and familiarity with NRC regulations and ASME/ANSI standards. If you hold an active SRO or RO license, you are competitive across the widest range of roles.
+                Beyond credentials, employers consistently expect regulatory fluency (NRC regulations, 10 CFR, ASME and ANSI standards), reactor-type knowledge (PWR, BWR, AP1000), and radiation protection awareness.
               </p>
-
-              <div className="border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
-                {topSkills.map(({ skill, count }, i) => {
-                  const pct = (count / maxCount) * 100;
-                  const jobPct = Math.round((count / jobsWithSkills.length) * 100);
-                  return (
-                    <div key={skill} className="flex items-center gap-4 px-4 py-3 hover:bg-[#E5DFD5] transition-colors">
-                      <span className="font-mono text-[10px] text-stone-300 w-5 shrink-0">{i + 1}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="font-mono text-xs font-semibold text-stone-900">{skill}</span>
-                          <span className="font-mono text-[10px] text-stone-500 shrink-0 ml-3">{count} jobs · {jobPct}%</span>
-                        </div>
-                        <div className="h-1.5 bg-[#CFC8BC]">
-                          <div className="h-full bg-yellow-400" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <RankedList items={topSkills} showShare numbered />
               <p className="font-mono text-[10px] text-stone-400 mt-2">
-                % shown as share of {jobsWithSkills.length} listings with skills data. Skills extracted from job descriptions using AI.
+                % shown as share of {jobsWithSkills.length} listings with skills data. Skills extracted from job descriptions using AI and normalized to a shared vocabulary.
               </p>
-            </section>
-
-            {/* Skill groups */}
-            <section>
-              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">By skill type</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-6">Skills by category</h2>
-
-              <div className="space-y-8">
-                {SKILL_GROUPS.map((group) => {
-                  const ranked = group.skills
-                    .map((s) => ({ skill: s, count: getCount(s) }))
-                    .filter((s) => s.count > 0)
-                    .sort((a, b) => b.count - a.count);
-                  const groupMax = ranked[0]?.count ?? 1;
-                  return (
-                    <div key={group.label}>
-                      <div className="flex items-baseline gap-3 mb-3">
-                        <p className="font-mono text-xs font-bold text-stone-900">{group.label}</p>
-                        <p className="font-mono text-[10px] text-stone-400">{group.desc}</p>
-                      </div>
-                      <div className="border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
-                        {ranked.map(({ skill, count }) => (
-                          <div key={skill} className="flex items-center gap-4 px-4 py-3 hover:bg-[#E5DFD5] transition-colors">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between mb-1.5">
-                                <span className="font-mono text-xs font-semibold text-stone-900">{skill}</span>
-                                <span className="font-mono text-[10px] text-stone-500 shrink-0 ml-3">{count} jobs</span>
-                              </div>
-                              <div className="h-1.5 bg-[#CFC8BC]">
-                                <div className="h-full bg-yellow-400" style={{ width: `${(count / groupMax) * 100}%` }} />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </section>
 
             {/* By job category */}
@@ -231,7 +213,7 @@ export default function SkillsReportPage() {
                   const catSkills = topSkillsForCategory(slug, 5);
                   const catJobs = jobs.filter((j) => j.category === slug);
                   const catWithSkills = catJobs.filter((j) => (j.structured_description?.skills?.length ?? 0) > 0);
-                  const catMax = catSkills[0]?.count ?? 1;
+                  if (catSkills.length === 0) return null;
                   return (
                     <div key={slug}>
                       <div className="flex items-baseline gap-3 mb-3">
@@ -245,21 +227,7 @@ export default function SkillsReportPage() {
                           {catWithSkills.length} of {catJobs.length} listings
                         </span>
                       </div>
-                      <div className="border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
-                        {catSkills.map(({ skill, count }) => (
-                          <div key={skill} className="flex items-center gap-4 px-4 py-3 hover:bg-[#E5DFD5] transition-colors">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between mb-1.5">
-                                <span className="font-mono text-xs font-semibold text-stone-900">{skill}</span>
-                                <span className="font-mono text-[10px] text-stone-500 shrink-0 ml-3">{count} jobs</span>
-                              </div>
-                              <div className="h-1.5 bg-[#CFC8BC]">
-                                <div className="h-full bg-yellow-400" style={{ width: `${(count / catMax) * 100}%` }} />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      <RankedList items={catSkills} />
                     </div>
                   );
                 })}

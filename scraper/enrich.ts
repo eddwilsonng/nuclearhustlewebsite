@@ -3,6 +3,8 @@ import { categorizeJob, JobCategory } from '../src/lib/categorize';
 import { extractState, generateJobSlug } from '../src/lib/states';
 import { scoreNuclearRelevance } from './relevance';
 import { ScrapedJob } from './types';
+import { parseSalary } from './parseSalary';
+import type { Salary } from '../src/lib/types';
 
 export interface StructuredDescription {
   about?: string;
@@ -29,6 +31,13 @@ export interface EnrichedJob {
   agent_confidence?: 'high' | 'low';
   review_notes?: string;
   structured_description?: StructuredDescription | null;
+  salary?: Salary | null;
+}
+
+// Resolve a job's salary: trust a structured ATS value, else parse the
+// description, else keep whatever we had on a prior scrape.
+function resolveSalary(job: ScrapedJob, existing?: EnrichedJob): Salary | null {
+  return job.salary ?? parseSalary(job.description) ?? existing?.salary ?? null;
 }
 
 export interface MergeStats {
@@ -99,6 +108,7 @@ export function mergeCompanyJobs(
         state: extractState(job.location),
         description: job.description || existing.description,
         department: job.department || existing.department,
+        salary: resolveSalary(job, existing),
       });
       existingByUrl.delete(key);
       stats.updated++;
@@ -131,6 +141,7 @@ export function mergeCompanyJobs(
       category: categorizeJob(job.title),
       description: job.description,
       department: job.department,
+      salary: resolveSalary(job),
       status: 'pending_review',
       agent_confidence: verdict.confidence,
       review_notes: verdict.reason,

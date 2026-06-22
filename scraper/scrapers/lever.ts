@@ -1,5 +1,6 @@
 import { BaseScraper } from './base';
 import { ScrapedJob, ScraperResult } from '../types';
+import type { Salary } from '../../src/lib/types';
 
 interface LeverPosting {
   text: string;
@@ -10,6 +11,28 @@ interface LeverPosting {
     team?: string;
     department?: string;
     commitment?: string;
+  };
+  // Lever's structured comp field, present when the employer fills it in.
+  salaryRange?: {
+    min?: number;
+    max?: number;
+    currency?: string;
+    interval?: string; // e.g. "per-year-salary", "per-hour-wage"
+  };
+}
+
+// Map Lever's interval enum onto our period; null for unsupported intervals
+// (per-week/per-day/one-time) so we don't emit a misleading annual/hourly value.
+function leverSalary(range?: LeverPosting['salaryRange']): Salary | null {
+  if (!range || (range.min == null && range.max == null)) return null;
+  const interval = range.interval ?? '';
+  const period = /hour/.test(interval) ? 'hour' : /year/.test(interval) ? 'year' : null;
+  if (!period) return null;
+  return {
+    min: range.min ?? range.max ?? null,
+    max: range.max ?? range.min ?? null,
+    period,
+    source: 'structured',
   };
 }
 
@@ -38,6 +61,7 @@ export class LeverScraper extends BaseScraper {
         url: p.hostedUrl,
         description: cleanDescription(p.descriptionPlain),
         department: p.categories?.department || p.categories?.team || undefined,
+        salary: leverSalary(p.salaryRange),
       }));
 
       console.log(`Found ${jobs.length} jobs from ${this.config.name}`);

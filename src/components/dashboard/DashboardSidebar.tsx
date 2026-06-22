@@ -77,6 +77,7 @@ export function DashboardSidebar({ profile, isAdmin, viewRole }: DashboardSideba
     { href: '/dashboard/admin/scrape', label: 'Scraper' },
     { href: '/dashboard/admin/jobs', label: 'Manage Jobs' },
     { href: '/dashboard/admin/email', label: 'Email Health' },
+    { href: '/dashboard/admin/linkedin', label: 'LinkedIn' },
   ];
 
   const effectiveRole = isAdmin ? (viewRole ?? profile.role) : profile.role;

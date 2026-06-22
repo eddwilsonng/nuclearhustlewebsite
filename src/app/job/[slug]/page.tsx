@@ -6,6 +6,7 @@ import { getAnyJobBySlug } from '@/lib/data/employer';
 import { getCategoryInfo } from '@/lib/categorize';
 import { getStateBySlug } from '@/lib/states';
 import { parseJobDescription, formatSectionTitle } from '@/lib/parseJobDescription';
+import { formatSalary } from '@/lib/salary';
 import { generateBreadcrumbSchema } from '@/lib/seo/schema';
 import { JobDescriptionBlock, JobDescriptionSection } from '@/components/job/JobDescriptionBlock';
 import { ApplicationForm } from '@/components/job/ApplicationForm';
@@ -13,6 +14,7 @@ import { ViewTracker } from '@/components/job/ViewTracker';
 import { SaveJobButton } from '@/components/job/SaveJobButton';
 import { FlagJobButton } from '@/components/job/FlagJobButton';
 import { getSkillIconCategory } from '@/lib/seo/skillIcons';
+import { groupSkills } from '@/lib/skills/taxonomy';
 import { Award, Zap, Monitor, Shield, Tag } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import {
@@ -345,6 +347,15 @@ export default async function JobPage({ params }: PageProps) {
                         <div className="h-px bg-[#CFC8BC]" />
                       </>
                     )}
+                    {formatSalary(job.salary) && (
+                      <>
+                        <div className="flex justify-between items-baseline gap-4">
+                          <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">Salary</span>
+                          <span className="font-mono text-xs text-stone-700 font-semibold">{formatSalary(job.salary)}</span>
+                        </div>
+                        <div className="h-px bg-[#CFC8BC]" />
+                      </>
+                    )}
                     <div className="flex justify-between items-baseline gap-4">
                       <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">Location</span>
                       <span className="font-mono text-xs text-stone-700 font-semibold text-right">{job.location}</span>
@@ -364,29 +375,40 @@ export default async function JobPage({ params }: PageProps) {
                   </div>
                 </div>
 
-                {/* Skills & Tools */}
+                {/* Requirements — certifications, clearances, and skills as
+                    distinct facets (normalized via the shared taxonomy). */}
                 {(() => {
-                  const skills = job.structured_description?.skills;
-                  if (!skills || skills.length === 0) return null;
-                  return (
-                    <div className="border border-[#CFC8BC] p-5">
-                      <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-3">Skills &amp; tools</p>
+                  const { certifications, clearances, skills } = groupSkills(
+                    job.structured_description?.skills
+                  );
+
+                  const sections = [
+                    { label: 'Training & Certifications', items: certifications },
+                    { label: 'Security Clearance', items: clearances },
+                    { label: 'Skills & Tools', items: skills },
+                  ].filter((s) => s.items.length > 0);
+
+                  if (sections.length === 0) return null;
+
+                  return sections.map(({ label, items }) => (
+                    <div key={label} className="border border-[#CFC8BC] p-5">
+                      <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-3">{label}</p>
                       <div className="flex flex-wrap gap-2">
-                        {skills.map((skill) => {
-                          const Icon = SKILL_ICONS[getSkillIconCategory(skill)];
+                        {items.map((item) => {
+                          const Icon = SKILL_ICONS[getSkillIconCategory(item)];
                           return (
                             <span
-                              key={skill}
+                              key={item}
                               className="flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-stone-700 border border-[#CFC8BC] bg-[#E5DFD5] px-2.5 py-1.5"
                             >
                               <Icon size={11} className="text-stone-500 flex-shrink-0" />
-                              {skill}
+                              {item}
                             </span>
                           );
                         })}
                       </div>
                     </div>
-                  );
+                  ));
                 })()}
 
                 {/* Company card */}

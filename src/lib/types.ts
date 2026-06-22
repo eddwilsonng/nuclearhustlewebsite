@@ -17,6 +17,14 @@ export interface Plant {
   region: 'Midwest' | 'Southeast' | 'Northeast' | 'Southwest' | 'West';
 }
 
+export interface Salary {
+  min: number | null;
+  max: number | null;
+  period: 'year' | 'hour';
+  /** Provenance — trust a structured ATS field over a regex-parsed description. */
+  source: 'structured' | 'parsed';
+}
+
 export interface Job {
   id: string;
   company_id: string;
@@ -27,6 +35,7 @@ export interface Job {
   slug: string;
   state: string | null;
   category: JobCategory;
+  salary?: Salary | null;
   description?: string;
   structured_description?: StructuredDescription | null;
   skills?: string[];
@@ -60,6 +69,7 @@ export interface JobListItem {
   isEmployerJob?: boolean;
   is_featured?: boolean;
   featured_until?: string | null;
+  salary?: Salary | null;
   company: { id: string; name: string };
 }
 
