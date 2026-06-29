@@ -1,0 +1,297 @@
+[
+  {
+    "slug": "nuclear-reactor-operator-oswego-new-york-2",
+    "state": "new-york",
+    "category": "operations"
+  },
+  {
+    "slug": "manager-engineering-electrical-braceville-illinois-54",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "associate-simulator-software-eng-clinton-illinois-186",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "design-engineer-mechanical-delta-pennsylvania-41",
+    "state": "pennsylvania",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-risk-assessment-kennett-square-penns-24",
+    "state": "maryland",
+    "category": "engineering"
+  },
+  {
+    "slug": "manager-engineering-pottstown-pennsylvan-57",
+    "state": "pennsylvania",
+    "category": "engineering"
+  },
+  {
+    "slug": "security-officer-trainee-pottstown-pennsylvan-26",
+    "state": "pennsylvania",
+    "category": "security"
+  },
+  {
+    "slug": "technical-instructional-specialist-pottstown-pennsylvan-38",
+    "state": "pennsylvania",
+    "category": "training"
+  },
+  {
+    "slug": "security-officer-trainee-ontario-new-york-828",
+    "state": "new-york",
+    "category": "security"
+  },
+  {
+    "slug": "simulator-software-engineer-clinton-illinois-22",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "sr-ops-training-instructor-corp-coatesville-pennsylv-829",
+    "state": "illinois",
+    "category": "training"
+  },
+  {
+    "slug": "engineer-electrical-ontario-new-york-831",
+    "state": "new-york",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineering-analyst-hvac-specialist-marseilles-illinois-1608",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "maintenance-planner-electrical-ontario-new-york-79",
+    "state": "new-york",
+    "category": "administrative"
+  },
+  {
+    "slug": "maintenance-planner-electrical-lusby-maryland-77",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "work-week-manager-braceville-illinois-88",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "engineer-sr-regulatory-warrenville-illinois-83",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "electrical-maintenance-supervisor-byron-illinois-105",
+    "state": "illinois",
+    "category": "maintenance"
+  },
+  {
+    "slug": "mechanic-trainee-ontario-new-york-835",
+    "state": "new-york",
+    "category": "maintenance"
+  },
+  {
+    "slug": "supervisor-maint-electrical-braceville-illinois-80",
+    "state": "illinois",
+    "category": "maintenance"
+  },
+  {
+    "slug": "outage-specialist-oswego-new-york-114",
+    "state": "new-york",
+    "category": "administrative"
+  },
+  {
+    "slug": "engineer-regulatory-morris-illinois-115",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "manager-fin-lusby-maryland-122",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "project-financial-analyst-byron-illinois-brace-127",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "rx-services-technician-oswego-new-york-1611",
+    "state": "new-york",
+    "category": "maintenance"
+  },
+  {
+    "slug": "sr-data-scientist-hurstbourne-acres-ke-140",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "procurement-specialist-technical-cordova-illinois-144",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "maintenance-fin-supervisor-clinton-illinois-194",
+    "state": "illinois",
+    "category": "maintenance"
+  },
+  {
+    "slug": "sr-maintenance-scheduler-oswego-new-york-162",
+    "state": "new-york",
+    "category": "administrative"
+  },
+  {
+    "slug": "work-week-manager-delta-pennsylvania-158",
+    "state": "pennsylvania",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-work-week-manager-lusby-maryland-153",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-geospatial-reality-capture-spec-baltimore-maryland-1616",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "maintenance-planner-baltimore-maryland-193",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "engineer-reactor-oswego-new-york-19",
+    "state": "new-york",
+    "category": "engineering"
+  },
+  {
+    "slug": "ops-training-instructor-morris-illinois-824",
+    "state": "illinois",
+    "category": "training"
+  },
+  {
+    "slug": "manager-engineering-programs-oswego-new-york-18",
+    "state": "new-york",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-analyst-sr-oad-braceville-illinois-72",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "supervisor-maintenance-byron-illinois-84",
+    "state": "illinois",
+    "category": "maintenance"
+  },
+  {
+    "slug": "auxiliary-operator-trainee-ontario-new-york-91",
+    "state": "new-york",
+    "category": "operations"
+  },
+  {
+    "slug": "maintenance-welder-baltimore-maryland-89",
+    "state": "maryland",
+    "category": "maintenance"
+  },
+  {
+    "slug": "facilities-maintenance-technician-baltimore-maryland-98",
+    "state": "maryland",
+    "category": "maintenance"
+  },
+  {
+    "slug": "cycle-manager-cordova-illinois-117",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "supervisor-maintenance-planner-marseilles-illinois-129",
+    "state": "illinois",
+    "category": "maintenance"
+  },
+  {
+    "slug": "manager-turbine-support-warrenville-illinois-168",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-security-specialist-clinton-illinois-179",
+    "state": "illinois",
+    "category": "security"
+  },
+  {
+    "slug": "engineer-mechanical-byron-illinois-51",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "auxiliary-operator-clinton-illinois-33",
+    "state": "illinois",
+    "category": "operations"
+  },
+  {
+    "slug": "engineer-sr-regulatory-kennett-square-penns-63",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "site-supply-chain-manager-marseilles-illinois-65",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "instrument-maintenance-planner-cordova-illinois-81",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "engineer-mechanical-braceville-illinois-92",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "supervisor-mechanical-maintenance-clinton-illinois-107",
+    "state": "illinois",
+    "category": "maintenance"
+  },
+  {
+    "slug": "sr-maint-program-specialist-middletown-pennsylva-111",
+    "state": "pennsylvania",
+    "category": "maintenance"
+  },
+  {
+    "slug": "sr-project-manager-braceville-illinois-120",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "assocmidsr-market-analyst-baltimore-maryland-151",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "manager-it-end-user-services-braceville-illinois-125",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "nuclear-training-instructor-eunice-new-mexico-1364",
+    "state": "new-mexico",
+    "category": "training"
+  },
+  {
+    "slug": "hrpc-administrator-eunice-new-mexico-1368",
+    "state": "new-mexico",
+    "category": "administrative"
+  },
+  {
+    "slug": "container-handler-eunice-new-mexico-1369",
+    "state": "new-mexico",
+    "category": "other"
+  }
+]
