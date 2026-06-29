@@ -28,16 +28,24 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Run hygiene (expire dead listings)
+        # Runs right after the scrape so the "disappeared from source" signal is
+        # fresh. Probes only unseen jobs; a job needs 2 consecutive dead (404/410)
+        # checks across runs before it's expired, so this safely runs daily.
+        run: npm run hygiene
+        env:
+          NODE_ENV: production
+
       - name: Check for changes
         id: git-check
         run: |
-          git diff --exit-code src/data/jobs.json || echo "changes=true" >> $GITHUB_OUTPUT
+          git diff --exit-code src/data/jobs.json src/data/expired-slugs.json || echo "changes=true" >> $GITHUB_OUTPUT
 
       - name: Commit and push changes
         if: steps.git-check.outputs.changes == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add src/data/jobs.json
-          git commit -m "Update job listings - $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git add src/data/jobs.json src/data/expired-slugs.json
+          git commit -m "Update job listings + hygiene - $(date -u '+%Y-%m-%d %H:%M UTC')"
           git push

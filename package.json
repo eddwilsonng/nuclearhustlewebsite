@@ -9,7 +9,9 @@
     "lint": "eslint",
     "scrape": "tsx scraper/index.ts",
     "process-jobs": "tsx scraper/process-pending.ts",
-    "scrape:review": "tsx scraper/index.ts && tsx scraper/process-pending.ts"
+    "scrape:review": "tsx scraper/index.ts && tsx scraper/process-pending.ts",
+    "hygiene": "tsx scraper/hygiene.ts",
+    "scrape:full": "npm run scrape:review && npm run hygiene"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",

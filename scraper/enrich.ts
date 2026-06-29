@@ -27,11 +27,19 @@ export interface EnrichedJob {
   description?: string;
   department?: string;
   // Review-pipeline fields (preserved across re-scrapes).
-  status?: 'pending_review' | 'published' | 'rejected';
+  status?: 'pending_review' | 'published' | 'rejected' | 'expired';
   agent_confidence?: 'high' | 'low';
   review_notes?: string;
   structured_description?: StructuredDescription | null;
   salary?: Salary | null;
+  // Hygiene lifecycle. last_seen_at is refreshed whenever the job's URL is
+  // returned by a scrape; link_check_failures is the consecutive dead-probe
+  // count (reset to 0 when seen alive); see scraper/hygiene.ts.
+  last_seen_at?: string;
+  last_checked_at?: string;
+  link_check_failures?: number;
+  expired_at?: string;
+  pre_expiry_status?: 'published' | 'pending_review';
 }
 
 // Resolve a job's salary: trust a structured ATS value, else parse the
@@ -98,17 +106,25 @@ export function mergeCompanyJobs(
     const existing = existingByUrl.get(key);
 
     if (existing) {
-      // Refresh volatile fields, preserve identity + review state.
+      // Seen at source this run: it's alive. Refresh volatile fields, preserve
+      // identity + review state, and reset the hygiene counters.
+      const wasExpired = existing.status === 'expired';
       merged.push({
         ...existing,
         title: job.title,
         location: job.location,
         url: job.url,
         scraped_at: now,
+        last_seen_at: now,
+        link_check_failures: 0,
         state: extractState(job.location),
         description: job.description || existing.description,
         department: job.department || existing.department,
         salary: resolveSalary(job, existing),
+        // Revive a previously-expired job that has re-appeared at its source.
+        ...(wasExpired
+          ? { status: existing.pre_expiry_status ?? 'published', expired_at: undefined, pre_expiry_status: undefined }
+          : {}),
       });
       existingByUrl.delete(key);
       stats.updated++;
@@ -145,6 +161,8 @@ export function mergeCompanyJobs(
       status: 'pending_review',
       agent_confidence: verdict.confidence,
       review_notes: verdict.reason,
+      last_seen_at: now,
+      link_check_failures: 0,
     });
     stats.new++;
   }

@@ -10,7 +10,7 @@ import * as path from 'path';
  * pipeline moves to Supabase this becomes an `agent_runs` table.
  */
 
-export type AgentRunType = 'scrape' | 'ai-review' | 'review-action' | string;
+export type AgentRunType = 'scrape' | 'hygiene' | 'ai-review' | 'review-action' | string;
 
 export interface AgentRun {
   id: string;

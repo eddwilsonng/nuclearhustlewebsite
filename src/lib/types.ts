@@ -39,9 +39,15 @@ export interface Job {
   description?: string;
   structured_description?: StructuredDescription | null;
   skills?: string[];
-  status?: 'pending_review' | 'published' | 'rejected';
+  status?: 'pending_review' | 'published' | 'rejected' | 'expired';
   agent_confidence?: 'high' | 'low';
   review_notes?: string;
+  // Hygiene lifecycle (set by scraper merge + scraper/hygiene.ts).
+  last_seen_at?: string;
+  last_checked_at?: string;
+  link_check_failures?: number;
+  expired_at?: string;
+  pre_expiry_status?: 'published' | 'pending_review';
 }
 
 export interface JobWithCompany extends Job {
