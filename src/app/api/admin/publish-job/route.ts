@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { submitToIndexNow, jobUrl } from '@/lib/indexnow';
 
 const JOBS_PATH = path.join(process.cwd(), 'src/data/jobs.json');
 
@@ -31,6 +32,8 @@ export async function POST(request: NextRequest) {
   };
 
   fs.writeFileSync(JOBS_PATH, JSON.stringify(data, null, 2));
+
+  submitToIndexNow([jobUrl(data.jobs[jobIndex].slug)]);
 
   return NextResponse.json({ success: true });
 }

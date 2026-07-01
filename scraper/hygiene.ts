@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { EnrichedJob } from './enrich';
 import { recordAgentRun } from '../src/lib/ops/runLog';
+import { submitToIndexNow, jobUrl } from '../src/lib/indexnow';
 
 /**
  * Job hygiene: detect and expire dead listings.
@@ -105,6 +106,7 @@ async function runHygiene(): Promise<void> {
   let alive = 0;
   let inconclusive = 0;
   let expired = 0;
+  const newlyExpiredSlugs: string[] = [];
 
   await mapLimit(candidates, CONCURRENCY, async (job) => {
     const result = await probe(job.url);
@@ -118,6 +120,7 @@ async function runHygiene(): Promise<void> {
         job.status = 'expired';
         job.expired_at = now;
         expired++;
+        newlyExpiredSlugs.push(job.slug);
         console.log(`  EXPIRED  ${job.slug} (${job.link_check_failures} dead checks) — ${job.url}`);
       } else {
         console.log(`  strike ${job.link_check_failures}  ${job.slug} — ${job.url}`);
@@ -137,6 +140,9 @@ async function runHygiene(): Promise<void> {
     .filter((job) => job.status === 'expired')
     .map((job) => ({ slug: job.slug, state: job.state, category: job.category }));
   fs.writeFileSync(EXPIRED_SLUGS_PATH, JSON.stringify(expiredIndex, null, 2) + '\n');
+
+  // Notify IndexNow of newly-dead URLs so engines recrawl, see the 410, and drop them faster.
+  await submitToIndexNow(newlyExpiredSlugs.map(jobUrl));
 
   console.log(
     `\nDone. probed ${candidates.length} — ${dead} dead, ${alive} alive, ${inconclusive} inconclusive.`
