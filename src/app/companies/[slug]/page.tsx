@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { getCompanies, getCompanyById, getPlantsByCompany, getJobsByCompany, toJobListItem } from '@/lib/data/static';
 import { JobCard } from '@/components/JobCard';
+import { Sidebar, SidebarSection, SidebarNavList } from '@/components/sidebar/Sidebar';
 import {
   BrowsePageHeader,
   BrowseBreadcrumb,
@@ -63,9 +63,9 @@ export default async function CompanyPage({ params }: PageProps) {
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-600">//</span>
+          <span className="text-stone-500">//</span>
           <BrowseBreadcrumbLink href="/companies">Companies</BrowseBreadcrumbLink>
-          <span className="text-stone-600">//</span>
+          <span className="text-stone-500">//</span>
           <BrowseBreadcrumbCurrent>{company.name}</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
         <BrowseLabel>Company</BrowseLabel>
@@ -82,7 +82,7 @@ export default async function CompanyPage({ params }: PageProps) {
 
           {/* Main: Jobs */}
           <div className="lg:col-span-2">
-            <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">Open positions</p>
+            <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">Open positions</p>
             {jobs.length > 0 ? (
               <div className="border border-[#CFC8BC]">
                 {jobs.map((job) => (
@@ -96,7 +96,7 @@ export default async function CompanyPage({ params }: PageProps) {
                   href={company.careers_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-xs tracking-widest uppercase text-yellow-600 hover:text-yellow-700 transition-colors"
+                  className="font-mono text-xs tracking-widest uppercase text-yellow-700 hover:text-yellow-500 transition-colors"
                 >
                   Visit {company.name} careers page ↗
                 </a>
@@ -105,10 +105,8 @@ export default async function CompanyPage({ params }: PageProps) {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-8">
-            {/* Company info */}
-            <div>
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">Info</p>
+          <Sidebar>
+            <SidebarSection label="Info">
               <a
                 href={company.careers_url}
                 target="_blank"
@@ -117,19 +115,17 @@ export default async function CompanyPage({ params }: PageProps) {
               >
                 Careers page ↗
               </a>
-            </div>
+            </SidebarSection>
 
-            {/* Plants */}
             {plants.length > 0 && (
-              <div>
-                <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">Nuclear plants</p>
+              <SidebarSection label="Nuclear plants">
                 <div className="space-y-4">
                   {Object.entries(plantsByRegion).map(([region, regionPlants]) => (
                     <div key={region}>
-                      <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-2">{region}</p>
+                      <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-2">{region}</p>
                       <ul className="space-y-1">
                         {regionPlants.map((plant) => (
-                          <li key={plant.id} className="font-mono text-xs text-stone-600">
+                          <li key={plant.id} className="font-sans text-sm text-stone-500">
                             — {plant.name}
                           </li>
                         ))}
@@ -137,32 +133,18 @@ export default async function CompanyPage({ params }: PageProps) {
                     </div>
                   ))}
                 </div>
-              </div>
+              </SidebarSection>
             )}
 
-            {/* Other companies */}
-            <div>
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">Other companies</p>
-              <ul className="space-y-2">
-                {otherCompanies.map((c) => (
-                  <li key={c.id}>
-                    <Link
-                      href={`/companies/${c.id}`}
-                      className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
-                    >
-                      {c.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/companies"
-                className="block font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors mt-4"
-              >
-                All companies →
-              </Link>
-            </div>
-          </div>
+            <SidebarSection label="Other companies" footerHref="/companies" footerLabel="All companies →">
+              <SidebarNavList
+                items={otherCompanies.map((c) => ({
+                  href: `/companies/${c.id}`,
+                  label: c.name,
+                }))}
+              />
+            </SidebarSection>
+          </Sidebar>
         </div>
       </main>
     </div>

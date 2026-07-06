@@ -30,8 +30,8 @@ export default async function AdminScrapePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Scrape Jobs</h1>
-      <p className="text-sm text-gray-500 mb-8 font-mono">
+      <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mb-1">Scrape Jobs</h1>
+      <p className="text-sm text-stone-500 mb-8 font-mono">
         Trigger per-company scrapes. New jobs are merged, existing jobs are updated, manual edits are preserved.
       </p>
       <ScrapePanel companies={companyCards} />

@@ -37,9 +37,9 @@ export function JobAlertForm() {
     return (
       <div className="flex items-center gap-3 font-mono text-sm">
         <span className="text-yellow-600">✓</span>
-        <span className="text-stone-600">
+        <span className="text-stone-500">
           You&apos;re on the list — we&apos;ll email you new jobs every Monday.{' '}
-          <Link href="/signup" className="underline underline-offset-2 text-stone-900 hover:text-yellow-600 transition-colors">
+          <Link href="/signup" className="underline underline-offset-2 text-stone-900 hover:text-yellow-500 transition-colors">
             Create a free account
           </Link>{' '}
           to save searches.
@@ -63,7 +63,7 @@ export function JobAlertForm() {
         <button
           type="submit"
           disabled={loading}
-          className="font-mono text-xs tracking-widest uppercase px-5 py-3 bg-stone-900 hover:bg-stone-700 text-white font-bold transition-colors whitespace-nowrap disabled:opacity-50"
+          className="font-mono text-xs tracking-widest uppercase px-5 py-3 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors whitespace-nowrap disabled:opacity-50"
         >
           {loading ? 'Saving...' : 'Get Alerts'}
         </button>

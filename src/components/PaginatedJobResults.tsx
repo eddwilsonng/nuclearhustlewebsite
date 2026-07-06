@@ -88,7 +88,7 @@ export function PaginatedJobResults({
             className="font-mono text-xs tracking-widest uppercase px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors w-full sm:w-auto"
           >
             Load {Math.min(remaining, JOBS_PAGE_SIZE)} more jobs
-            <span className="text-stone-700 font-normal normal-case tracking-normal ml-1">
+            <span className="text-stone-900 font-normal normal-case tracking-normal ml-1">
               ({remaining} remaining)
             </span>
           </button>

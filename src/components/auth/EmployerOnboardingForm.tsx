@@ -33,7 +33,7 @@ export function EmployerOnboardingForm() {
 
       <div>
         <label htmlFor="companyWebsite" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">
-          Company Website <span className="normal-case text-stone-600">(optional)</span>
+          Company Website <span className="normal-case text-stone-500">(optional)</span>
         </label>
         <input
           id="companyWebsite"
@@ -46,7 +46,7 @@ export function EmployerOnboardingForm() {
 
       <div>
         <label htmlFor="companyDescription" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">
-          Company Description <span className="normal-case text-stone-600">(optional)</span>
+          Company Description <span className="normal-case text-stone-500">(optional)</span>
         </label>
         <textarea
           id="companyDescription"
@@ -60,7 +60,7 @@ export function EmployerOnboardingForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full py-3 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:bg-yellow-200 text-stone-900 font-mono text-xs tracking-widest uppercase font-bold transition-colors"
+        className="w-full py-3 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-stone-900 font-mono text-xs tracking-widest uppercase font-bold transition-colors"
       >
         {isPending ? "Saving..." : "Complete Setup →"}
       </button>

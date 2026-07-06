@@ -132,7 +132,7 @@ export default async function StatusPage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
             <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">Live data</p>
-            <h1 className="font-mono text-2xl md:text-3xl font-bold text-stone-900">
+            <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900">
               US Nuclear Fleet Status
             </h1>
             {stats.reportDate && (
@@ -146,7 +146,7 @@ export default async function StatusPage() {
           <div className="flex items-center gap-3">
             <a
               href="#all-reactors"
-              className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] text-stone-600 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
+              className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
             >
               All reactors ↓
             </a>
@@ -159,29 +159,29 @@ export default async function StatusPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-6 divide-x divide-y md:divide-y-0 divide-[#CFC8BC]">
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-1">Fleet Capacity</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Fleet Capacity</p>
               <p className="font-mono text-3xl font-bold text-stone-900">
                 {stats.fleetCapacity !== null ? `${stats.fleetCapacity}%` : '—'}
               </p>
             </div>
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-1">Full Power</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Full Power</p>
               <p className="font-mono text-3xl font-bold text-green-500">{stats.fullPower}</p>
             </div>
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-1">Reduced</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Reduced</p>
               <p className="font-mono text-3xl font-bold text-yellow-500">{stats.reduced}</p>
             </div>
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-1">Offline</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Offline</p>
               <p className="font-mono text-3xl font-bold text-red-500">{stats.offline}</p>
             </div>
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-1">Restarting</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Restarting</p>
               <p className="font-mono text-3xl font-bold text-blue-500">{stats.restarting}</p>
             </div>
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-1">Operating</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Operating</p>
               <p className="font-mono text-3xl font-bold text-stone-900">{stats.totalUnits}</p>
             </div>
           </div>
@@ -194,7 +194,7 @@ export default async function StatusPage() {
           <div className="max-w-6xl mx-auto px-6 py-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <p className="font-mono text-xs tracking-widest uppercase text-stone-500 shrink-0">
               <span className="text-yellow-600 font-bold">Hiring now</span>
-              <span className="text-stone-300 mx-2">{'//'}</span>
+              <span className="text-stone-400 mx-2">{'//'}</span>
               {hiringJobTotal} roles at plants in {hiringChips.length} states
             </p>
             <div className="flex flex-wrap gap-2">
@@ -202,7 +202,7 @@ export default async function StatusPage() {
                 <Link
                   key={chip.slug}
                   href={`/jobs/${chip.slug}`}
-                  className="font-mono text-xs tracking-wide px-3 py-1.5 border border-[#CFC8BC] bg-[#EDE8DF] text-stone-700 hover:bg-yellow-400 hover:text-stone-900 hover:border-yellow-400 transition-colors"
+                  className="font-mono text-xs tracking-wide px-3 py-1.5 border border-[#CFC8BC] bg-[#EDE8DF] text-stone-900 hover:bg-yellow-400 hover:text-stone-900 hover:border-yellow-400 transition-colors"
                 >
                   {chip.name}
                   <span className="text-stone-400 mx-1.5">·</span>
@@ -220,7 +220,7 @@ export default async function StatusPage() {
       {/* Plant-by-plant breakdown */}
       <div id="all-reactors" className="max-w-6xl mx-auto px-6 py-12 scroll-mt-4">
         <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">Plant breakdown</p>
-        <h2 className="font-mono text-xl font-bold text-stone-900 mb-1">All reactors</h2>
+        <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-1">All reactors</h2>
         <p className="font-mono text-xs text-stone-400 mb-6">
           {stats.totalUnits} operating
           {stats.restarting > 0 && ` · ${stats.restarting} restarting`}
@@ -258,7 +258,7 @@ export default async function StatusPage() {
                       </div>
                       <p className="font-mono text-xs text-stone-400 mt-0.5">
                         {plant.city}, {plant.state}
-                        <span className="text-stone-300 mx-1.5">{'//'}</span>
+                        <span className="text-stone-400 mx-1.5">{'//'}</span>
                         {plant.operator}
                       </p>
                     </div>
@@ -274,10 +274,10 @@ export default async function StatusPage() {
                           <div key={unit.nrcName} className="flex flex-col items-center gap-0.5">
                             <span className="font-mono text-[9px] text-stone-400 uppercase tracking-wider">{label}</span>
                             <span className={`font-mono text-xs font-bold px-1.5 py-0.5 border ${
-                              unit.power === null     ? 'border-[#CFC8BC] text-stone-300' :
+                              unit.power === null     ? 'border-[#CFC8BC] text-stone-400' :
                               unit.power === 0        ? 'border-red-200 text-red-500 bg-red-50' :
                               unit.power >= 95        ? 'border-green-200 text-green-600 bg-green-50' :
-                              'border-yellow-200 text-yellow-500 bg-yellow-50'
+                              'border-yellow-50 text-yellow-500 bg-yellow-50'
                             }`}>
                               {unit.power !== null ? `${unit.power}%` : '—'}
                             </span>
@@ -287,9 +287,9 @@ export default async function StatusPage() {
                     </div>
 
                     <div className="hidden sm:block w-24">
-                      <div className="h-1 bg-[#CFC8BC] rounded-full overflow-hidden">
+                      <div className="h-1 bg-[#CFC8BC] overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all ${
+                          className={`h-full transition-all ${
                             plant.status === 'full'    ? 'bg-green-500' :
                             plant.status === 'reduced' ? 'bg-yellow-400' :
                             plant.status === 'offline' ? 'bg-red-500' :
@@ -304,7 +304,7 @@ export default async function StatusPage() {
                       plant.status === 'full'    ? 'text-green-600' :
                       plant.status === 'reduced' ? 'text-yellow-500' :
                       plant.status === 'offline' ? 'text-red-500' :
-                      'text-stone-300'
+                      'text-stone-400'
                     }`}>
                       {plant.avgPower !== null ? `${plant.avgPower}%` : '—'}
                     </p>
@@ -331,7 +331,7 @@ export default async function StatusPage() {
             href="https://www.nrc.gov/reading-rm/doc-collections/event-status/reactor-status/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-stone-600 transition-colors underline underline-offset-2"
+            className="hover:text-stone-500 transition-colors underline underline-offset-2"
           >
             NRC source ↗
           </a>

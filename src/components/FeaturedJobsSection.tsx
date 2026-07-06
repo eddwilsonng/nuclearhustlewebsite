@@ -8,7 +8,7 @@ export async function FeaturedJobsSection({ postHref = '/signup/employer' }: { p
   return (
     <>
       {featuredJobs.length > 0 ? (
-        <div className="border border-yellow-200">
+        <div className="border border-yellow-400">
           {featuredJobs.map((job) => (
             <JobCard key={job.id} job={job} />
           ))}
@@ -16,7 +16,7 @@ export async function FeaturedJobsSection({ postHref = '/signup/employer' }: { p
       ) : (
         <div className="border border-dashed border-[#CFC8BC] p-10 text-center">
           <p className="font-mono text-xs tracking-widest uppercase text-stone-500 mb-3">No featured listings yet</p>
-          <p className="text-stone-400 text-sm mb-6 max-w-sm mx-auto">
+          <p className="font-sans text-stone-500 text-sm mb-6 max-w-sm mx-auto">
             Get your role in front of thousands of nuclear professionals. Featured listings appear at the top of the board.
           </p>
           <Link

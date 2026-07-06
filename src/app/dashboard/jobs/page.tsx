@@ -42,9 +42,9 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
   if (!employerProfile) {
     return (
       <div className="max-w-4xl">
-        <h1 className="text-2xl font-bold text-stone-900 mb-6">Job Postings</h1>
-        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-8 text-center">
-          <p className="text-stone-600">No employer profile found.</p>
+        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mb-6">Job Postings</h1>
+        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-8 text-center">
+          <p className="text-stone-500">No employer profile found.</p>
         </div>
       </div>
     );
@@ -65,17 +65,17 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
     <div className="max-w-4xl">
       {showFeaturedSuccess && <FeaturedSuccessBanner />}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-2xl font-bold text-stone-900">Job Postings</h1>
+        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900">Job Postings</h1>
         <Link
           href="/dashboard/jobs/new"
-          className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-stone-900 font-semibold rounded-md transition-colors text-center sm:text-left shrink-0"
+          className="px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-semibold transition-colors text-center sm:text-left shrink-0"
         >
           Post New Job
         </Link>
       </div>
 
       {typedJobs.length === 0 ? (
-        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-8 text-center">
+        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-8 text-center">
           <svg
             className="mx-auto h-12 w-12 text-stone-400 mb-4"
             fill="none"
@@ -89,16 +89,16 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
               d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
             />
           </svg>
-          <p className="text-stone-600 mb-4">You haven&apos;t posted any jobs yet.</p>
+          <p className="text-stone-500 mb-4">You haven&apos;t posted any jobs yet.</p>
           <Link
             href="/dashboard/jobs/new"
-            className="inline-block px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-stone-900 font-semibold rounded-md transition-colors"
+            className="inline-block px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-semibold transition-colors"
           >
             Post Your First Job
           </Link>
         </div>
       ) : (
-        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
+        <div className="bg-[#EDE8DF] border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
           {typedJobs.map((job) => {
             const appCount = applicationCounts[job.id];
             const expiry = getExpiryState(job.expires_at);
@@ -109,17 +109,17 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold text-stone-900 truncate">{job.title}</h3>
                     <span
-                      className={`px-2 py-0.5 text-xs font-medium rounded ${
+                      className={`px-2 py-0.5 text-xs font-medium ${
                         job.is_active
                           ? 'bg-green-100 text-green-700'
-                          : 'bg-[#E5DFD5] text-stone-600'
+                          : 'bg-[#E5DFD5] text-stone-500'
                       }`}
                     >
                       {job.is_active ? 'Active' : 'Inactive'}
                     </span>
                     {expiry && (
                       <span
-                        className={`px-2 py-0.5 text-xs font-medium rounded ${
+                        className={`px-2 py-0.5 text-xs font-medium ${
                           expiry.expired
                             ? 'bg-red-100 text-red-700'
                             : expiry.soon
@@ -139,11 +139,11 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
                     <span>·</span>
                     <Link
                       href={`/dashboard/jobs/${job.id}/applications`}
-                      className="text-stone-700 hover:text-stone-900 underline-offset-2 hover:underline"
+                      className="text-stone-900 hover:text-stone-900 underline-offset-2 hover:underline"
                     >
                       {appCount?.total ?? 0} application{(appCount?.total ?? 0) === 1 ? '' : 's'}
                       {appCount?.new ? (
-                        <span className="ml-1 inline-block bg-yellow-400 text-stone-900 px-1.5 py-0.5 rounded font-bold">
+                        <span className="ml-1 inline-block bg-yellow-400 text-stone-900 px-1.5 py-0.5 font-bold">
                           {appCount.new} new
                         </span>
                       ) : null}
@@ -161,20 +161,20 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
                   <JobStatusToggle jobId={job.id} isActive={job.is_active} />
                   <Link
                     href={`/dashboard/jobs/${job.id}/applications`}
-                    className="px-3 py-1.5 text-sm text-stone-700 hover:bg-[#E5DFD5] rounded-md transition-colors"
+                    className="px-3 py-1.5 text-sm text-stone-900 hover:bg-[#E5DFD5] transition-colors"
                   >
                     Applicants
                   </Link>
                   <Link
                     href={`/dashboard/jobs/${job.id}/edit`}
-                    className="px-3 py-1.5 text-sm text-stone-700 hover:bg-[#E5DFD5] rounded-md transition-colors"
+                    className="px-3 py-1.5 text-sm text-stone-900 hover:bg-[#E5DFD5] transition-colors"
                   >
                     Edit
                   </Link>
                   <Link
                     href={`/job/${job.slug}`}
                     target="_blank"
-                    className="px-3 py-1.5 text-sm text-stone-700 hover:bg-[#E5DFD5] rounded-md transition-colors"
+                    className="px-3 py-1.5 text-sm text-stone-900 hover:bg-[#E5DFD5] transition-colors"
                   >
                     View
                   </Link>

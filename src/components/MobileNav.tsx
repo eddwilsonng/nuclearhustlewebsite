@@ -165,7 +165,7 @@ export function MobileNav({ isAuthed = false }: { isAuthed?: boolean }) {
           <Link
             href="/signup/employer"
             onClick={close}
-            className="font-mono text-xs tracking-widest uppercase px-5 py-4 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors text-center"
+            className="font-mono text-xs tracking-widest uppercase px-5 py-4 border border-[#CFC8BC] hover:border-stone-400 text-stone-500 hover:text-stone-900 transition-colors text-center"
           >
             Post a Job
           </Link>

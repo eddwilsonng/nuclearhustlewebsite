@@ -17,7 +17,7 @@ export default async function LoginPage({
 
   return (
     <div className="w-full max-w-md">
-      <h1 className="font-mono text-2xl font-bold text-stone-900 mb-2">Welcome back.</h1>
+      <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 leading-tight mb-2">Welcome back.</h1>
       <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-8">Sign in to your account</p>
 
       {error && (
@@ -30,7 +30,7 @@ export default async function LoginPage({
 
       <p className="mt-8 font-mono text-xs tracking-widest uppercase text-stone-400">
         No account?{" "}
-        <Link href="/signup" className="text-stone-900 hover:text-yellow-600 transition-colors">
+        <Link href="/signup" className="text-stone-900 hover:text-yellow-500 transition-colors">
           Sign up →
         </Link>
       </p>

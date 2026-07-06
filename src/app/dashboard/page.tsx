@@ -71,7 +71,7 @@ async function JobSeekerDashboard({ userId, profile }: { userId: string; profile
   return (
     <div className="max-w-4xl">
       <div className="flex items-center gap-3 mb-6">
-        <h1 className="font-mono text-2xl font-bold text-stone-900">
+        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900">
           Welcome back, {profile.full_name.split(' ')[0]}!
         </h1>
         <span
@@ -92,8 +92,8 @@ async function JobSeekerDashboard({ userId, profile }: { userId: string; profile
           <div className="space-y-3">
             {statusRows.map((row) => (
               <div key={row.label} className="flex items-center justify-between">
-                <span className="font-mono text-xs text-stone-600">{row.label}</span>
-                <span className={row.complete ? 'text-green-600' : 'text-stone-300'}>
+                <span className="font-mono text-xs text-stone-500">{row.label}</span>
+                <span className={row.complete ? 'text-green-600' : 'text-stone-400'}>
                   {row.complete ? <Check size={16} /> : <XIcon size={16} />}
                 </span>
               </div>
@@ -101,7 +101,7 @@ async function JobSeekerDashboard({ userId, profile }: { userId: string; profile
           </div>
           <Link
             href="/dashboard/profile"
-            className="mt-4 block text-center py-2 px-4 border border-[#CFC8BC] bg-[#E5DFD5] hover:bg-[#CFC8BC] font-mono text-xs tracking-widest uppercase text-stone-700 transition-colors"
+            className="mt-4 block text-center py-2 px-4 border border-[#CFC8BC] bg-[#E5DFD5] hover:bg-[#CFC8BC] font-mono text-xs tracking-widest uppercase text-stone-900 transition-colors"
           >
             Complete Profile
           </Link>
@@ -118,7 +118,7 @@ async function JobSeekerDashboard({ userId, profile }: { userId: string; profile
                 className="flex items-center gap-3 p-3 hover:bg-[#E5DFD5] transition-colors"
               >
                 <div className="w-10 h-10 border border-[#CFC8BC] flex items-center justify-center shrink-0">
-                  <Icon size={18} className="text-stone-600" />
+                  <Icon size={18} className="text-stone-500" />
                 </div>
                 <div>
                   <p className="font-mono text-sm font-semibold text-stone-900">{label}</p>
@@ -159,21 +159,21 @@ async function EmployerDashboard({ userId, profile }: { userId: string; profile:
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-2xl font-bold text-stone-900 mb-6">
+      <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mb-6">
         Welcome back, {profile.full_name.split(' ')[0]}!
       </h1>
 
       {/* Stats */}
       <div className="grid gap-6 md:grid-cols-3 mb-8">
-        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
+        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-6">
           <p className="text-sm text-stone-500">Active Jobs</p>
           <p className="text-3xl font-bold text-stone-900">{activeJobs}</p>
         </div>
-        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
+        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-6">
           <p className="text-sm text-stone-500">Total Jobs Posted</p>
           <p className="text-3xl font-bold text-stone-900">{totalJobs}</p>
         </div>
-        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
+        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-6">
           <p className="text-sm text-stone-500">Company</p>
           <p className="text-lg font-semibold text-stone-900 truncate">
             {typedEmployerProfile?.company_name || 'Not set'}
@@ -185,10 +185,10 @@ async function EmployerDashboard({ userId, profile }: { userId: string; profile:
       <div className="grid gap-6 md:grid-cols-2">
         <Link
           href="/dashboard/jobs/new"
-          className="bg-yellow-500 hover:bg-yellow-400 rounded-lg p-6 transition-colors group"
+          className="bg-yellow-400 hover:bg-yellow-300 p-6 transition-colors group"
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-yellow-600 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-yellow-500 flex items-center justify-center">
               <svg className="w-6 h-6 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
@@ -202,11 +202,11 @@ async function EmployerDashboard({ userId, profile }: { userId: string; profile:
 
         <Link
           href="/dashboard/jobs"
-          className="bg-[#EDE8DF] hover:bg-[#E5DFD5] rounded-lg border border-[#CFC8BC] p-6 transition-colors"
+          className="bg-[#EDE8DF] hover:bg-[#E5DFD5] border border-[#CFC8BC] p-6 transition-colors"
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#E5DFD5] rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-12 h-12 bg-[#E5DFD5] flex items-center justify-center">
+              <svg className="w-6 h-6 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
@@ -222,7 +222,7 @@ async function EmployerDashboard({ userId, profile }: { userId: string; profile:
       {jobs.length > 0 && (
         <div className="mt-8">
           <h2 className="text-lg font-semibold text-stone-900 mb-4">Recent Job Postings</h2>
-          <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
+          <div className="bg-[#EDE8DF] border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
             {jobs.slice(0, 5).map((job) => (
               <div key={job.id} className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
@@ -231,10 +231,10 @@ async function EmployerDashboard({ userId, profile }: { userId: string; profile:
                 </div>
                 <div className="flex items-center gap-4 shrink-0">
                   <span
-                    className={`px-2 py-1 text-xs font-medium rounded ${
+                    className={`px-2 py-1 text-xs font-medium ${
                       job.is_active
                         ? 'bg-green-100 text-green-700'
-                        : 'bg-[#E5DFD5] text-stone-600'
+                        : 'bg-[#E5DFD5] text-stone-500'
                     }`}
                   >
                     {job.is_active ? 'Active' : 'Inactive'}

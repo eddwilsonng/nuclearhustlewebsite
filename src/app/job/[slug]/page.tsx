@@ -174,17 +174,17 @@ export default async function JobPage({ params }: PageProps) {
         <BrowsePageHeader className="py-8 md:py-10">
           <BrowseBreadcrumb>
             <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-            <span className="text-stone-600">//</span>
+            <span className="text-stone-500">//</span>
             <BrowseBreadcrumbLink href="/jobs">Jobs</BrowseBreadcrumbLink>
             {stateInfo && (
               <>
-                <span className="text-stone-600">//</span>
+                <span className="text-stone-500">//</span>
                 <BrowseBreadcrumbLink href={`/jobs/${stateInfo.slug}`}>
                   {stateInfo.name}
                 </BrowseBreadcrumbLink>
               </>
             )}
-            <span className="text-stone-600">//</span>
+            <span className="text-stone-500">//</span>
             <BrowseBreadcrumbTruncated>{job.title}</BrowseBreadcrumbTruncated>
           </BrowseBreadcrumb>
 
@@ -212,9 +212,9 @@ export default async function JobPage({ params }: PageProps) {
                 {job.company.name}
               </BrowseMetaLink>
             )}
-            <span className="text-stone-600">·</span>
+            <span className="text-stone-500">·</span>
             <span>{job.location}</span>
-            <span className="text-stone-600">·</span>
+            <span className="text-stone-500">·</span>
             <span className="text-stone-500" suppressHydrationWarning>
               {getPostedLabel(job.scraped_at)}
             </span>
@@ -265,7 +265,7 @@ export default async function JobPage({ params }: PageProps) {
                   categoryName={categoryInfo.name}
                 />
               ) : (
-                <div className="space-y-4 text-stone-600 leading-relaxed text-sm">
+                <div className="space-y-4 text-stone-500 leading-relaxed text-sm">
                   <p>{job.company.name} is hiring a <strong>{job.title}</strong> to join their team in {job.location}. This is a {categoryInfo.name.toLowerCase()} role in the nuclear power industry.</p>
                   <p>{categoryInfo.description}</p>
                   <p>Click the apply button to view the full job description and submit your application on {job.company.name}&apos;s careers website.</p>
@@ -296,7 +296,7 @@ export default async function JobPage({ params }: PageProps) {
               <div className="sticky top-6 space-y-4">
 
                 {/* Apply card — desktop sidebar only; mobile uses sticky bar */}
-                <div className="hidden md:block border border-[#CFC8BC] p-5">
+                <div className="card-raised hidden md:block border border-[#CFC8BC] p-5">
                   <a
                     href={applyHref}
                     target={applyExternal ? '_blank' : undefined}
@@ -317,7 +317,7 @@ export default async function JobPage({ params }: PageProps) {
                       initialSaved={initialSaved}
                       isAuthenticated={isAuthenticated}
                       showLabel
-                      className="text-stone-400 hover:text-stone-700"
+                      className="text-stone-400 hover:text-stone-900"
                     />
                   </div>
                 </div>
@@ -332,7 +332,7 @@ export default async function JobPage({ params }: PageProps) {
                       <>
                         <div className="flex justify-between items-baseline gap-4">
                           <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">Type</span>
-                          <span className="font-mono text-xs text-stone-700 font-semibold">{employmentLabel}</span>
+                          <span className="font-mono text-xs text-stone-900 font-semibold">{employmentLabel}</span>
                         </div>
                         <div className="h-px bg-[#CFC8BC]" />
                       </>
@@ -342,7 +342,7 @@ export default async function JobPage({ params }: PageProps) {
                       <>
                         <div className="flex justify-between items-baseline gap-4">
                           <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">Field</span>
-                          <span className="font-mono text-xs text-stone-700 font-semibold">{categoryInfo.name}</span>
+                          <span className="font-mono text-xs text-stone-900 font-semibold">{categoryInfo.name}</span>
                         </div>
                         <div className="h-px bg-[#CFC8BC]" />
                       </>
@@ -351,24 +351,24 @@ export default async function JobPage({ params }: PageProps) {
                       <>
                         <div className="flex justify-between items-baseline gap-4">
                           <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">Salary</span>
-                          <span className="font-mono text-xs text-stone-700 font-semibold">{formatSalary(job.salary)}</span>
+                          <span className="font-mono text-xs text-stone-900 font-semibold">{formatSalary(job.salary)}</span>
                         </div>
                         <div className="h-px bg-[#CFC8BC]" />
                       </>
                     )}
                     <div className="flex justify-between items-baseline gap-4">
                       <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">Location</span>
-                      <span className="font-mono text-xs text-stone-700 font-semibold text-right">{job.location}</span>
+                      <span className="font-mono text-xs text-stone-900 font-semibold text-right">{job.location}</span>
                     </div>
                     <div className="h-px bg-[#CFC8BC]" />
                     <div className="flex justify-between items-baseline gap-4">
                       <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">Industry</span>
-                      <span className="font-mono text-xs text-stone-700 font-semibold">Nuclear energy</span>
+                      <span className="font-mono text-xs text-stone-900 font-semibold">Nuclear energy</span>
                     </div>
                     <div className="h-px bg-[#CFC8BC]" />
                     <div className="flex justify-between items-baseline gap-4" suppressHydrationWarning>
                       <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">Posted</span>
-                      <span className="font-mono text-xs text-stone-700 font-semibold" suppressHydrationWarning>
+                      <span className="font-mono text-xs text-stone-900 font-semibold" suppressHydrationWarning>
                         {new Date(job.scraped_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                       </span>
                     </div>
@@ -399,7 +399,7 @@ export default async function JobPage({ params }: PageProps) {
                           return (
                             <span
                               key={item}
-                              className="flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-stone-700 border border-[#CFC8BC] bg-[#E5DFD5] px-2.5 py-1.5"
+                              className="flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-stone-900 border border-[#CFC8BC] bg-[#E5DFD5] px-2.5 py-1.5"
                             >
                               <Icon size={11} className="text-stone-500 flex-shrink-0" />
                               {item}
@@ -427,7 +427,7 @@ export default async function JobPage({ params }: PageProps) {
                   ) : (
                     <Link
                       href={`/companies/${job.company.id}`}
-                      className="font-mono text-sm font-bold text-stone-900 hover:text-yellow-600 transition-colors mb-2 block"
+                      className="font-mono text-sm font-bold text-stone-900 hover:text-yellow-500 transition-colors mb-2 block"
                     >
                       {job.company.name} →
                     </Link>
@@ -442,22 +442,23 @@ export default async function JobPage({ params }: PageProps) {
                       href={job.company.careers_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-700 transition-colors"
+                      className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
                     >
                       Careers page ↗
                     </a>
                   )}
                 </div>
 
-                {/* Set up alert nudge */}
-                <div className="border border-[#CFC8BC] p-5 bg-[#E5DFD5]">
+                {/* Set up alert nudge — Rule 8: page-bg fill (not surface tint) so it
+                    doesn't blend into the sidebar, outline button stays secondary to Apply. */}
+                <div className="border border-[#CFC8BC] p-5 bg-[#EDE8DF]">
                   <p className="font-mono text-[10px] tracking-widest uppercase text-stone-500 mb-1.5">Don&apos;t miss similar roles</p>
-                  <p className="text-xs text-stone-600 leading-relaxed mb-3">
+                  <p className="font-sans text-xs text-stone-500 leading-relaxed mb-3">
                     Get notified when new {categoryInfo.name.toLowerCase()} jobs are posted.
                   </p>
                   <Link
                     href="/signup/job-seeker"
-                    className="block w-full text-center font-mono text-[10px] tracking-widest uppercase py-2.5 border border-[#CFC8BC] text-stone-600 hover:bg-[#EDE8DF] hover:text-stone-900 transition-colors"
+                    className="block w-full text-center font-mono text-[10px] tracking-widest uppercase py-2.5 border border-[#CFC8BC] text-stone-500 hover:bg-[#EDE8DF] hover:text-stone-900 transition-colors"
                   >
                     Create free alert →
                   </Link>
@@ -475,7 +476,7 @@ export default async function JobPage({ params }: PageProps) {
           {relatedJobs.length > 0 && (
             <div className="mt-16 pt-10 border-t border-[#CFC8BC]">
               <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">More like this</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-6">Related jobs</h2>
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-6">Related jobs</h2>
               <div className="border border-[#CFC8BC]">
                 {relatedJobs.map((relatedJob) => (
                   <Link
@@ -484,10 +485,10 @@ export default async function JobPage({ params }: PageProps) {
                     className="flex items-center justify-between gap-4 px-5 py-4 border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors group"
                   >
                     <div className="min-w-0">
-                      <h3 className="font-mono text-sm font-semibold text-stone-900 group-hover:text-yellow-600 transition-colors truncate">{relatedJob.title}</h3>
-                      <p className="font-mono text-xs text-stone-400 mt-0.5">{relatedJob.company.name} // {relatedJob.location}</p>
+                      <h3 className="font-sans text-[15px] font-semibold tracking-tight text-stone-900 group-hover:text-yellow-500 transition-colors truncate">{relatedJob.title}</h3>
+                      <p className="font-mono text-xs text-stone-500 mt-0.5 truncate">{relatedJob.company.name} // {relatedJob.location}</p>
                     </div>
-                    <span className="font-mono text-xs text-stone-400 shrink-0 group-hover:text-stone-700 transition-colors">→</span>
+                    <span className="font-mono text-xs text-stone-400 shrink-0 group-hover:text-stone-900 transition-colors">→</span>
                   </Link>
                 ))}
               </div>
@@ -498,7 +499,7 @@ export default async function JobPage({ params }: PageProps) {
           {isEmployerJob && job.application_type === 'form' && (
             <div id="apply" className="mt-16 pt-10 border-t border-[#CFC8BC]">
               <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Apply now</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-8">Apply for {job.title}</h2>
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-8">Apply for {job.title}</h2>
               <div className="max-w-xl">
                 <ApplicationForm jobId={job.slug} jobTitle={job.title} companyName={job.company.name} />
               </div>
@@ -511,7 +512,10 @@ export default async function JobPage({ params }: PageProps) {
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#EDE8DF] border-t border-[#CFC8BC] px-4 py-3 flex items-center gap-3">
         <div className="min-w-0 flex-1">
           <p className="font-mono text-xs font-bold text-stone-900 truncate">{job.title}</p>
-          <p className="font-mono text-[10px] text-stone-400">{job.company.name}</p>
+          <p className="font-mono text-[10px] text-stone-400 truncate">
+            {job.company.name}
+            {formatSalary(job.salary) && <> · {formatSalary(job.salary)}</>}
+          </p>
         </div>
         <a
           href={applyHref}
@@ -536,14 +540,14 @@ function StructuredJobDescription({ description, companyName, jobTitle, location
       <div className="space-y-6">
         <div>
           <h2 className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">About this role</h2>
-          <p className="text-stone-700 leading-relaxed text-sm">
+          <p className="text-stone-900 leading-relaxed text-sm">
             {parsed.overview || `${companyName} is hiring a ${jobTitle} to join their team in ${location}. This is a ${categoryName.toLowerCase()} role in the nuclear power industry.`}
           </p>
         </div>
         {description.length > 200 && (
           <div>
             <h2 className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">Full description</h2>
-            <p className="text-stone-600 leading-relaxed text-sm whitespace-pre-line">{description}</p>
+            <p className="text-stone-500 leading-relaxed text-sm whitespace-pre-line">{description}</p>
           </div>
         )}
       </div>
@@ -562,7 +566,7 @@ function StructuredJobDescription({ description, companyName, jobTitle, location
           {section.type === 'list' ? (
             <ul className="space-y-3">
               {section.content.map((item, itemIndex) => (
-                <li key={itemIndex} className="flex items-start gap-3 text-stone-600 text-sm leading-relaxed">
+                <li key={itemIndex} className="flex items-start gap-3 text-stone-500 text-sm leading-relaxed">
                   <span className="text-yellow-500 mt-[0.35rem] flex-shrink-0 font-mono leading-none">—</span>
                   <span>{item}</span>
                 </li>

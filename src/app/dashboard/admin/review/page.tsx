@@ -43,7 +43,7 @@ function DescriptionPreview({ sd }: { sd: StructuredDescription }) {
       {fields.map(({ label, value }) => (
         <div key={label}>
           <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">{label}</p>
-          <p className="font-mono text-xs text-stone-600 whitespace-pre-line leading-relaxed">{value}</p>
+          <p className="font-mono text-xs text-stone-500 whitespace-pre-line leading-relaxed">{value}</p>
         </div>
       ))}
     </div>
@@ -74,7 +74,7 @@ function EditableDescription({
             rows={4}
             value={asText(sd[key])}
             onChange={e => onChange({ ...sd, [key]: e.target.value })}
-            className="w-full font-mono text-xs text-stone-700 bg-white border border-[#CFC8BC] px-3 py-2 focus:outline-none focus:border-stone-400 resize-y"
+            className="w-full font-mono text-xs text-stone-900 bg-white border border-[#CFC8BC] px-3 py-2 focus:outline-none focus:border-stone-400 resize-y"
           />
         </div>
       ))}
@@ -150,7 +150,7 @@ function JobCard({
           <button
             onClick={handleReprocess}
             disabled={reprocessing || processing}
-            className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-700 border border-[#CFC8BC] px-2 py-1 disabled:opacity-40 whitespace-nowrap"
+            className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-900 border border-[#CFC8BC] px-2 py-1 disabled:opacity-40 whitespace-nowrap"
           >
             {reprocessing ? 'Running…' : 'Re-run AI'}
           </button>
@@ -182,14 +182,14 @@ function JobCard({
         <button
           onClick={handleApprove}
           disabled={processing}
-          className="font-mono text-xs tracking-widest uppercase px-4 py-2 bg-stone-900 hover:bg-stone-700 text-white font-bold transition-colors disabled:opacity-40"
+          className="font-mono text-xs tracking-widest uppercase px-4 py-2 bg-stone-900 hover:bg-stone-900/80 text-white font-bold transition-colors disabled:opacity-40"
         >
           {processing ? 'Saving…' : 'Approve'}
         </button>
         <button
           onClick={() => { setEditing(e => !e); setEditedSd(job.structured_description || {}); }}
           disabled={processing}
-          className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] hover:bg-[#E5DFD5] text-stone-700 transition-colors disabled:opacity-40"
+          className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] hover:bg-[#E5DFD5] text-stone-900 transition-colors disabled:opacity-40"
         >
           {editing ? 'Cancel edit' : 'Edit'}
         </button>
@@ -203,7 +203,7 @@ function JobCard({
         <Link
           href={`/job/${job.id}`}
           target="_blank"
-          className="ml-auto font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-700 transition-colors"
+          className="ml-auto font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
         >
           Preview →
         </Link>
@@ -254,10 +254,10 @@ export default function ReviewQueuePage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
       <div className="mb-6">
-        <Link href="/dashboard/admin" className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-700">
+        <Link href="/dashboard/admin" className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900">
           ← Operations
         </Link>
-        <h1 className="font-mono text-2xl font-bold text-stone-900 mt-3">Content Review Pipeline</h1>
+        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mt-3">Content Review Pipeline</h1>
         <p className="font-mono text-xs text-stone-500 mt-1">
           {pending.length} job{pending.length !== 1 ? 's' : ''} pending review
           {lowConf.length > 0 && ` · ${lowConf.length} flagged for closer attention`}
@@ -270,7 +270,7 @@ export default function ReviewQueuePage() {
           <button
             onClick={() => runBulk('approve', highConf.map(j => j.id))}
             disabled={bulkBusy !== null || highConf.length === 0}
-            className="font-mono text-xs tracking-widest uppercase px-4 py-2 bg-stone-900 hover:bg-stone-700 text-white font-bold transition-colors disabled:opacity-40"
+            className="font-mono text-xs tracking-widest uppercase px-4 py-2 bg-stone-900 hover:bg-stone-900/80 text-white font-bold transition-colors disabled:opacity-40"
           >
             {bulkBusy === 'approve' ? 'Approving…' : `Approve all high-confidence (${highConf.length})`}
           </button>

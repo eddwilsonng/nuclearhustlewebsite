@@ -56,7 +56,7 @@ export function FlagJobModal({ jobSlug, onClose }: FlagJobModalProps) {
       <div className="bg-[#EDE8DF] border border-[#CFC8BC] w-full max-w-sm mx-4 p-6 relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 transition-colors"
+          className="absolute top-4 right-4 text-stone-400 hover:text-stone-900 transition-colors"
           aria-label="Close"
         >
           <X size={16} />
@@ -68,7 +68,7 @@ export function FlagJobModal({ jobSlug, onClose }: FlagJobModalProps) {
             <p className="font-mono text-xs text-stone-500">We&apos;ll review this listing and take action if needed.</p>
             <button
               onClick={onClose}
-              className="mt-6 font-mono text-xs tracking-widest uppercase py-2.5 px-6 border border-[#CFC8BC] text-stone-600 hover:bg-[#E5DFD5] transition-colors"
+              className="mt-6 font-mono text-xs tracking-widest uppercase py-2.5 px-6 border border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5] transition-colors"
             >
               Close
             </button>
@@ -91,7 +91,7 @@ export function FlagJobModal({ jobSlug, onClose }: FlagJobModalProps) {
                   className={`text-left font-mono text-xs px-3 py-2.5 border transition-colors ${
                     selected === r.id
                       ? 'border-yellow-400 bg-yellow-50 text-stone-900'
-                      : 'border-[#CFC8BC] text-stone-600 hover:bg-[#E5DFD5]'
+                      : 'border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5]'
                   }`}
                 >
                   {r.label}
@@ -105,7 +105,7 @@ export function FlagJobModal({ jobSlug, onClose }: FlagJobModalProps) {
               placeholder="Anything else we should know? (optional)"
               rows={3}
               maxLength={500}
-              className="w-full font-mono text-xs bg-[#EDE8DF] border border-[#CFC8BC] px-3 py-2 text-stone-700 placeholder:text-stone-400 resize-none focus:outline-none focus:border-stone-400 mb-4"
+              className="w-full font-mono text-xs bg-[#EDE8DF] border border-[#CFC8BC] px-3 py-2 text-stone-900 placeholder:text-stone-400 resize-none focus:outline-none focus:border-stone-400 mb-4"
             />
 
             {status === 'error' && (
@@ -115,7 +115,7 @@ export function FlagJobModal({ jobSlug, onClose }: FlagJobModalProps) {
             <div className="flex gap-2 justify-end">
               <button
                 onClick={onClose}
-                className="font-mono text-xs tracking-widest uppercase py-2.5 px-4 border border-[#CFC8BC] text-stone-600 hover:bg-[#E5DFD5] transition-colors"
+                className="font-mono text-xs tracking-widest uppercase py-2.5 px-4 border border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5] transition-colors"
               >
                 Cancel
               </button>

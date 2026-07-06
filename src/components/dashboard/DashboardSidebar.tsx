@@ -87,7 +87,7 @@ export function DashboardSidebar({ profile, isAdmin, viewRole }: DashboardSideba
   const sidebarContent = (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6 md:block">
-        <p className="font-mono text-xs tracking-widest uppercase text-stone-300">
+        <p className="font-mono text-xs tracking-widest uppercase text-stone-400">
           {effectiveRole === 'employer' ? 'Employer' : 'Job Seeker'}
         </p>
         <button
@@ -160,7 +160,7 @@ export function DashboardSidebar({ profile, isAdmin, viewRole }: DashboardSideba
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="font-mono text-xs tracking-widest uppercase text-stone-600 hover:text-stone-900 transition-colors px-2 py-1"
+          className="font-mono text-xs tracking-widest uppercase text-stone-500 hover:text-stone-900 transition-colors px-2 py-1"
           aria-expanded={open}
           aria-label="Open account menu"
         >

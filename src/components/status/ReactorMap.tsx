@@ -109,7 +109,7 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
       {/* Tooltip */}
       {tooltip && (
         <div
-          className="pointer-events-none fixed z-50 bg-[#EDE8DF] border border-[#CFC8BC] px-3 py-2.5 shadow-md"
+          className="pointer-events-none fixed z-50 bg-[#EDE8DF] border border-[#CFC8BC] px-3 py-2.5"
           style={{ left: tooltip.x + 12, top: tooltip.y - 10 }}
         >
           <p className="font-mono text-xs font-bold text-stone-900 mb-0.5">{tooltip.plant.name}</p>

@@ -14,6 +14,7 @@ import {
   getEngineeringDisciplineInfo,
 } from '@/lib/categorize';
 import { CategoryJobsList } from '@/components/CategoryJobsList';
+import { Sidebar, SidebarSection, SidebarNavList, SidebarCTA } from '@/components/sidebar/Sidebar';
 import {
   BrowsePageHeader,
   BrowseBreadcrumb,
@@ -131,11 +132,11 @@ export default async function DisciplinePage({ params, searchParams }: PageProps
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-600" aria-hidden="true">//</span>
+          <span className="text-stone-500" aria-hidden="true">//</span>
           <BrowseBreadcrumbLink href="/jobs">Jobs</BrowseBreadcrumbLink>
-          <span className="text-stone-600" aria-hidden="true">//</span>
+          <span className="text-stone-500" aria-hidden="true">//</span>
           <BrowseBreadcrumbLink href="/jobs/role/engineering">Engineering</BrowseBreadcrumbLink>
-          <span className="text-stone-600" aria-hidden="true">//</span>
+          <span className="text-stone-500" aria-hidden="true">//</span>
           <BrowseBreadcrumbCurrent>{info.name}</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
 
@@ -199,7 +200,7 @@ export default async function DisciplinePage({ params, searchParams }: PageProps
                   </Link>
                   <Link
                     href="/jobs/role/engineering"
-                    className="font-mono text-xs tracking-widest uppercase px-5 py-3 border border-[#CFC8BC] text-stone-600 hover:text-stone-900 hover:border-stone-400 transition-colors"
+                    className="font-mono text-xs tracking-widest uppercase px-5 py-3 border border-[#CFC8BC] text-stone-500 hover:text-stone-900 hover:border-stone-400 transition-colors"
                   >
                     All engineering jobs →
                   </Link>
@@ -209,45 +210,27 @@ export default async function DisciplinePage({ params, searchParams }: PageProps
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-8">
-            {/* Other engineering disciplines */}
-            <div>
-              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Other disciplines</p>
-              <ul className="border border-[#CFC8BC]">
-                {siblingDisciplines.map(({ slug, name, count }) => (
-                  <li key={slug} className="border-b border-[#CFC8BC] last:border-b-0">
-                    <Link
-                      href={`/jobs/role/engineering/${slug}`}
-                      className="flex items-center justify-between px-3 py-2 font-mono text-xs tracking-widest uppercase text-stone-500 hover:text-stone-900 hover:bg-[#E5DFD5] transition-colors"
-                    >
-                      <span>{name}</span>
-                      <span className="text-stone-400">{count}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/jobs/role/engineering"
-                className="block font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors mt-3"
-              >
-                All engineering →
-              </Link>
-            </div>
+          <Sidebar>
+            <SidebarSection
+              label="Other disciplines"
+              footerHref="/jobs/role/engineering"
+              footerLabel="All engineering →"
+            >
+              <SidebarNavList
+                items={siblingDisciplines.map(({ slug, name, count }) => ({
+                  href: `/jobs/role/engineering/${slug}`,
+                  label: name,
+                  count,
+                }))}
+              />
+            </SidebarSection>
 
-            {/* Employer nudge */}
-            <div className="border border-[#CFC8BC] p-5">
-              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-2">Hiring?</p>
-              <p className="font-mono text-xs text-stone-500 leading-relaxed mb-4">
-                Post a {info.name.toLowerCase()} engineering role and reach qualified nuclear professionals.
-              </p>
-              <Link
-                href="/signup/employer"
-                className="block text-center font-mono text-xs tracking-widest uppercase px-4 py-2.5 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors"
-              >
-                Post a job →
-              </Link>
-            </div>
-          </div>
+            <SidebarCTA
+              label="Hiring?"
+              body={`Post a ${info.name.toLowerCase()} engineering role and reach qualified nuclear professionals.`}
+              href="/signup/employer"
+            />
+          </Sidebar>
         </div>
       </div>
     </div>

@@ -172,7 +172,7 @@ function PercentileBar({ p10, p25, median, p75, p90, max }: {
       <div className="relative h-3 bg-[#CFC8BC]">
         {/* p25–p75 band */}
         <div
-          className="absolute h-full bg-yellow-200"
+          className="absolute h-full bg-yellow-50"
           style={{ left: pct(p25), width: `${((p75 - p25) / max) * 100}%` }}
         />
         {/* p10–p90 thin line */}
@@ -186,7 +186,7 @@ function PercentileBar({ p10, p25, median, p75, p90, max }: {
           style={{ left: pct(median) }}
         />
       </div>
-      <div className="flex justify-between font-mono text-[10px] text-stone-600">
+      <div className="flex justify-between font-mono text-[10px] text-stone-500">
         <span>${Math.round(p10 / 1000)}k<br /><span className="text-stone-400">10th</span></span>
         <span className="text-right">${Math.round(p25 / 1000)}k<br /><span className="text-stone-400">25th</span></span>
         <span className="text-center font-bold text-stone-900">${Math.round(median / 1000)}k<br /><span className="text-stone-500 font-normal">median</span></span>
@@ -205,7 +205,7 @@ export default function SalaryPage() {
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-600">//</span>
+          <span className="text-stone-500">//</span>
           <BrowseBreadcrumbCurrent>Salary guide</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
 
@@ -240,7 +240,7 @@ export default function SalaryPage() {
             {/* BLS role cards */}
             <section>
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">By occupation</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-6">Salary by occupation</h2>
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-6">Salary by occupation</h2>
 
               <div className="space-y-px border border-[#CFC8BC]">
                 {BLS_ROLES.map((role) => (
@@ -251,7 +251,7 @@ export default function SalaryPage() {
                         <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mt-0.5">
                           SOC {role.socCode} · {role.employment.toLocaleString()} workers
                         </p>
-                        <p className="font-mono text-xs text-stone-700 mt-2 leading-relaxed">{role.description}</p>
+                        <p className="font-mono text-xs text-stone-900 mt-2 leading-relaxed">{role.description}</p>
                       </div>
                       <div className="shrink-0 flex gap-5 items-start">
                         <div className="text-right border-r border-[#CFC8BC] pr-5">
@@ -259,7 +259,7 @@ export default function SalaryPage() {
                           <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400">median</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-mono text-2xl font-bold text-stone-600">{formatSalary(role.p90)}</p>
+                          <p className="font-mono text-2xl font-bold text-stone-500">{formatSalary(role.p90)}</p>
                           <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400">90th pct</p>
                         </div>
                       </div>
@@ -276,7 +276,7 @@ export default function SalaryPage() {
                         href={role.blsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-700 transition-colors"
+                        className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
                       >
                         BLS source ↗
                       </a>
@@ -289,8 +289,8 @@ export default function SalaryPage() {
             {/* Year-over-year trend */}
             <section>
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">Salary trend</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-2">Pay growth 2021 → 2025</h2>
-              <p className="font-mono text-xs text-stone-600 mb-6 leading-relaxed">
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-2">Pay growth 2021 → 2025</h2>
+              <p className="font-mono text-xs text-stone-500 mb-6 leading-relaxed">
                 All three nuclear occupations have grown faster than US wage inflation over the period, driven by retiring operators, new-build demand, and limited qualified candidate pools.
               </p>
 
@@ -316,7 +316,7 @@ export default function SalaryPage() {
                         {role.years.map((y, yi) => (
                           <span
                             key={y.year}
-                            className={`font-mono text-right text-xs ${yi === role.years.length - 1 ? 'font-bold text-stone-900' : 'text-stone-600'}`}
+                            className={`font-mono text-right text-xs ${yi === role.years.length - 1 ? 'font-bold text-stone-900' : 'text-stone-500'}`}
                           >
                             ${Math.round(y.median / 1000)}k
                           </span>
@@ -351,8 +351,8 @@ export default function SalaryPage() {
             {/* State breakdown */}
             <section>
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">By state</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-2">Nuclear engineer pay by state</h2>
-              <p className="font-mono text-xs text-stone-600 mb-6 leading-relaxed">
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-2">Nuclear engineer pay by state</h2>
+              <p className="font-mono text-xs text-stone-500 mb-6 leading-relaxed">
                 Nuclear engineer wages vary by region — higher in states with large utility headquarters or new-build activity, lower where TVA and federal scale applies. Reactor operator wages are more uniform nationally due to NRC licensing requirements.
               </p>
 
@@ -381,7 +381,7 @@ export default function SalaryPage() {
             {/* From listings */}
             <section>
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">From current listings</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-2">What employers are advertising</h2>
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-2">What employers are advertising</h2>
               <p className="font-mono text-xs text-stone-500 mb-6 leading-relaxed">
                 Based on {LISTING_RANGES.reduce((a, b) => a + b.n, 0)} job listings on Nuclear Hustle that disclosed a compensation range. Coverage is partial — most nuclear employers do not post salary ranges publicly. Rows marked * have fewer than 4 listings and should be treated as illustrative only.
               </p>
@@ -396,7 +396,7 @@ export default function SalaryPage() {
                 {LISTING_RANGES.map((row) => (
                   <div key={row.category} className={`grid grid-cols-4 gap-4 px-4 py-3 border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors ${!row.reliable ? 'opacity-50' : ''}`}>
                     <div>
-                      <span className="font-mono text-xs text-stone-700 font-semibold">
+                      <span className="font-mono text-xs text-stone-900 font-semibold">
                         {row.category}{!row.reliable && '*'}
                       </span>
                       <span className="block font-mono text-[10px] text-stone-400">{row.n} listing{row.n !== 1 ? 's' : ''}</span>
@@ -412,7 +412,7 @@ export default function SalaryPage() {
             {/* FAQ */}
             <section>
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">Common questions</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-6">Nuclear salary FAQs</h2>
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-6">Nuclear salary FAQs</h2>
 
               <div className="space-y-px border border-[#CFC8BC]">
                 {FAQS.map((faq, i) => (
@@ -429,10 +429,10 @@ export default function SalaryPage() {
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-3">Methodology</p>
               <div className="space-y-2 font-mono text-xs text-stone-500 leading-relaxed">
                 <p>
-                  <strong className="text-stone-700">BLS figures</strong> are from the Bureau of Labor Statistics Occupational Employment and Wage Statistics (OEWS) survey, May 2025 release, sourced directly from the BLS public API (series OEUN*). Wages are national figures across all industries and experience levels employing each occupation.
+                  <strong className="text-stone-900">BLS figures</strong> are from the Bureau of Labor Statistics Occupational Employment and Wage Statistics (OEWS) survey, May 2025 release, sourced directly from the BLS public API (series OEUN*). Wages are national figures across all industries and experience levels employing each occupation.
                 </p>
                 <p>
-                  <strong className="text-stone-700">Listing ranges</strong> are extracted from job descriptions on Nuclear Hustle that explicitly stated a compensation or salary range. Only labeled ranges (e.g. &quot;Compensation Range: $X – $Y&quot;) are included. Hourly rates are annualised at 2,080 hours.
+                  <strong className="text-stone-900">Listing ranges</strong> are extracted from job descriptions on Nuclear Hustle that explicitly stated a compensation or salary range. Only labeled ranges (e.g. &quot;Compensation Range: $X – $Y&quot;) are included. Hourly rates are annualised at 2,080 hours.
                 </p>
                 <p>
                   Coverage is non-random: companies that post ranges tend to be larger utilities and new-build firms. Treat listing figures as directional, not representative of industry-wide pay.
@@ -448,7 +448,7 @@ export default function SalaryPage() {
 
               <div className="border border-yellow-300 bg-yellow-50 p-5">
                 <p className="font-mono text-[10px] tracking-widest uppercase text-yellow-700 mb-2">Browse open roles</p>
-                <p className="font-mono text-xs text-stone-600 leading-relaxed mb-4">
+                <p className="font-mono text-xs text-stone-500 leading-relaxed mb-4">
                   View current nuclear job listings filtered by role, state, and employer.
                 </p>
                 <Link
@@ -488,7 +488,7 @@ export default function SalaryPage() {
                   href="https://www.bls.gov/oes/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-700 transition-colors"
+                  className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
                 >
                   bls.gov/oes ↗
                 </a>

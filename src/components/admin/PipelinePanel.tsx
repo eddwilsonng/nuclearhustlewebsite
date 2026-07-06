@@ -73,7 +73,7 @@ export function PipelinePanel({ stats }: { stats: PipelineStats }) {
             <div className="space-y-2">
               {stats.bySource.map((s) => (
                 <div key={s.id} className="flex items-center gap-3">
-                  <span className="font-mono text-xs text-stone-600 w-40 truncate">{s.name}</span>
+                  <span className="font-mono text-xs text-stone-500 w-40 truncate">{s.name}</span>
                   <div className="flex-1"><Bar value={s.published} total={s.pending + s.published || 1} /></div>
                   <span className="font-mono text-[10px] text-stone-400 w-28 text-right">
                     {s.pending} pending · {s.published} live

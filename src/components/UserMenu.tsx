@@ -57,7 +57,7 @@ export function UserMenu({ profile }: UserMenuProps) {
           <div className="px-4 py-3 border-b border-[#CFC8BC]">
             <p className="font-mono text-sm font-bold text-stone-900 truncate">{profile.full_name || profile.email}</p>
             <p className="font-mono text-xs text-stone-500 truncate">{profile.email}</p>
-            <span className="inline-block mt-2 px-2 py-0.5 font-mono text-[10px] tracking-widest uppercase bg-[#E5DFD5] text-stone-600">
+            <span className="inline-block mt-2 px-2 py-0.5 font-mono text-[10px] tracking-widest uppercase bg-[#E5DFD5] text-stone-500">
               {profile.role === 'employer' ? 'Employer' : 'Job Seeker'}
             </span>
           </div>
@@ -65,7 +65,7 @@ export function UserMenu({ profile }: UserMenuProps) {
           <Link
             href="/dashboard"
             onClick={() => setIsOpen(false)}
-            className="block px-4 py-2.5 font-mono text-xs tracking-widest uppercase text-stone-700 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
+            className="block px-4 py-2.5 font-mono text-xs tracking-widest uppercase text-stone-900 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
           >
             Dashboard
           </Link>
@@ -73,7 +73,7 @@ export function UserMenu({ profile }: UserMenuProps) {
           <Link
             href="/dashboard/profile"
             onClick={() => setIsOpen(false)}
-            className="block px-4 py-2.5 font-mono text-xs tracking-widest uppercase text-stone-700 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
+            className="block px-4 py-2.5 font-mono text-xs tracking-widest uppercase text-stone-900 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
           >
             Edit Profile
           </Link>
@@ -82,7 +82,7 @@ export function UserMenu({ profile }: UserMenuProps) {
             <Link
               href="/dashboard/jobs"
               onClick={() => setIsOpen(false)}
-              className="block px-4 py-2.5 font-mono text-xs tracking-widest uppercase text-stone-700 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
+              className="block px-4 py-2.5 font-mono text-xs tracking-widest uppercase text-stone-900 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
             >
               Manage Jobs
             </Link>

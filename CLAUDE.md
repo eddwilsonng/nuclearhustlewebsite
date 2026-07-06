@@ -31,6 +31,9 @@ All UI uses a consistent monospace-first cream palette. Never use default Tailwi
 | Font | `font-mono` | Everything — labels, headings, body |
 | Label style | `text-xs tracking-widest uppercase` | Section labels, chips |
 
+**Design rules:** see the `design-system` skill (`.claude/skills/design-system/`) before any UI/styling change.
+**Copy voice:** see the `brand-voice` skill (`.claude/skills/brand-voice/`) before writing public body copy — page intros, About/mission, job descriptions, email body. Headlines, CTAs, and SEO titles/meta are exempt (conversion/SEO-led).
+
 ## Project Structure
 
 ```

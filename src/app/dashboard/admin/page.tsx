@@ -142,8 +142,8 @@ export default async function AdminOverviewPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Operations</h1>
-      <p className="text-sm text-gray-500 mb-8 font-mono">
+      <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mb-1">Operations</h1>
+      <p className="text-sm text-stone-500 mb-8 font-mono">
         Run and monitor the site&apos;s automated processes
       </p>
 
@@ -153,52 +153,52 @@ export default async function AdminOverviewPage() {
         <AgentRunsPanel runs={agentRuns} />
       </div>
 
-      <h2 className="text-sm font-mono tracking-widest uppercase text-gray-500 mb-3">Jobs</h2>
+      <h2 className="text-sm font-mono tracking-widest uppercase text-stone-500 mb-3">Jobs</h2>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         {jobStats.map((stat) => (
           <div
             key={stat.label}
-            className="bg-white border border-gray-200 rounded-lg p-4"
+            className="bg-white border border-[#CFC8BC] p-4"
           >
-            <p className="text-xs font-mono tracking-widest uppercase text-gray-400 mb-1">
+            <p className="text-xs font-mono tracking-widest uppercase text-stone-400 mb-1">
               {stat.label}
             </p>
-            <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+            <p className="text-2xl font-bold text-stone-900">{stat.value}</p>
           </div>
         ))}
       </div>
 
-      <h2 className="text-sm font-mono tracking-widest uppercase text-gray-500 mb-3">
+      <h2 className="text-sm font-mono tracking-widest uppercase text-stone-500 mb-3">
         Members
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
         {memberStats.map((stat) => (
           <div
             key={stat.label}
-            className="bg-white border border-gray-200 rounded-lg p-4"
+            className="bg-white border border-[#CFC8BC] p-4"
           >
-            <p className="text-xs font-mono tracking-widest uppercase text-gray-400 mb-1">
+            <p className="text-xs font-mono tracking-widest uppercase text-stone-400 mb-1">
               {stat.label}
             </p>
-            <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+            <p className="text-2xl font-bold text-stone-900">{stat.value}</p>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h2 className="text-sm font-mono tracking-widest uppercase text-gray-500 mb-4">
+        <div className="bg-white border border-[#CFC8BC] p-6">
+          <h2 className="text-sm font-mono tracking-widest uppercase text-stone-500 mb-4">
             Job Postings Over Time
           </h2>
           <JobChart data={chartData} />
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h2 className="text-sm font-mono tracking-widest uppercase text-gray-500 mb-4">
+        <div className="bg-white border border-[#CFC8BC] p-6">
+          <h2 className="text-sm font-mono tracking-widest uppercase text-stone-500 mb-4">
             Recent Members
           </h2>
           {recentMembers.length === 0 ? (
-            <p className="text-sm text-gray-400 font-mono py-8 text-center">
+            <p className="text-sm text-stone-400 font-mono py-8 text-center">
               No members yet
             </p>
           ) : (
@@ -209,22 +209,22 @@ export default async function AdminOverviewPage() {
                   className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                      <span className="text-xs font-mono text-gray-500">
+                    <div className="w-8 h-8 rounded-full bg-[#E5DFD5] flex items-center justify-center">
+                      <span className="text-xs font-mono text-stone-500">
                         {member.role === 'employer' ? 'E' : 'JS'}
                       </span>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-900 font-medium">
+                      <p className="text-sm text-stone-900 font-medium">
                         {member.id.slice(0, 8)}...
                       </p>
-                      <p className="text-xs text-gray-400 font-mono">
+                      <p className="text-xs text-stone-400 font-mono">
                         {new Date(member.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
                   <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-mono ${
+                    className={`inline-flex items-center px-2 py-0.5 text-xs font-mono ${
                       member.role === 'employer'
                         ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-blue-100 text-blue-700'

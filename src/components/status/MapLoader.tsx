@@ -7,7 +7,7 @@ const ReactorMap = dynamic(() => import('./ReactorMap'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-[560px] bg-[#E5DFD5] flex items-center justify-center">
-      <p className="font-mono text-xs text-stone-300 tracking-widest uppercase">Loading map...</p>
+      <p className="font-mono text-xs text-stone-400 tracking-widest uppercase">Loading map...</p>
     </div>
   ),
 });

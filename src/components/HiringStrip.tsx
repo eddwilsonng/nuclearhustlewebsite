@@ -83,12 +83,12 @@ export function HiringStrip() {
                   {operator.initials}
                 </span>
               </div>
-              <span className="font-mono text-[10px] tracking-widest uppercase text-stone-600 group-hover:text-stone-900 leading-tight transition-colors">
+              <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 group-hover:text-stone-900 leading-tight transition-colors">
                 {operator.shortName}
               </span>
               {operator.jobCount > 0 && (
-                <span className="font-mono text-[10px] text-stone-400">
-                  {operator.jobCount} open
+                <span className="font-mono text-[10px] text-stone-500">
+                  <span className="font-bold text-stone-900 tabular-nums">{operator.jobCount}</span> open
                 </span>
               )}
             </Link>

@@ -15,7 +15,7 @@ export function FlagJobButton({ jobSlug }: FlagJobButtonProps) {
     <>
       <button
         onClick={() => setShowModal(true)}
-        className="flex items-center gap-1.5 font-mono text-xs text-stone-400 hover:text-stone-600 transition-colors"
+        className="flex items-center gap-1.5 font-mono text-xs text-stone-400 hover:text-stone-500 transition-colors"
       >
         <Flag size={12} />
         Flag this listing

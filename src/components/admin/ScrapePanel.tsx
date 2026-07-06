@@ -89,14 +89,14 @@ export function ScrapePanel({ companies }: ScrapePanelProps) {
     <div>
       {/* Status banner */}
       {isRunning && (
-        <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="mb-6 bg-yellow-50 border border-yellow-400 p-4">
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse" />
             <div>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-stone-900">
                 Scraping {status.companyName}...
               </p>
-              <p className="text-xs font-mono text-gray-500 mt-0.5">
+              <p className="text-xs font-mono text-stone-500 mt-0.5">
                 {status.phase} &middot; {status.jobsFound} jobs found
               </p>
             </div>
@@ -105,7 +105,7 @@ export function ScrapePanel({ companies }: ScrapePanelProps) {
       )}
 
       {lastResult && lastResult.status === 'done' && (
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="mb-6 bg-green-50 border border-green-200 p-4">
           <p className="text-sm font-medium text-green-800">
             {lastResult.companyName} scrape complete
           </p>
@@ -119,7 +119,7 @@ export function ScrapePanel({ companies }: ScrapePanelProps) {
       )}
 
       {lastResult && lastResult.status === 'error' && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="mb-6 bg-red-50 border border-red-200 p-4">
           <p className="text-sm font-medium text-red-800">
             {lastResult.companyName} scrape failed
           </p>
@@ -137,14 +137,14 @@ export function ScrapePanel({ companies }: ScrapePanelProps) {
           return (
             <div
               key={company.id}
-              className={`bg-white border rounded-lg p-5 transition-colors ${
-                isScraping ? 'border-yellow-300 bg-yellow-50' : 'border-gray-200'
+              className={`bg-white border p-5 transition-colors ${
+                isScraping ? 'border-yellow-400 bg-yellow-50' : 'border-[#CFC8BC]'
               }`}
             >
               <div className="flex items-start justify-between mb-3">
-                <h3 className="font-semibold text-gray-900">{company.name}</h3>
+                <h3 className="font-semibold text-stone-900">{company.name}</h3>
                 {isScraping && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono bg-yellow-100 text-yellow-800">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-mono bg-yellow-100 text-yellow-800">
                     <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse" />
                     running
                   </span>
@@ -152,10 +152,10 @@ export function ScrapePanel({ companies }: ScrapePanelProps) {
               </div>
 
               <div className="space-y-1 mb-4">
-                <p className="text-xs font-mono text-gray-500">
+                <p className="text-xs font-mono text-stone-500">
                   {company.jobCount} jobs
                 </p>
-                <p className="text-xs font-mono text-gray-400">
+                <p className="text-xs font-mono text-stone-400">
                   {company.lastScraped
                     ? `Last scraped: ${new Date(company.lastScraped).toLocaleDateString()}`
                     : 'Never scraped'}
@@ -173,10 +173,10 @@ export function ScrapePanel({ companies }: ScrapePanelProps) {
               <button
                 onClick={() => handleScrape(company.id)}
                 disabled={disabled}
-                className={`w-full py-2 px-3 rounded-md text-sm font-mono font-medium transition-colors ${
+                className={`w-full py-2 px-3 text-sm font-mono font-medium transition-colors ${
                   disabled
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-gray-900 text-white hover:bg-gray-800'
+                    ? 'bg-[#E5DFD5] text-stone-400 cursor-not-allowed'
+                    : 'bg-stone-900 text-white hover:bg-stone-900/80'
                 }`}
               >
                 {isStarting

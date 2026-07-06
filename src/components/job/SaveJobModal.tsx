@@ -36,7 +36,7 @@ export function SaveJobModal({ onClose, redirectPath }: SaveJobModalProps) {
       <div className="bg-[#EDE8DF] border border-[#CFC8BC] w-full max-w-sm mx-4 p-6 relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 transition-colors"
+          className="absolute top-4 right-4 text-stone-400 hover:text-stone-900 transition-colors"
           aria-label="Close"
         >
           <X size={16} />
@@ -62,7 +62,7 @@ export function SaveJobModal({ onClose, redirectPath }: SaveJobModalProps) {
           </Link>
           <Link
             href={loginHref}
-            className="block w-full text-center font-mono text-xs tracking-widest uppercase py-3 border border-[#CFC8BC] text-stone-600 hover:bg-[#E5DFD5] transition-colors"
+            className="block w-full text-center font-mono text-xs tracking-widest uppercase py-3 border border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5] transition-colors"
           >
             Log in
           </Link>

@@ -41,7 +41,7 @@ export default async function JobApplicationsPage({
         <p className="font-mono text-xs uppercase tracking-widest text-stone-500">
           Applications
         </p>
-        <h1 className="text-2xl font-bold text-stone-900 mt-1">{job.title}</h1>
+        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mt-1">{job.title}</h1>
         <p className="font-mono text-sm text-stone-500 mt-2">
           {applications.length} total
           {newCount > 0 && (
@@ -53,7 +53,7 @@ export default async function JobApplicationsPage({
 
       {applications.length === 0 ? (
         <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-8 text-center">
-          <p className="text-stone-600 font-mono text-sm">
+          <p className="text-stone-500 font-mono text-sm">
             No applications yet. Share your listing to start receiving them.
           </p>
           <Link
@@ -93,7 +93,7 @@ export default async function JobApplicationsPage({
                   <p className="font-mono text-xs uppercase tracking-widest text-stone-400 mb-1">
                     Cover note
                   </p>
-                  <p className="text-sm text-stone-700 whitespace-pre-wrap leading-relaxed">
+                  <p className="text-sm text-stone-900 whitespace-pre-wrap leading-relaxed">
                     {app.message}
                   </p>
                 </div>

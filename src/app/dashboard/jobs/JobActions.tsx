@@ -41,7 +41,7 @@ export function JobStatusToggle({ jobId, isActive }: { jobId: string; isActive: 
     <button
       onClick={handleToggle}
       disabled={isPending}
-      className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+      className={`px-3 py-1.5 text-sm transition-colors ${
         isActive
           ? 'text-orange-700 hover:bg-orange-50'
           : 'text-green-700 hover:bg-green-50'
@@ -115,7 +115,7 @@ export function DeleteJobButton({ jobId }: { jobId: string }) {
     <button
       onClick={handleDelete}
       disabled={isPending}
-      className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
+      className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
     >
       {isPending ? '...' : 'Delete'}
     </button>

@@ -42,6 +42,17 @@ export function FilterSidebar({
 }: FilterSidebarProps) {
   const hasActiveFilters = Boolean(selectedCompany || selectedCategory || searchQuery);
 
+  const selectedCategoryName = categories.find((c) => c.category === selectedCategory)?.name;
+  const selectedCompanyName = companies.find((c) => c.id === selectedCompany)?.name;
+
+  // Active filters surfaced as removable chips so the current state is visible
+  // without opening a dropdown (Rule 6: a filter UI must show its active state).
+  const activeChips: { label: string; onRemove: () => void }[] = [
+    ...(searchQuery ? [{ label: `“${searchQuery}”`, onRemove: () => onSearchChange('') }] : []),
+    ...(selectedCategoryName ? [{ label: selectedCategoryName, onRemove: () => onCategoryChange(null) }] : []),
+    ...(selectedCompanyName ? [{ label: selectedCompanyName, onRemove: () => onCompanyChange(null) }] : []),
+  ];
+
   return (
     <aside className="w-full lg:w-64 shrink-0">
       <div className="border border-[#CFC8BC] lg:sticky lg:top-6">
@@ -57,12 +68,28 @@ export function FilterSidebar({
                 onCategoryChange(null);
                 onSearchChange('');
               }}
-              className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
+              className="font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 border border-[#CFC8BC] text-stone-500 hover:border-stone-400 hover:text-stone-900 transition-colors"
             >
-              Clear ✕
+              Clear all
             </button>
           )}
         </div>
+
+        {activeChips.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 border-b border-[#CFC8BC] px-4 py-3">
+            {activeChips.map((chip) => (
+              <button
+                key={chip.label}
+                type="button"
+                onClick={chip.onRemove}
+                className="flex items-center gap-1 font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 border border-yellow-400 bg-yellow-50 text-stone-900 hover:bg-yellow-100 transition-colors"
+              >
+                <span className="max-w-[10rem] truncate">{chip.label}</span>
+                <span aria-hidden="true" className="text-stone-500">✕</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="space-y-5 p-4">
           {/* Search */}
@@ -125,11 +152,11 @@ export function FilterSidebar({
           <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
             {hasActiveFilters ? (
               <>
-                <span className="text-stone-700">{resultCount}</span> of {totalCount} jobs
+                <span className="text-stone-900 font-semibold tabular-nums">{resultCount}</span> of {totalCount} jobs
               </>
             ) : (
               <>
-                <span className="text-stone-700">{totalCount}</span> jobs
+                <span className="text-stone-900 font-semibold tabular-nums">{totalCount}</span> jobs
               </>
             )}
           </p>

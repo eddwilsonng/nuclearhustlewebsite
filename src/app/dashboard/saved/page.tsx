@@ -31,20 +31,20 @@ export default async function SavedJobsPage() {
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-2xl font-bold text-stone-900 mb-6">Saved Jobs</h1>
+      <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mb-6">Saved Jobs</h1>
 
       {jobs.length === 0 ? (
-        <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-8 text-center">
-          <p className="text-stone-600 mb-4">You haven&apos;t saved any jobs yet.</p>
+        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-8 text-center">
+          <p className="text-stone-500 mb-4">You haven&apos;t saved any jobs yet.</p>
           <Link
             href="/jobs"
-            className="inline-block py-2 px-4 bg-yellow-500 hover:bg-yellow-400 text-stone-900 font-semibold rounded-md transition-colors"
+            className="inline-block py-2 px-4 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-semibold transition-colors"
           >
             Browse Jobs
           </Link>
         </div>
       ) : (
-        <div className="border border-[#CFC8BC] rounded-lg overflow-hidden">
+        <div className="border border-[#CFC8BC] overflow-hidden">
           {jobs.map((job) => (
             <JobCard key={job.id} job={job} isAuthenticated initialSaved />
           ))}

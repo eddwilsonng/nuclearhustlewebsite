@@ -42,7 +42,7 @@ export default async function AdminEditJobPage({
       <div className="flex items-center gap-4 mb-6">
         <Link
           href="/dashboard/admin/jobs"
-          className="text-gray-500 hover:text-gray-700"
+          className="text-stone-500 hover:text-stone-900"
         >
           <svg
             className="w-5 h-5"
@@ -58,15 +58,15 @@ export default async function AdminEditJobPage({
             />
           </svg>
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900">
           Edit Job
-          <span className="ml-2 text-xs font-mono text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded">
+          <span className="ml-2 text-xs font-mono text-yellow-700 bg-yellow-50 px-2 py-0.5">
             admin
           </span>
         </h1>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white border border-[#CFC8BC] p-6">
         <JobPostingForm job={typedJob} mode="edit" customAction={adminUpdateJob} />
       </div>
     </div>

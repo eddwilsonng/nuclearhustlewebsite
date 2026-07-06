@@ -34,7 +34,7 @@ export function LinkedInPostPanel({ post }: { post: string }) {
         readOnly
         value={post}
         rows={Math.max(16, post.split('\n').length + 2)}
-        className="w-full font-mono text-xs text-stone-700 bg-[#EDE8DF] border border-[#CFC8BC] p-4 pr-24 resize-none focus:outline-none leading-relaxed"
+        className="w-full font-mono text-xs text-stone-900 bg-[#EDE8DF] border border-[#CFC8BC] p-4 pr-24 resize-none focus:outline-none leading-relaxed"
       />
     </div>
   );

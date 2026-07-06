@@ -24,7 +24,7 @@ interface JobChartProps {
 export function JobChart({ data }: JobChartProps) {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400 font-mono text-sm">
+      <div className="flex items-center justify-center h-64 text-stone-400 font-mono text-sm">
         No data yet
       </div>
     );

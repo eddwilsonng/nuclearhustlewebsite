@@ -72,7 +72,7 @@ export default async function Home() {
               </Link>
               <Link
                 href="/companies"
-                className="font-mono text-xs tracking-widest uppercase px-6 py-3 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors text-center w-full sm:w-fit"
+                className="font-mono text-xs tracking-widest uppercase px-6 py-3 border border-[#CFC8BC] hover:border-stone-400 text-stone-500 hover:text-stone-900 transition-colors text-center w-full sm:w-fit"
               >
                 View companies →
               </Link>
@@ -123,7 +123,7 @@ export default async function Home() {
             </div>
             <Link
               href={postJobHref}
-              className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors shrink-0"
+              className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] hover:border-stone-400 text-stone-500 hover:text-stone-900 transition-colors shrink-0"
             >
               Feature a listing →
             </Link>
@@ -165,7 +165,7 @@ export default async function Home() {
           <div className="mt-6 text-center">
             <Link
               href="/jobs"
-              className="font-mono text-xs tracking-widest uppercase px-6 py-3 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors inline-block"
+              className="font-mono text-xs tracking-widest uppercase px-6 py-3 border border-[#CFC8BC] hover:border-stone-400 text-stone-500 hover:text-stone-900 transition-colors inline-block"
             >
               View all {jobs.length} jobs →
             </Link>
@@ -184,7 +184,7 @@ export default async function Home() {
           <div className="flex items-baseline justify-between mb-8">
             <div>
               <p className="font-mono text-xs tracking-widest uppercase text-stone-500 mb-2">03</p>
-              <h2 className="font-mono text-2xl font-bold text-stone-900">Browse by role</h2>
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900">Browse by role</h2>
             </div>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -192,10 +192,10 @@ export default async function Home() {
               <Link
                 key={category}
                 href={`/jobs/role/${category}`}
-                className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] text-stone-600 hover:border-yellow-400 hover:text-stone-900 transition-colors"
+                className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] text-stone-500 hover:border-yellow-400 hover:text-stone-900 transition-colors"
               >
                 {name}
-                <span className="ml-2 text-stone-400">{count}</span>
+                <span className="ml-2 text-stone-500 font-semibold tabular-nums">{count}</span>
               </Link>
             ))}
           </div>
@@ -220,16 +220,16 @@ export default async function Home() {
       <section className="py-16 border-t border-[#CFC8BC]">
         <div className="max-w-6xl mx-auto px-6">
           <p className="font-mono text-xs tracking-widest uppercase text-stone-500 mb-2">04</p>
-          <h2 className="font-mono text-2xl font-bold text-stone-900 mb-8">Browse by state</h2>
+          <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-8">Browse by state</h2>
           <div className="flex flex-wrap gap-3">
             {activeStates.slice(0, 12).map(({ state, count }) => (
               <Link
                 key={state.slug}
                 href={`/jobs/${state.slug}`}
-                className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] text-stone-600 hover:border-yellow-400 hover:text-stone-900 transition-colors"
+                className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] text-stone-500 hover:border-yellow-400 hover:text-stone-900 transition-colors"
               >
                 {state.name}
-                <span className="ml-2 text-stone-400">{count}</span>
+                <span className="ml-2 text-stone-500 font-semibold tabular-nums">{count}</span>
               </Link>
             ))}
             {activeStates.length > 12 && (
@@ -279,7 +279,7 @@ export default async function Home() {
               </p>
               <Link
                 href={postJobHref}
-                className="font-mono text-xs tracking-widest uppercase px-5 py-3 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors inline-block"
+                className="font-mono text-xs tracking-widest uppercase px-5 py-3 border border-[#CFC8BC] hover:border-stone-400 text-stone-500 hover:text-stone-900 transition-colors inline-block"
               >
                 Post a Job →
               </Link>

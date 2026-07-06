@@ -36,7 +36,7 @@ function splitDescriptionBlocks(text: string): DescriptionBlock[] {
 
 function DescriptionListItem({ children }: { children: React.ReactNode }) {
   return (
-    <li className="flex items-start gap-3 text-stone-600 text-sm leading-relaxed">
+    <li className="flex items-start gap-3 text-stone-500 text-sm leading-relaxed">
       <span className="text-yellow-500 mt-[0.35rem] flex-shrink-0 font-mono leading-none">—</span>
       <span>{children}</span>
     </li>
@@ -60,7 +60,7 @@ export function JobDescriptionBlock({ text }: { text: string }) {
         ) : (
           <div key={blockIndex} className="space-y-3">
             {block.content.map((paragraph, paragraphIndex) => (
-              <p key={paragraphIndex} className="text-stone-600 text-sm leading-relaxed">
+              <p key={paragraphIndex} className="text-stone-500 text-sm leading-relaxed">
                 {paragraph}
               </p>
             ))}

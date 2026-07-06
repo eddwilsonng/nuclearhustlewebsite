@@ -97,7 +97,7 @@ function RankedList({
     <div className="border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
       {items.map(({ name, count }, i) => (
         <div key={name} className="flex items-center gap-4 px-4 py-3 hover:bg-[#E5DFD5] transition-colors">
-          {numbered && <span className="font-mono text-[10px] text-stone-300 w-5 shrink-0">{i + 1}</span>}
+          {numbered && <span className="font-mono text-[10px] text-stone-400 w-5 shrink-0">{i + 1}</span>}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1.5">
               <span className="font-mono text-xs font-semibold text-stone-900">{name}</span>
@@ -126,7 +126,7 @@ export default function SkillsReportPage() {
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-600">//</span>
+          <span className="text-stone-500">//</span>
           <BrowseBreadcrumbCurrent>Skills report</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
 
@@ -166,8 +166,8 @@ export default function SkillsReportPage() {
             {/* Certifications */}
             <section>
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">Credentials</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-3">Most-requested training &amp; certifications</h2>
-              <p className="font-mono text-xs text-stone-700 leading-relaxed mb-6">
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-3">Most-requested training &amp; certifications</h2>
+              <p className="font-mono text-xs text-stone-900 leading-relaxed mb-6">
                 {topCert && (
                   <>
                     {topCert.name} leads — required or preferred in {topCert.count} of {jobsWithSkills.length} skilled listings ({pctOfSkilled(topCert.count)}%).{' '}
@@ -182,8 +182,8 @@ export default function SkillsReportPage() {
             {clearances.length > 0 && (
               <section>
                 <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">Access</p>
-                <h2 className="font-mono text-xl font-bold text-stone-900 mb-3">Security clearance &amp; site access</h2>
-                <p className="font-mono text-xs text-stone-700 leading-relaxed mb-6">
+                <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-3">Security clearance &amp; site access</h2>
+                <p className="font-mono text-xs text-stone-900 leading-relaxed mb-6">
                   Most plant roles require unescorted site access — granted after a background check and fitness-for-duty screening. A handful of roles also call for DOE clearances.
                 </p>
                 <RankedList items={clearances} showShare />
@@ -193,8 +193,8 @@ export default function SkillsReportPage() {
             {/* Skills */}
             <section>
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">Most in demand</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-3">Top 20 skills across all listings</h2>
-              <p className="font-mono text-xs text-stone-700 leading-relaxed mb-6">
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-3">Top 20 skills across all listings</h2>
+              <p className="font-mono text-xs text-stone-900 leading-relaxed mb-6">
                 Beyond credentials, employers consistently expect regulatory fluency (NRC regulations, 10 CFR, ASME and ANSI standards), reactor-type knowledge (PWR, BWR, AP1000), and radiation protection awareness.
               </p>
               <RankedList items={topSkills} showShare numbered />
@@ -206,7 +206,7 @@ export default function SkillsReportPage() {
             {/* By job category */}
             <section>
               <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">By role</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-6">Top skills per job category</h2>
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-6">Top skills per job category</h2>
 
               <div className="space-y-8">
                 {Object.entries(CATEGORIES).map(([slug, label]) => {
@@ -219,7 +219,7 @@ export default function SkillsReportPage() {
                       <div className="flex items-baseline gap-3 mb-3">
                         <Link
                           href={`/jobs/role/${slug}`}
-                          className="font-mono text-xs font-bold text-stone-900 hover:text-yellow-600 transition-colors"
+                          className="font-mono text-xs font-bold text-stone-900 hover:text-yellow-500 transition-colors"
                         >
                           {label} →
                         </Link>
@@ -242,7 +242,7 @@ export default function SkillsReportPage() {
 
               <div className="border border-yellow-300 bg-yellow-50 p-5">
                 <p className="font-mono text-[10px] tracking-widest uppercase text-yellow-700 mb-2">Browse open roles</p>
-                <p className="font-mono text-xs text-stone-600 leading-relaxed mb-4">
+                <p className="font-mono text-xs text-stone-500 leading-relaxed mb-4">
                   Find nuclear jobs that match your skills and certifications.
                 </p>
                 <Link
@@ -270,7 +270,7 @@ export default function SkillsReportPage() {
                 <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-2">Also see</p>
                 <Link
                   href="/nuclear-salary"
-                  className="block font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors"
+                  className="block font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors"
                 >
                   Nuclear salary guide →
                 </Link>

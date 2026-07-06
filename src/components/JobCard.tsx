@@ -48,92 +48,97 @@ export function JobCard({ job, hideCategory = false, isAuthenticated = false, in
 
   const hasSkills = job.skills && job.skills.length > 0;
 
+  // One context chip, not five — category when it's meaningful, otherwise the
+  // employment type. The salary stays the strongest right-side element.
+  const contextLabel = showCategory ? categoryLabel : job.employment_type || null;
+
   return (
     <Link
       href={`/job/${job.slug}`}
-      className={`block px-4 py-4 bg-[#EDE8DF] border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors group ${isFeatured ? 'border-l-2 border-l-yellow-400' : ''}`}
+      className={`block px-4 py-5 bg-[#EDE8DF] border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors group ${isFeatured ? 'border-l-2 border-l-yellow-400' : ''}`}
     >
       {/* Top row: initials + title + meta */}
-      <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+      <div className="flex items-start gap-3 sm:gap-4">
         {/* Company initials */}
         <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center border ${isEmployerJob ? 'border-yellow-300 bg-yellow-50' : 'border-[#CFC8BC] bg-[#E5DFD5]'}`}>
-          <span className={`font-mono text-xs font-bold ${isEmployerJob ? 'text-yellow-600' : 'text-stone-400'}`}>
+          <span className={`font-mono text-xs font-bold ${isEmployerJob ? 'text-yellow-700' : 'text-stone-400'}`}>
             {getCompanyInitials(job.company.name)}
           </span>
         </div>
 
-        {/* Job info */}
+        {/* Info column — holds title, meta, right-meta and skills so the skills
+            row aligns under the title without a hardcoded indent. */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-mono text-sm font-semibold text-stone-900 line-clamp-2 sm:truncate sm:line-clamp-none group-hover:text-yellow-600 transition-colors">
-            {job.title}
-          </h3>
-          <div className="flex items-center justify-between gap-3 mt-0.5">
-            <p className="font-mono text-xs text-stone-400 min-w-0 truncate">
-              {job.company.name} <span aria-hidden="true">//</span> {job.location}
-            </p>
-            <span className="font-mono text-[10px] text-stone-400 whitespace-nowrap shrink-0 sm:hidden" suppressHydrationWarning>
-              {getPostedLabel(job.scraped_at)}
-            </span>
-          </div>
-        </div>
+          <div className="flex items-start justify-between gap-4">
+            {/* Job title + company/location */}
+            <div className="min-w-0">
+              <h3 className="font-sans text-[15px] font-semibold tracking-tight text-stone-900 line-clamp-2 sm:truncate sm:line-clamp-none group-hover:text-yellow-500 transition-colors">
+                {job.title}
+              </h3>
+              <div className="flex items-center justify-between gap-3 mt-1">
+                <p className="font-mono text-xs text-stone-500 min-w-0 truncate">
+                  {job.company.name} <span aria-hidden="true">//</span> {job.location}
+                </p>
+                <span className="font-mono text-[10px] text-stone-400 whitespace-nowrap shrink-0 sm:hidden" suppressHydrationWarning>
+                  {getPostedLabel(job.scraped_at)}
+                </span>
+              </div>
+            </div>
 
-        {/* Right meta — desktop only */}
-        <div className="hidden sm:flex flex-shrink-0 items-center gap-3">
-          {isFeatured && (
-            <span className="font-mono text-[10px] tracking-widest uppercase border border-yellow-400 bg-yellow-50 text-yellow-700 px-2 py-0.5">
-              Featured
-            </span>
+            {/* Right meta — desktop only */}
+            <div className="hidden sm:flex flex-shrink-0 items-center gap-2.5">
+              {isFeatured && (
+                <span className="font-mono text-[10px] tracking-widest uppercase border border-yellow-400 bg-yellow-50 text-yellow-700 px-2 py-0.5">
+                  Featured
+                </span>
+              )}
+              {isEmployerJob && !isFeatured && (
+                <span className="font-mono text-[10px] tracking-widest uppercase border border-yellow-400 bg-yellow-50 text-yellow-700 px-2 py-0.5">
+                  Direct
+                </span>
+              )}
+              {contextLabel && (
+                <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 border border-[#CFC8BC] px-2 py-0.5">
+                  {contextLabel}
+                </span>
+              )}
+              {salaryLabel && (
+                <span className="font-mono text-[10px] font-semibold text-stone-900 border border-[#CFC8BC] bg-[#E5DFD5] px-2 py-0.5 whitespace-nowrap">
+                  {salaryLabel}
+                </span>
+              )}
+              <span className="font-mono text-[10px] text-stone-400 whitespace-nowrap" suppressHydrationWarning>
+                {getPostedLabel(job.scraped_at)}
+              </span>
+              <SaveJobButton
+                jobSlug={job.slug}
+                jobId={job.id}
+                isAuthenticated={isAuthenticated}
+                initialSaved={initialSaved}
+                className="p-1 -mr-1"
+              />
+            </div>
+          </div>
+
+          {/* Skills row — aligns under the title inside the info column */}
+          {hasSkills && (
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {job.skills!.map((skill) => {
+                const Icon = SKILL_ICONS[getSkillIconCategory(skill)];
+                return (
+                  <span
+                    key={skill}
+                    className="flex items-center gap-1 font-mono text-[10px] tracking-widest uppercase text-stone-500 border border-[#CFC8BC] px-2 py-1"
+                  >
+                    <Icon size={10} className="text-stone-400 flex-shrink-0" />
+                    {skill}
+                  </span>
+                );
+              })}
+            </div>
           )}
-          {isEmployerJob && !isFeatured && (
-            <span className="font-mono text-[10px] tracking-widest uppercase border border-yellow-200 text-yellow-600 px-2 py-0.5">
-              Direct
-            </span>
-          )}
-          {job.employment_type && (
-            <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 border border-[#CFC8BC] px-2 py-0.5">
-              {job.employment_type}
-            </span>
-          )}
-          {showCategory && (
-            <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 border border-[#CFC8BC] px-2 py-0.5">
-              {categoryLabel}
-            </span>
-          )}
-          {salaryLabel && (
-            <span className="font-mono text-[10px] font-semibold text-stone-700 border border-[#CFC8BC] px-2 py-0.5 whitespace-nowrap">
-              {salaryLabel}
-            </span>
-          )}
-          <span className="font-mono text-[10px] text-stone-400 whitespace-nowrap" suppressHydrationWarning>
-            {getPostedLabel(job.scraped_at)}
-          </span>
-          <SaveJobButton
-            jobSlug={job.slug}
-            jobId={job.id}
-            isAuthenticated={isAuthenticated}
-            initialSaved={initialSaved}
-            className="p-1 -mr-1"
-          />
         </div>
       </div>
-
-      {/* Skills row */}
-      {hasSkills && (
-        <div className="mt-2.5 ml-[52px] flex flex-wrap gap-1.5">
-          {job.skills!.map((skill) => {
-            const Icon = SKILL_ICONS[getSkillIconCategory(skill)];
-            return (
-              <span
-                key={skill}
-                className="flex items-center gap-1 font-mono text-[10px] tracking-widest uppercase text-stone-500 border border-[#CFC8BC] px-2 py-1"
-              >
-                <Icon size={10} className="text-stone-400 flex-shrink-0" />
-                {skill}
-              </span>
-            );
-          })}
-        </div>
-      )}
     </Link>
   );
 }
@@ -147,10 +152,10 @@ export function JobCardCompact({ job }: JobCardProps) {
     >
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="font-mono text-xs font-semibold text-stone-900 truncate group-hover:text-yellow-600 transition-colors">
+          <h3 className="font-sans text-[13px] font-semibold tracking-tight text-stone-900 truncate group-hover:text-yellow-500 transition-colors">
             {job.title}
           </h3>
-          <p className="font-mono text-xs text-stone-400 mt-0.5">{job.company.name} // {job.location}</p>
+          <p className="font-mono text-xs text-stone-500 mt-0.5 truncate">{job.company.name} // {job.location}</p>
         </div>
         <span className="font-mono text-[10px] text-stone-400 flex-shrink-0 whitespace-nowrap" suppressHydrationWarning>
           {getPostedLabel(job.scraped_at)}

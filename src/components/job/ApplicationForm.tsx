@@ -56,7 +56,7 @@ export function ApplicationForm({ jobId, jobTitle, companyName }: ApplicationFor
 
   return (
     <div className="border border-[#CFC8BC] p-6">
-      <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">Apply for this role</p>
+      <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">Apply for this role</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {errorMessage && (
@@ -95,7 +95,7 @@ export function ApplicationForm({ jobId, jobTitle, companyName }: ApplicationFor
 
         <div>
           <label htmlFor="message" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-1.5">
-            Cover Letter <span className="normal-case text-stone-600">(optional)</span>
+            Cover Letter <span className="normal-case text-stone-500">(optional)</span>
           </label>
           <textarea
             id="message"
@@ -108,7 +108,7 @@ export function ApplicationForm({ jobId, jobTitle, companyName }: ApplicationFor
 
         <div>
           <label htmlFor="cv" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-1.5">
-            CV / Resume <span className="normal-case text-stone-600">(PDF or Word · max 5MB)</span>
+            CV / Resume <span className="normal-case text-stone-500">(PDF or Word · max 5MB)</span>
           </label>
           <input
             id="cv"
@@ -116,14 +116,14 @@ export function ApplicationForm({ jobId, jobTitle, companyName }: ApplicationFor
             type="file"
             accept=".pdf,.doc,.docx"
             required
-            className="w-full text-sm text-stone-500 font-mono file:mr-3 file:py-1.5 file:px-3 file:border file:border-[#CFC8BC] file:text-xs file:font-mono file:uppercase file:tracking-widest file:bg-[#EDE8DF] file:text-stone-600 hover:file:bg-[#E5DFD5] file:cursor-pointer"
+            className="w-full text-sm text-stone-500 font-mono file:mr-3 file:py-1.5 file:px-3 file:border file:border-[#CFC8BC] file:text-xs file:font-mono file:uppercase file:tracking-widest file:bg-[#EDE8DF] file:text-stone-500 hover:file:bg-[#E5DFD5] file:cursor-pointer"
           />
         </div>
 
         <button
           type="submit"
           disabled={status === 'submitting'}
-          className="w-full py-3 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:bg-yellow-200 text-stone-900 font-mono text-xs tracking-widest uppercase font-bold transition-colors"
+          className="w-full py-3 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-stone-900 font-mono text-xs tracking-widest uppercase font-bold transition-colors"
         >
           {status === 'submitting' ? 'Sending...' : `Apply for ${jobTitle} →`}
         </button>

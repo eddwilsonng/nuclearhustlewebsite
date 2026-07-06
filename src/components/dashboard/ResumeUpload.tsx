@@ -15,7 +15,7 @@ export function ResumeUpload({ currentResumeUrl, currentFilename }: ResumeUpload
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-2">Resume</label>
+        <label className="block text-sm font-medium text-stone-900 mb-2">Resume</label>
 
         {currentResumeUrl && currentFilename && (
           <div className="mb-4 p-3 bg-[#E5DFD5] rounded-md flex items-center justify-between">
@@ -42,7 +42,7 @@ export function ResumeUpload({ currentResumeUrl, currentFilename }: ResumeUpload
         )}
 
         <form action={formAction}>
-          <div className="border-2 border-dashed border-stone-300 rounded-md p-6 text-center hover:border-yellow-500 transition-colors">
+          <div className="border-2 border-dashed border-[#CFC8BC] rounded-md p-6 text-center hover:border-yellow-500 transition-colors">
             <input
               type="file"
               name="resume"
@@ -65,7 +65,7 @@ export function ResumeUpload({ currentResumeUrl, currentFilename }: ResumeUpload
                   d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                 />
               </svg>
-              <p className="mt-2 text-sm text-stone-600">
+              <p className="mt-2 text-sm text-stone-500">
                 {fileName || 'Click to upload or drag and drop'}
               </p>
               <p className="mt-1 text-xs text-stone-500">PDF or Word (max 5MB)</p>
@@ -76,7 +76,7 @@ export function ResumeUpload({ currentResumeUrl, currentFilename }: ResumeUpload
             <button
               type="submit"
               disabled={isPending}
-              className="mt-4 w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-400 disabled:bg-yellow-300 text-stone-900 font-semibold rounded-md transition-colors"
+              className="mt-4 w-full py-2 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-stone-900 font-semibold rounded-md transition-colors"
             >
               {isPending ? 'Uploading...' : 'Upload Resume'}
             </button>

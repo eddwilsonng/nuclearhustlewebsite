@@ -23,7 +23,7 @@ export function JobSeekerProfileForm({
 
   return (
     <div className="max-w-2xl">
-      <h1 className="font-mono text-2xl font-bold text-stone-900 mb-6">My Profile</h1>
+      <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 leading-tight mb-6">My Profile</h1>
 
       <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-6 mb-6">
         <h2 className="font-mono text-sm font-bold tracking-widest uppercase text-stone-900 mb-4">
@@ -74,14 +74,14 @@ export function JobSeekerProfileForm({
 
           <div>
             <label htmlFor="phone" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">
-              Phone <span className="text-stone-300 normal-case tracking-normal">(optional)</span>
+              Phone <span className="text-stone-400 normal-case tracking-normal">(optional)</span>
             </label>
             <input
               id="phone"
               name="phone"
               type="tel"
               defaultValue={jobSeekerProfile?.phone || ''}
-              className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-300"
+              className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-400"
               placeholder="(555) 123-4567"
             />
           </div>
@@ -89,20 +89,20 @@ export function JobSeekerProfileForm({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="location" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">
-                City <span className="text-stone-300 normal-case tracking-normal">(optional)</span>
+                City <span className="text-stone-400 normal-case tracking-normal">(optional)</span>
               </label>
               <input
                 id="location"
                 name="location"
                 type="text"
                 defaultValue={jobSeekerProfile?.location || ''}
-                className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-300"
+                className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-400"
                 placeholder="Chicago"
               />
             </div>
             <div>
               <label htmlFor="state" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">
-                State <span className="text-stone-300 normal-case tracking-normal">(optional)</span>
+                State <span className="text-stone-400 normal-case tracking-normal">(optional)</span>
               </label>
               <select
                 id="state"
@@ -150,7 +150,7 @@ export function JobSeekerProfileForm({
           <button
             type="submit"
             disabled={isPending}
-            className="w-full py-3 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:bg-yellow-200 text-stone-900 font-mono text-xs tracking-widest uppercase font-bold transition-colors"
+            className="w-full py-3 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-stone-900 font-mono text-xs tracking-widest uppercase font-bold transition-colors"
           >
             {isPending ? 'Saving...' : 'Save Changes'}
           </button>

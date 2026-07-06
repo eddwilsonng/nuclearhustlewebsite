@@ -5,10 +5,10 @@ import { getEmailHealth } from '@/lib/data/emailHealth';
 
 function StatCard({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4">
-      <p className="text-xs font-mono tracking-widest uppercase text-gray-400 mb-1">{label}</p>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-      {hint && <p className="text-xs text-gray-400 font-mono mt-1">{hint}</p>}
+    <div className="bg-white border border-[#CFC8BC] p-4">
+      <p className="text-xs font-mono tracking-widest uppercase text-stone-400 mb-1">{label}</p>
+      <p className="text-2xl font-bold text-stone-900">{value}</p>
+      {hint && <p className="text-xs text-stone-400 font-mono mt-1">{hint}</p>}
     </div>
   );
 }
@@ -27,36 +27,36 @@ export default async function AdminEmailPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Email Health</h1>
-      <p className="text-sm text-gray-500 mb-8 font-mono">
+      <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mb-1">Email Health</h1>
+      <p className="text-sm text-stone-500 mb-8 font-mono">
         Subscriber list and Resend deliverability — no Pro plan required
       </p>
 
-      <h2 className="text-sm font-mono tracking-widest uppercase text-gray-500 mb-3">Subscribers</h2>
+      <h2 className="text-sm font-mono tracking-widest uppercase text-stone-500 mb-3">Subscribers</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
         <StatCard label="Total" value={subscribers.total} />
         <StatCard label="Active" value={subscribers.active} />
         <StatCard label="Unsubscribed" value={subscribers.unsubscribed} />
       </div>
 
-      <h2 className="text-sm font-mono tracking-widest uppercase text-gray-500 mb-3">
+      <h2 className="text-sm font-mono tracking-widest uppercase text-stone-500 mb-3">
         Deliverability {events ? `(last ${events.windowDays}d)` : ''}
       </h2>
 
       {events === null ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <p className="text-sm text-gray-500 font-mono leading-relaxed">
+        <div className="bg-white border border-[#CFC8BC] p-6">
+          <p className="text-sm text-stone-500 font-mono leading-relaxed">
             No event data yet. To capture delivery, bounce, and complaint events for free:
           </p>
-          <ol className="text-sm text-gray-500 font-mono leading-relaxed list-decimal pl-5 mt-3 space-y-1">
+          <ol className="text-sm text-stone-500 font-mono leading-relaxed list-decimal pl-5 mt-3 space-y-1">
             <li>
-              Run <code className="text-gray-700">supabase/email-events-migration.sql</code> in the
+              Run <code className="text-stone-900">supabase/email-events-migration.sql</code> in the
               Supabase SQL editor.
             </li>
             <li>
               Add a webhook in Resend pointing at{' '}
-              <code className="text-gray-700">/api/webhooks/resend</code> and set{' '}
-              <code className="text-gray-700">RESEND_WEBHOOK_SECRET</code>.
+              <code className="text-stone-900">/api/webhooks/resend</code> and set{' '}
+              <code className="text-stone-900">RESEND_WEBHOOK_SECRET</code>.
             </li>
           </ol>
         </div>

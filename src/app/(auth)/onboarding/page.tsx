@@ -8,7 +8,7 @@ export const metadata = {
 export default function OnboardingPage() {
   return (
     <div className="w-full max-w-lg">
-      <h1 className="font-mono text-2xl font-bold text-stone-900 mb-2">
+      <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 leading-tight mb-2">
         One more step.
       </h1>
       <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-8">

@@ -122,11 +122,11 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
       {/* Breadcrumb */}
       <div className="border-b border-[#CFC8BC]">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-2 font-mono text-xs text-stone-400">
-          <Link href="/status" className="hover:text-stone-600 transition-colors">Fleet Status</Link>
+          <Link href="/status" className="hover:text-stone-500 transition-colors">Fleet Status</Link>
           <span className="text-[#CFC8BC]">/</span>
-          <Link href="/plants" className="hover:text-stone-600 transition-colors">All Plants</Link>
+          <Link href="/plants" className="hover:text-stone-500 transition-colors">All Plants</Link>
           <span className="text-[#CFC8BC]">/</span>
-          <span className="text-stone-600">{plant.name}</span>
+          <span className="text-stone-500">{plant.name}</span>
         </div>
       </div>
 
@@ -157,7 +157,7 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
                   <p className="font-mono text-xs text-stone-400">{avgPower}% avg output</p>
                 )}
                 {reportDate && (
-                  <p className="font-mono text-[10px] text-stone-300 mt-0.5">
+                  <p className="font-mono text-[10px] text-stone-400 mt-0.5">
                     NRC {reportDate.split(' ')[0]}
                   </p>
                 )}
@@ -185,7 +185,7 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
                     full: 'text-green-600',
                     reduced: 'text-yellow-500',
                     offline: 'text-red-500',
-                    unknown: 'text-stone-300',
+                    unknown: 'text-stone-400',
                   }[uStatus];
 
                   return (
@@ -233,7 +233,7 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
                 {jobs.length > 0 && stateInfo && (
                   <Link
                     href={`/jobs/${stateInfo.slug}`}
-                    className="font-mono text-xs text-stone-400 hover:text-stone-600 transition-colors"
+                    className="font-mono text-xs text-stone-400 hover:text-stone-500 transition-colors"
                   >
                     {stateInfo.name} jobs →
                   </Link>
@@ -252,7 +252,7 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
                   {stateInfo && (
                     <Link
                       href={`/jobs/${stateInfo.slug}`}
-                      className="inline-block mt-4 font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] text-stone-600 hover:bg-[#E5DFD5] transition-colors"
+                      className="inline-block mt-4 font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5] transition-colors"
                     >
                       Browse {stateInfo.name} jobs →
                     </Link>
@@ -273,19 +273,19 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
               </div>
               <div className="divide-y divide-[#CFC8BC]">
                 <div className="px-5 py-3">
-                  <p className="font-mono text-[10px] tracking-widest uppercase text-stone-300 mb-0.5">Location</p>
-                  <p className="font-mono text-sm text-stone-700">{plant.city}, {stateInfo?.name ?? plant.state}</p>
+                  <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-0.5">Location</p>
+                  <p className="font-mono text-sm text-stone-900">{plant.city}, {stateInfo?.name ?? plant.state}</p>
                 </div>
                 <div className="px-5 py-3">
-                  <p className="font-mono text-[10px] tracking-widest uppercase text-stone-300 mb-0.5">Operator</p>
-                  <p className="font-mono text-sm text-stone-700">{plant.operator}</p>
+                  <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-0.5">Operator</p>
+                  <p className="font-mono text-sm text-stone-900">{plant.operator}</p>
                 </div>
                 <div className="px-5 py-3">
-                  <p className="font-mono text-[10px] tracking-widest uppercase text-stone-300 mb-0.5">Units</p>
-                  <p className="font-mono text-sm text-stone-700">{plant.units.length} reactor{plant.units.length > 1 ? 's' : ''}</p>
+                  <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-0.5">Units</p>
+                  <p className="font-mono text-sm text-stone-900">{plant.units.length} reactor{plant.units.length > 1 ? 's' : ''}</p>
                 </div>
                 <div className="px-5 py-3">
-                  <p className="font-mono text-[10px] tracking-widest uppercase text-stone-300 mb-0.5">Current Output</p>
+                  <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-0.5">Current Output</p>
                   <p className={`font-mono text-sm font-bold ${statusColor}`}>
                     {avgPower !== null ? `${avgPower}%` : '—'} · {statusLabel}
                   </p>
@@ -332,10 +332,10 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
                       className="flex items-center justify-between px-5 py-3 hover:bg-[#E5DFD5] transition-colors group"
                     >
                       <div>
-                        <p className="font-mono text-xs font-bold text-stone-700 group-hover:underline underline-offset-2">{p.name}</p>
+                        <p className="font-mono text-xs font-bold text-stone-900 group-hover:underline underline-offset-2">{p.name}</p>
                         <p className="font-mono text-[10px] text-stone-400 mt-0.5">{p.operator}</p>
                       </div>
-                      <span className="font-mono text-[10px] text-stone-300">→</span>
+                      <span className="font-mono text-[10px] text-stone-400">→</span>
                     </Link>
                   ))}
                 </div>
@@ -346,21 +346,21 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
             <div className="flex flex-col gap-2">
               <Link
                 href="/status"
-                className="font-mono text-xs tracking-widest uppercase px-4 py-3 border border-[#CFC8BC] text-stone-600 hover:bg-[#E5DFD5] transition-colors text-center"
+                className="font-mono text-xs tracking-widest uppercase px-4 py-3 border border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5] transition-colors text-center"
               >
                 ← Fleet Status
               </Link>
               {stateInfo && (
                 <Link
                   href={`/jobs/${stateInfo.slug}`}
-                  className="font-mono text-xs tracking-widest uppercase px-4 py-3 border border-[#CFC8BC] text-stone-600 hover:bg-[#E5DFD5] transition-colors text-center"
+                  className="font-mono text-xs tracking-widest uppercase px-4 py-3 border border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5] transition-colors text-center"
                 >
                   {stateInfo.name} Jobs →
                 </Link>
               )}
               <Link
                 href="/plants"
-                className="font-mono text-xs tracking-widest uppercase px-4 py-3 border border-[#CFC8BC] text-stone-600 hover:bg-[#E5DFD5] transition-colors text-center"
+                className="font-mono text-xs tracking-widest uppercase px-4 py-3 border border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5] transition-colors text-center"
               >
                 All Plants →
               </Link>

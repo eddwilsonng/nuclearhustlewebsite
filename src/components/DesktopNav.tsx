@@ -32,20 +32,20 @@ function ResourcesDropdown({ active }: { active: boolean }) {
     <div className="relative" onMouseEnter={show} onMouseLeave={hide}>
       <button
         className={`group relative font-mono text-xs tracking-widest uppercase transition-colors flex items-center gap-1 ${
-          active ? 'text-stone-900' : 'text-stone-600 hover:text-stone-900'
+          active ? 'text-stone-900' : 'text-stone-500 hover:text-stone-900'
         }`}
       >
         Resources
         <span className={`text-[8px] transition-transform ${open ? 'rotate-180' : ''}`}>▾</span>
         <span
-          className={`absolute -bottom-[6px] left-0 h-px bg-yellow-400 transition-all duration-200 ${
+          className={`absolute -bottom-[6px] left-0 h-0.5 bg-yellow-400 transition-all duration-200 ${
             active ? 'w-full' : 'w-0 group-hover:w-full'
           }`}
         />
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-3 w-52 bg-[#EDE8DF] border border-[#CFC8BC] z-50">
+        <div className="card-raised absolute top-full left-0 mt-3 w-56 bg-[#EDE8DF] border border-[#CFC8BC] z-50">
           {RESOURCES_LINKS.map(({ href, label, desc }) => (
             <Link
               key={href}
@@ -53,10 +53,10 @@ function ResourcesDropdown({ active }: { active: boolean }) {
               onClick={() => setOpen(false)}
               className="block px-4 py-3 border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors group"
             >
-              <span className="block font-mono text-xs font-semibold text-stone-900 group-hover:text-yellow-600 transition-colors">
+              <span className="block font-mono text-xs font-semibold text-stone-900 group-hover:text-yellow-500 transition-colors">
                 {label}
               </span>
-              <span className="block font-mono text-[10px] text-stone-400 mt-0.5">{desc}</span>
+              <span className="block font-mono text-[10px] text-stone-500 mt-0.5">{desc}</span>
             </Link>
           ))}
         </div>
@@ -80,7 +80,7 @@ export function DesktopNav({
   const resourcesActive = RESOURCES_LINKS.some(({ href }) => isActive(href));
 
   return (
-    <nav className="hidden md:flex items-center gap-8">
+    <nav className="hidden md:flex items-center gap-6">
       {BROWSE_LINKS.map(({ href, label }) => {
         const active = isActive(href);
         return (
@@ -89,12 +89,12 @@ export function DesktopNav({
             href={href}
             aria-current={active ? 'page' : undefined}
             className={`group relative font-mono text-xs tracking-widest uppercase transition-colors ${
-              active ? 'text-stone-900' : 'text-stone-600 hover:text-stone-900'
+              active ? 'text-stone-900' : 'text-stone-500 hover:text-stone-900'
             }`}
           >
             {label}
             <span
-              className={`absolute -bottom-[6px] left-0 h-px bg-yellow-400 transition-all duration-200 ${
+              className={`absolute -bottom-[6px] left-0 h-0.5 bg-yellow-400 transition-all duration-200 ${
                 active ? 'w-full' : 'w-0 group-hover:w-full'
               }`}
             />
@@ -111,13 +111,13 @@ export function DesktopNav({
         <>
           <Link
             href="/signup/employer"
-            className="font-mono text-xs tracking-widest uppercase text-stone-600 hover:text-stone-900 transition-colors"
+            className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] hover:border-stone-400 text-stone-500 hover:text-stone-900 transition-colors"
           >
             Post a Job
           </Link>
           <Link
             href="/login"
-            className="font-mono text-xs tracking-widest uppercase text-stone-600 hover:text-stone-900 transition-colors"
+            className="font-mono text-xs tracking-widest uppercase text-stone-500 hover:text-stone-900 transition-colors"
           >
             Log In
           </Link>

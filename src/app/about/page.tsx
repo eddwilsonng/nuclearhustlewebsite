@@ -14,8 +14,8 @@ export default function AboutPage() {
       {/* Hero */}
       <section className="py-20 md:py-28 border-b border-[#CFC8BC]">
         <div className="max-w-4xl mx-auto px-6">
-          <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">About</p>
-          <h1 className="font-mono text-4xl md:text-5xl font-bold text-stone-900 leading-tight max-w-2xl">
+          <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">About</p>
+          <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 leading-tight max-w-2xl">
             Built for the people who keep the lights on.
           </h1>
           <p className="mt-6 text-stone-500 text-lg max-w-xl leading-relaxed">
@@ -31,8 +31,8 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             <div>
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">01</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-4">Why nuclear?</h2>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">01</p>
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-4">Why nuclear?</h2>
               <p className="text-sm text-stone-500 leading-relaxed">
                 Nuclear power produces more carbon-free electricity than any other source in the US.
                 With new reactors being built and existing plants extending their operating licenses,
@@ -40,8 +40,8 @@ export default function AboutPage() {
               </p>
             </div>
             <div>
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">02</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-4">The problem</h2>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">02</p>
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-4">The problem</h2>
               <p className="text-sm text-stone-500 leading-relaxed">
                 Nuclear is a niche field with specific licensing, clearance, and experience requirements.
                 General job boards don&apos;t understand the industry. Candidates waste time. Employers
@@ -49,8 +49,8 @@ export default function AboutPage() {
               </p>
             </div>
             <div>
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-4">03</p>
-              <h2 className="font-mono text-xl font-bold text-stone-900 mb-4">Our mission</h2>
+              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">03</p>
+              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-4">Our mission</h2>
               <p className="text-sm text-stone-500 leading-relaxed">
                 Make it simple for nuclear professionals to find their next role, and for employers
                 to reach the right candidates — without the noise of generic job platforms.
@@ -63,8 +63,8 @@ export default function AboutPage() {
       {/* How it works */}
       <section className="py-20 border-b border-[#CFC8BC]">
         <div className="max-w-4xl mx-auto px-6">
-          <p className="font-mono text-xs tracking-widest uppercase text-stone-300 mb-2">How it works</p>
-          <h2 className="font-mono text-2xl font-bold text-stone-900 mb-12">For everyone in nuclear.</h2>
+          <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">How it works</p>
+          <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-12">For everyone in nuclear.</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Job seekers */}
@@ -121,7 +121,7 @@ export default function AboutPage() {
               </ul>
               <Link
                 href="/signup/employer"
-                className="inline-block mt-8 font-mono text-xs tracking-widest uppercase px-5 py-2.5 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors"
+                className="inline-block mt-8 font-mono text-xs tracking-widest uppercase px-5 py-2.5 border border-[#CFC8BC] hover:border-stone-400 text-stone-500 hover:text-stone-900 transition-colors"
               >
                 Post a job →
               </Link>
@@ -148,7 +148,7 @@ export default function AboutPage() {
             </Link>
             <Link
               href="/signup/employer"
-              className="font-mono text-xs tracking-widest uppercase px-6 py-3 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors"
+              className="font-mono text-xs tracking-widest uppercase px-6 py-3 border border-[#CFC8BC] hover:border-stone-400 text-stone-500 hover:text-stone-900 transition-colors"
             >
               Post a Job
             </Link>

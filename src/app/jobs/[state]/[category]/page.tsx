@@ -13,6 +13,7 @@ import {
 import { getStateBySlug } from '@/lib/states';
 import { getCategoryInfo, getAllCategories, JobCategory } from '@/lib/categorize';
 import { PaginatedJobResults } from '@/components/PaginatedJobResults';
+import { Sidebar, SidebarSection, SidebarNavList, SidebarCTA, SidebarAlertCard } from '@/components/sidebar/Sidebar';
 import {
   BrowsePageHeader,
   BrowseBreadcrumb,
@@ -134,11 +135,11 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-600" aria-hidden="true">//</span>
+          <span className="text-stone-500" aria-hidden="true">//</span>
           <BrowseBreadcrumbLink href="/jobs">Jobs</BrowseBreadcrumbLink>
-          <span className="text-stone-600" aria-hidden="true">//</span>
+          <span className="text-stone-500" aria-hidden="true">//</span>
           <BrowseBreadcrumbLink href={`/jobs/${state}`}>{stateInfo.name}</BrowseBreadcrumbLink>
-          <span className="text-stone-600" aria-hidden="true">//</span>
+          <span className="text-stone-500" aria-hidden="true">//</span>
           <BrowseBreadcrumbCurrent>{categoryInfo.name}</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
 
@@ -201,7 +202,7 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
                   </Link>
                   <Link
                     href={`/jobs/${state}`}
-                    className="font-mono text-xs tracking-widest uppercase px-5 py-3 border border-[#CFC8BC] text-stone-600 hover:text-stone-900 hover:border-stone-400 transition-colors"
+                    className="font-mono text-xs tracking-widest uppercase px-5 py-3 border border-[#CFC8BC] text-stone-500 hover:text-stone-900 hover:border-stone-400 transition-colors"
                   >
                     All {stateInfo.name} jobs →
                   </Link>
@@ -211,93 +212,49 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-8">
-            {/* Job alert CTA */}
-            <div className="border border-yellow-300 bg-yellow-50 p-5">
-              <p className="font-mono text-[10px] tracking-widest uppercase text-yellow-700 mb-2">Free job alerts</p>
-              <p className="font-mono text-xs text-stone-600 leading-relaxed mb-4">
-                Be first to hear about new {categoryInfo.name.toLowerCase()} roles in {stateInfo.name}.
-              </p>
-              <Link
-                href="/signup"
-                className="block text-center font-mono text-xs tracking-widest uppercase px-4 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
-              >
-                Create free alert →
-              </Link>
-            </div>
+          <Sidebar>
+            <SidebarAlertCard
+              body={`Be first to hear about new ${categoryInfo.name.toLowerCase()} roles in ${stateInfo.name}.`}
+            />
 
-            {/* Other roles in this state */}
             {otherRolesInState.length > 0 && (
-              <div>
-                <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">
-                  Other roles in {stateInfo.name}
-                </p>
-                <ul className="border border-[#CFC8BC]">
-                  {otherRolesInState.map(({ category: cat, name, count }) => (
-                    <li key={cat} className="border-b border-[#CFC8BC] last:border-b-0">
-                      <Link
-                        href={`/jobs/${state}/${cat}`}
-                        className="flex items-center justify-between px-3 py-2 font-mono text-xs tracking-widest uppercase text-stone-500 hover:text-stone-900 hover:bg-[#E5DFD5] transition-colors"
-                      >
-                        <span>{name}</span>
-                        <span className="text-stone-400">{count}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href={`/jobs/${state}`}
-                  className="block font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors mt-3"
-                >
-                  All {stateInfo.name} jobs →
-                </Link>
-              </div>
-            )}
-
-            {/* This role in other states */}
-            {sameRoleOtherStates.length > 0 && (
-              <div>
-                <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">
-                  {categoryInfo.name} in other states
-                </p>
-                <ul className="border border-[#CFC8BC]">
-                  {sameRoleOtherStates.map(({ stateSlug, state: s, count }) => (
-                    <li key={stateSlug} className="border-b border-[#CFC8BC] last:border-b-0">
-                      <Link
-                        href={`/jobs/${stateSlug}/${category}`}
-                        className="flex items-center justify-between px-3 py-2 font-mono text-xs tracking-widest uppercase text-stone-500 hover:text-stone-900 hover:bg-[#E5DFD5] transition-colors"
-                      >
-                        <span>{s!.name}</span>
-                        <span className="text-stone-400">{count}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href={`/jobs/role/${category}`}
-                  className="block font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors mt-3"
-                >
-                  All {categoryInfo.name.toLowerCase()} jobs →
-                </Link>
-              </div>
-            )}
-
-            {/* Employer nudge */}
-            <div className="border border-[#CFC8BC] p-5">
-              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-2">
-                Hiring in {stateInfo.name}?
-              </p>
-              <p className="font-mono text-xs text-stone-500 leading-relaxed mb-4">
-                Post a {categoryInfo.name.toLowerCase()} role and reach qualified nuclear professionals.
-              </p>
-              <Link
-                href="/signup/employer"
-                className="block text-center font-mono text-xs tracking-widest uppercase px-4 py-2.5 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors"
+              <SidebarSection
+                label={`Other roles in ${stateInfo.name}`}
+                footerHref={`/jobs/${state}`}
+                footerLabel={`All ${stateInfo.name} jobs →`}
               >
-                Post a job →
-              </Link>
-            </div>
-          </div>
+                <SidebarNavList
+                  items={otherRolesInState.map(({ category: cat, name, count }) => ({
+                    href: `/jobs/${state}/${cat}`,
+                    label: name,
+                    count,
+                  }))}
+                />
+              </SidebarSection>
+            )}
+
+            {sameRoleOtherStates.length > 0 && (
+              <SidebarSection
+                label={`${categoryInfo.name} in other states`}
+                footerHref={`/jobs/role/${category}`}
+                footerLabel={`All ${categoryInfo.name.toLowerCase()} jobs →`}
+              >
+                <SidebarNavList
+                  items={sameRoleOtherStates.map(({ stateSlug, state: s, count }) => ({
+                    href: `/jobs/${stateSlug}/${category}`,
+                    label: s!.name,
+                    count,
+                  }))}
+                />
+              </SidebarSection>
+            )}
+
+            <SidebarCTA
+              label={`Hiring in ${stateInfo.name}?`}
+              body={`Post a ${categoryInfo.name.toLowerCase()} role and reach qualified nuclear professionals.`}
+              href="/signup/employer"
+            />
+          </Sidebar>
         </div>
       </div>
     </div>

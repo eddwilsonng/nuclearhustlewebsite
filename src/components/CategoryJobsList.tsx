@@ -5,6 +5,7 @@ import type { JobWithCompany } from '@/lib/types';
 import { toJobListItem } from '@/lib/jobUtils';
 import { getStateBySlug } from '@/lib/states';
 import { PaginatedJobResults } from './PaginatedJobResults';
+import { JobAlertForm } from './JobAlertForm';
 
 type SortOption = 'recent' | 'featured' | 'alphabetical';
 
@@ -110,7 +111,7 @@ export function CategoryJobsList({
               }`}
             >
               {state.name}
-              <span className="ml-1.5 text-stone-400">({count})</span>
+              <span className="ml-1.5 text-stone-500 font-semibold tabular-nums">({count})</span>
             </button>
           ))}
         </div>
@@ -144,9 +145,15 @@ export function CategoryJobsList({
         />
       ) : (
         <div className="border border-[#CFC8BC] p-10 text-center">
-          <p className="font-mono text-sm text-stone-400">
+          <p className="font-sans text-[15px] text-stone-500 mb-2">
             No {categoryName.toLowerCase()} jobs found{selectedState ? ` in ${selectedState}` : ''}.
           </p>
+          <p className="font-sans text-sm text-stone-400 mb-6">
+            New roles are added daily — get notified the moment one is posted.
+          </p>
+          <div className="flex justify-center">
+            <JobAlertForm />
+          </div>
         </div>
       )}
     </div>

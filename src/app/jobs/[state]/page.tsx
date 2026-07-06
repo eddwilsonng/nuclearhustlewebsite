@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import { getJobsByState, getAllStateSlugs, getActiveCategoriesByState, getActiveStates, toJobListItem } from '@/lib/data/static';
 import { getStateBySlug } from '@/lib/states';
 import { PaginatedJobResults } from '@/components/PaginatedJobResults';
+import { JobAlertForm } from '@/components/JobAlertForm';
 import {
   BrowsePageHeader,
   BrowseBreadcrumb,
@@ -15,6 +16,7 @@ import {
   BrowseMeta,
   BrowseAlertLink,
 } from '@/components/BrowsePageHeader';
+import { Sidebar, SidebarSection, SidebarNavList, SidebarCTA } from '@/components/sidebar/Sidebar';
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
 import Script from 'next/script';
@@ -95,9 +97,9 @@ export default async function StatePage({ params, searchParams }: PageProps) {
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-600" aria-hidden="true">//</span>
+          <span className="text-stone-500" aria-hidden="true">//</span>
           <BrowseBreadcrumbLink href="/jobs">Jobs</BrowseBreadcrumbLink>
-          <span className="text-stone-600" aria-hidden="true">//</span>
+          <span className="text-stone-500" aria-hidden="true">//</span>
           <BrowseBreadcrumbCurrent>{stateInfo.name}</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
 
@@ -164,68 +166,39 @@ export default async function StatePage({ params, searchParams }: PageProps) {
                   No jobs currently listed in {stateInfo.name}.
                 </p>
                 <p className="font-mono text-xs text-stone-400 mb-6">
-                  New roles are added daily — set up an alert so you don't miss one.
+                  New roles are added daily — get notified the moment one is posted.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Link
-                    href="/signup"
-                    className="font-mono text-xs tracking-widest uppercase px-5 py-3 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
-                  >
-                    Get job alerts →
-                  </Link>
-                  <Link
-                    href="/jobs"
-                    className="font-mono text-xs tracking-widest uppercase px-5 py-3 border border-[#CFC8BC] text-stone-600 hover:text-stone-900 hover:border-stone-400 transition-colors"
-                  >
-                    Browse all jobs →
-                  </Link>
+                <div className="flex justify-center mb-4">
+                  <JobAlertForm />
                 </div>
+                <Link
+                  href="/jobs"
+                  className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors underline underline-offset-2"
+                >
+                  Or browse all jobs →
+                </Link>
               </div>
             )}
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-8">
+          <Sidebar>
+            <SidebarSection label="Other states" footerHref="/jobs" footerLabel="All locations →">
+              <SidebarNavList
+                items={allActiveStates.map(({ state: otherState, count }) => ({
+                  href: `/jobs/${otherState.slug}`,
+                  label: otherState.name,
+                  count,
+                }))}
+              />
+            </SidebarSection>
 
-            {/* Other states */}
-            <div>
-              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Other states</p>
-              <ul className="space-y-2 border border-[#CFC8BC]">
-                {allActiveStates.map(({ state: otherState, count }) => (
-                  <li key={otherState.slug} className="border-b border-[#CFC8BC] last:border-b-0">
-                    <Link
-                      href={`/jobs/${otherState.slug}`}
-                      className="flex items-center justify-between px-3 py-2 font-mono text-xs tracking-widest uppercase text-stone-500 hover:text-stone-900 hover:bg-[#E5DFD5] transition-colors"
-                    >
-                      <span>{otherState.name}</span>
-                      <span className="text-stone-400">{count}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/jobs"
-                className="block font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors mt-3"
-              >
-                All locations →
-              </Link>
-            </div>
-
-            {/* Employer nudge */}
-            <div className="border border-[#CFC8BC] p-5">
-              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-2">Hiring in {stateInfo.name}?</p>
-              <p className="font-mono text-xs text-stone-500 leading-relaxed mb-4">
-                Post a role and reach nuclear professionals actively looking.
-              </p>
-              <Link
-                href="/signup/employer"
-                className="block text-center font-mono text-xs tracking-widest uppercase px-4 py-2.5 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors"
-              >
-                Post a job →
-              </Link>
-            </div>
-
-          </div>
+            <SidebarCTA
+              label={`Hiring in ${stateInfo.name}?`}
+              body="Post a role and reach nuclear professionals actively looking."
+              href="/signup/employer"
+            />
+          </Sidebar>
         </div>
       </div>
     </div>

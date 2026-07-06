@@ -5,6 +5,7 @@ import { JobListItem, Company } from '@/lib/types';
 import { JobCategory, getCategoryInfo } from '@/lib/categorize';
 import { FilterSidebar } from './FilterSidebar';
 import { PaginatedJobResults } from './PaginatedJobResults';
+import { JobAlertForm } from './JobAlertForm';
 
 interface JobListProps {
   jobs: JobListItem[];
@@ -81,11 +82,14 @@ export function JobList({ jobs, companies, initialPage = 1 }: JobListProps) {
 
       <div className="flex-1 min-w-0">
         {filteredJobs.length === 0 ? (
-          <div className="text-center py-12 bg-[#E5DFD5]">
+          <div className="text-center py-12 bg-[#E5DFD5] px-6">
             <p className="font-mono text-sm text-stone-500">No jobs found matching your criteria.</p>
-            <p className="font-mono text-xs text-stone-400 mt-2">
-              Try adjusting your filters or search terms.
+            <p className="font-mono text-xs text-stone-400 mt-2 mb-6">
+              Try adjusting your filters or search terms — or get new jobs by email instead.
             </p>
+            <div className="flex justify-center">
+              <JobAlertForm />
+            </div>
           </div>
         ) : (
           <PaginatedJobResults

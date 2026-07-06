@@ -17,7 +17,7 @@ export function JobSeekerSignupForm() {
         <input type="hidden" name="role" value="job_seeker" />
         <button
           type="submit"
-          className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-[#CFC8BC] bg-[#EDE8DF] hover:border-stone-400 hover:bg-[#E5DFD5] font-mono text-xs tracking-widest uppercase text-stone-700 transition-colors"
+          className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-[#CFC8BC] bg-[#EDE8DF] hover:border-stone-400 hover:bg-[#E5DFD5] font-mono text-xs tracking-widest uppercase text-stone-900 transition-colors"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0" aria-hidden="true">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -51,7 +51,7 @@ export function JobSeekerSignupForm() {
             name="fullName"
             type="text"
             required
-            className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-300"
+            className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-400"
             placeholder="John Doe"
           />
         </div>
@@ -65,7 +65,7 @@ export function JobSeekerSignupForm() {
             name="email"
             type="email"
             required
-            className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-300"
+            className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-400"
             placeholder="you@example.com"
           />
         </div>
@@ -80,7 +80,7 @@ export function JobSeekerSignupForm() {
             type="password"
             required
             minLength={8}
-            className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-300"
+            className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-400"
             placeholder="••••••••"
           />
           <p className="mt-1.5 font-mono text-[10px] text-stone-400">Min. 8 characters</p>
@@ -89,19 +89,19 @@ export function JobSeekerSignupForm() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="location" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">
-              City <span className="text-stone-300 normal-case tracking-normal">(optional)</span>
+              City <span className="text-stone-400 normal-case tracking-normal">(optional)</span>
             </label>
             <input
               id="location"
               name="location"
               type="text"
-              className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-300"
+              className="w-full px-3 py-2.5 border border-[#CFC8BC] font-mono text-sm text-stone-900 bg-[#EDE8DF] focus:outline-none focus:border-yellow-400 transition-colors placeholder:text-stone-400"
               placeholder="Chicago"
             />
           </div>
           <div>
             <label htmlFor="state" className="block font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">
-              State <span className="text-stone-300 normal-case tracking-normal">(optional)</span>
+              State <span className="text-stone-400 normal-case tracking-normal">(optional)</span>
             </label>
             <select
               id="state"
@@ -122,7 +122,7 @@ export function JobSeekerSignupForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full py-3 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:bg-yellow-200 text-stone-900 font-mono text-xs tracking-widest uppercase font-bold transition-colors"
+          className="w-full py-3 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-stone-900 font-mono text-xs tracking-widest uppercase font-bold transition-colors"
         >
           {isPending ? "Creating account..." : "Create account →"}
         </button>

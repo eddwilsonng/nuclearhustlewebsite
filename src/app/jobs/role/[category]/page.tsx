@@ -6,6 +6,8 @@ import { Suspense } from 'react';
 import { getJobsByCategory, getActiveStates, getActiveCategories, getActiveEngineeringDisciplines, getCompanies } from '@/lib/data/static';
 import { getCategoryInfo, getAllCategories, JobCategory } from '@/lib/categorize';
 import { CategoryJobsList } from '@/components/CategoryJobsList';
+import { JobAlertForm } from '@/components/JobAlertForm';
+import { Sidebar, SidebarSection, SidebarNavList, SidebarCTA } from '@/components/sidebar/Sidebar';
 import {
   BrowsePageHeader,
   BrowseBreadcrumb,
@@ -132,9 +134,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-600" aria-hidden="true">//</span>
+          <span className="text-stone-500" aria-hidden="true">//</span>
           <BrowseBreadcrumbLink href="/jobs">Jobs</BrowseBreadcrumbLink>
-          <span className="text-stone-600" aria-hidden="true">//</span>
+          <span className="text-stone-500" aria-hidden="true">//</span>
           <BrowseBreadcrumbCurrent>{categoryInfo.name}</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
 
@@ -211,68 +213,39 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                   No {categoryInfo.name.toLowerCase()} jobs currently listed.
                 </p>
                 <p className="font-mono text-xs text-stone-400 mb-6">
-                  New roles are added daily — set up an alert so you don't miss one.
+                  New roles are added daily — get notified the moment one is posted.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Link
-                    href="/signup"
-                    className="font-mono text-xs tracking-widest uppercase px-5 py-3 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
-                  >
-                    Get job alerts →
-                  </Link>
-                  <Link
-                    href="/jobs"
-                    className="font-mono text-xs tracking-widest uppercase px-5 py-3 border border-[#CFC8BC] text-stone-600 hover:text-stone-900 hover:border-stone-400 transition-colors"
-                  >
-                    Browse all jobs →
-                  </Link>
+                <div className="flex justify-center mb-4">
+                  <JobAlertForm />
                 </div>
+                <Link
+                  href="/jobs"
+                  className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors underline underline-offset-2"
+                >
+                  Or browse all jobs →
+                </Link>
               </div>
             )}
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-8">
+          <Sidebar>
+            <SidebarSection label="Other roles" footerHref="/jobs" footerLabel="All jobs →">
+              <SidebarNavList
+                items={activeCategories.map(({ category: cat, name, count }) => ({
+                  href: `/jobs/role/${cat}`,
+                  label: name,
+                  count,
+                }))}
+              />
+            </SidebarSection>
 
-            {/* Other roles */}
-            <div>
-              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4">Other roles</p>
-              <ul className="border border-[#CFC8BC]">
-                {activeCategories.map(({ category: cat, name, count }) => (
-                  <li key={cat} className="border-b border-[#CFC8BC] last:border-b-0">
-                    <Link
-                      href={`/jobs/role/${cat}`}
-                      className="flex items-center justify-between px-3 py-2 font-mono text-xs tracking-widest uppercase text-stone-500 hover:text-stone-900 hover:bg-[#E5DFD5] transition-colors"
-                    >
-                      <span>{name}</span>
-                      <span className="text-stone-400">{count}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/jobs"
-                className="block font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors mt-3"
-              >
-                All jobs →
-              </Link>
-            </div>
-
-            {/* Employer nudge */}
-            <div className="border border-[#CFC8BC] p-5">
-              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-2">Hiring?</p>
-              <p className="font-mono text-xs text-stone-500 leading-relaxed mb-4">
-                Post a {categoryInfo.name.toLowerCase()} role and reach qualified nuclear professionals.
-              </p>
-              <Link
-                href="/signup/employer"
-                className="block text-center font-mono text-xs tracking-widest uppercase px-4 py-2.5 border border-[#CFC8BC] hover:border-stone-400 text-stone-600 hover:text-stone-900 transition-colors"
-              >
-                Post a job →
-              </Link>
-            </div>
-
-          </div>
+            <SidebarCTA
+              label="Hiring?"
+              body={`Post a ${categoryInfo.name.toLowerCase()} role and reach qualified nuclear professionals.`}
+              href="/signup/employer"
+            />
+          </Sidebar>
         </div>
       </div>
     </div>

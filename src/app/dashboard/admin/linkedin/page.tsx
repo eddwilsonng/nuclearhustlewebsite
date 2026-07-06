@@ -35,7 +35,7 @@ export default async function AdminLinkedInPage({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-4 mb-1">
-        <h1 className="font-mono text-xl font-bold text-stone-900">LinkedIn Draft</h1>
+        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900">LinkedIn Draft</h1>
         <LinkedInRerunButton currentSeed={seed} />
       </div>
       <p className="font-mono text-xs text-stone-400 tracking-wide mb-8">
@@ -79,12 +79,12 @@ export default async function AdminLinkedInPage({
                       {CATEGORY_LABELS[job.category] ?? job.category}
                     </span>
                     {salary && (
-                      <span className="font-mono text-[10px] font-semibold border border-[#CFC8BC] px-2 py-0.5 text-stone-700">
+                      <span className="font-mono text-[10px] font-semibold border border-[#CFC8BC] px-2 py-0.5 text-stone-900">
                         {salary}
                       </span>
                     )}
                     {job.isEmployerJob && (
-                      <span className="font-mono text-[10px] tracking-widest uppercase border border-yellow-300 px-2 py-0.5 text-yellow-700">
+                      <span className="font-mono text-[10px] tracking-widest uppercase border border-yellow-400 px-2 py-0.5 text-yellow-700">
                         Direct
                       </span>
                     )}

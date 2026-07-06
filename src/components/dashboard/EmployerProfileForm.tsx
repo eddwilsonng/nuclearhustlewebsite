@@ -18,7 +18,7 @@ export function EmployerProfileForm({
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-stone-900 mb-6">Company Profile</h1>
+      <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 leading-tight mb-6">Company Profile</h1>
 
       <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
         {state.error && (
@@ -35,7 +35,7 @@ export function EmployerProfileForm({
 
         <form action={formAction} className="space-y-4">
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-stone-700 mb-1">
+            <label htmlFor="fullName" className="block text-sm font-medium text-stone-900 mb-1">
               Your Name
             </label>
             <input
@@ -44,12 +44,12 @@ export function EmployerProfileForm({
               type="text"
               required
               defaultValue={profile.full_name}
-              className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-[#CFC8BC] rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-stone-900 mb-1">
               Email
             </label>
             <input
@@ -66,7 +66,7 @@ export function EmployerProfileForm({
           <hr className="my-6" />
 
           <div>
-            <label htmlFor="companyName" className="block text-sm font-medium text-stone-700 mb-1">
+            <label htmlFor="companyName" className="block text-sm font-medium text-stone-900 mb-1">
               Company Name
             </label>
             <input
@@ -75,12 +75,12 @@ export function EmployerProfileForm({
               type="text"
               required
               defaultValue={employerProfile?.company_name || ''}
-              className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-[#CFC8BC] rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label htmlFor="companyWebsite" className="block text-sm font-medium text-stone-700 mb-1">
+            <label htmlFor="companyWebsite" className="block text-sm font-medium text-stone-900 mb-1">
               Company Website
             </label>
             <input
@@ -88,13 +88,13 @@ export function EmployerProfileForm({
               name="companyWebsite"
               type="url"
               defaultValue={employerProfile?.company_website || ''}
-              className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-[#CFC8BC] rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
               placeholder="https://company.com"
             />
           </div>
 
           <div>
-            <label htmlFor="companyDescription" className="block text-sm font-medium text-stone-700 mb-1">
+            <label htmlFor="companyDescription" className="block text-sm font-medium text-stone-900 mb-1">
               Company Description
             </label>
             <textarea
@@ -102,13 +102,13 @@ export function EmployerProfileForm({
               name="companyDescription"
               rows={4}
               defaultValue={employerProfile?.company_description || ''}
-              className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-[#CFC8BC] rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
               placeholder="Tell job seekers about your company..."
             />
           </div>
 
           <div>
-            <label htmlFor="companyLogo" className="block text-sm font-medium text-stone-700 mb-1">
+            <label htmlFor="companyLogo" className="block text-sm font-medium text-stone-900 mb-1">
               Company Logo
             </label>
             {employerProfile?.company_logo_url && (
@@ -124,7 +124,7 @@ export function EmployerProfileForm({
               name="companyLogo"
               type="file"
               accept="image/png,image/jpeg,image/webp,image/svg+xml"
-              className="w-full text-sm text-stone-700 file:mr-3 file:py-2 file:px-3 file:border file:border-stone-300 file:bg-[#E5DFD5] file:text-stone-700 file:font-medium hover:file:bg-[#CFC8BC]"
+              className="w-full text-sm text-stone-900 file:mr-3 file:py-2 file:px-3 file:border file:border-[#CFC8BC] file:bg-[#E5DFD5] file:text-stone-900 file:font-medium hover:file:bg-[#CFC8BC]"
             />
             <p className="mt-1 text-xs text-stone-500">
               PNG, JPG, WEBP, or SVG. Max 2MB. Shown on your job listings.
@@ -134,7 +134,7 @@ export function EmployerProfileForm({
           <button
             type="submit"
             disabled={isPending}
-            className="w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-400 disabled:bg-yellow-300 text-stone-900 font-semibold rounded-md transition-colors"
+            className="w-full py-2 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-stone-900 font-semibold rounded-md transition-colors"
           >
             {isPending ? 'Saving...' : 'Save Changes'}
           </button>

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const labelClass = 'font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4 block';
-const linkClass = 'font-mono text-xs text-stone-600 hover:text-stone-900 transition-colors';
+const linkClass = 'font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors';
 
 const STATIC_PAGES = [
   { href: '/', label: 'Home' },
@@ -41,7 +41,7 @@ export default function SitemapPage() {
         {/* Header */}
         <div className="border-b border-[#CFC8BC] pb-8 mb-12">
           <p className={`${labelClass} mb-2`}>Site</p>
-          <h1 className="font-mono text-2xl font-bold text-stone-900 tracking-tight">Sitemap</h1>
+          <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 leading-tight tracking-tight">Sitemap</h1>
           <p className="font-mono text-xs text-stone-500 mt-2">
             Every public page on Nuclear Hustle.
           </p>

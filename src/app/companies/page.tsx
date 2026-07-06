@@ -31,7 +31,7 @@ export default function CompaniesPage() {
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-600">//</span>
+          <span className="text-stone-500">//</span>
           <BrowseBreadcrumbCurrent>Companies</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
         <BrowseLabel>Directory</BrowseLabel>
@@ -51,25 +51,25 @@ export default function CompaniesPage() {
             >
               <div className="flex items-center gap-4 min-w-0">
                 <div className="flex-shrink-0 w-10 h-10 border border-[#CFC8BC] flex items-center justify-center">
-                  <span className="font-mono text-xs font-bold text-stone-600">
+                  <span className="font-mono text-xs font-bold text-stone-500">
                     {String(index + 1).padStart(2, '0')}
                   </span>
                 </div>
                 <div className="min-w-0">
-                  <h2 className="font-mono text-sm font-bold text-stone-900 group-hover:text-yellow-600 transition-colors">
+                  <h2 className="font-sans text-[15px] font-bold tracking-tight text-stone-900 group-hover:text-yellow-500 transition-colors">
                     {company.name}
                   </h2>
-                  <p className="font-mono text-xs text-stone-400 mt-0.5">
+                  <p className="font-mono text-xs text-stone-500 mt-0.5">
                     {company.plants.length} plant{company.plants.length !== 1 ? 's' : ''}
                   </p>
                 </div>
               </div>
 
               <div className="flex-shrink-0 flex items-center gap-6">
-                <span className="font-mono text-xs tracking-widest uppercase border border-[#CFC8BC] px-3 py-1 text-stone-400">
-                  {company.jobCount} job{company.jobCount !== 1 ? 's' : ''}
+                <span className="font-mono text-xs tracking-widest uppercase border border-[#CFC8BC] px-3 py-1 text-stone-500">
+                  <span className="font-semibold text-stone-900 tabular-nums">{company.jobCount}</span> job{company.jobCount !== 1 ? 's' : ''}
                 </span>
-                <span className="font-mono text-xs text-stone-300 group-hover:text-stone-900 transition-colors">→</span>
+                <span className="font-mono text-xs text-stone-400 group-hover:text-stone-900 transition-colors">→</span>
               </div>
             </Link>
           ))}
