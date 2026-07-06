@@ -70,11 +70,6 @@
     "category": "administrative"
   },
   {
-    "slug": "maintenance-planner-electrical-lusby-maryland-77",
-    "state": "maryland",
-    "category": "administrative"
-  },
-  {
     "slug": "work-week-manager-braceville-illinois-88",
     "state": "illinois",
     "category": "administrative"
@@ -83,11 +78,6 @@
     "slug": "engineer-sr-regulatory-warrenville-illinois-83",
     "state": "illinois",
     "category": "engineering"
-  },
-  {
-    "slug": "electrical-maintenance-supervisor-byron-illinois-105",
-    "state": "illinois",
-    "category": "maintenance"
   },
   {
     "slug": "mechanic-trainee-ontario-new-york-835",
@@ -241,11 +231,6 @@
   },
   {
     "slug": "site-supply-chain-manager-marseilles-illinois-65",
-    "state": "illinois",
-    "category": "administrative"
-  },
-  {
-    "slug": "instrument-maintenance-planner-cordova-illinois-81",
     "state": "illinois",
     "category": "administrative"
   },
