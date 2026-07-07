@@ -1,4 +1,4 @@
-import { getJobsWithCompany } from '@/lib/data/static';
+import { getAllJobs } from '@/lib/data/employer';
 import type { JobWithCompany } from '@/lib/types';
 
 const MAX_POSTS = 8;
@@ -31,6 +31,15 @@ export interface CuratedJob {
   score: number;
 }
 
+export interface CurationResult {
+  picks: CuratedJob[];
+  /** How many jobs sat in the selected window (not just the ones picked) —
+   *  powers the fact-led hook on the post. */
+  totalInWindow: number;
+  /** 2 when the fresh 48h window was used, else 7. Drives the hook wording. */
+  windowDays: number;
+}
+
 // Cheap seedable shuffle — lets the rerun button surface different picks
 // from among jobs that share the same score.
 function seededShuffle<T>(arr: T[], seed: number): T[] {
@@ -44,15 +53,18 @@ function seededShuffle<T>(arr: T[], seed: number): T[] {
   return out;
 }
 
-export function curateForLinkedIn(seed = 0): CuratedJob[] {
-  const all = getJobsWithCompany();
+export async function curateForLinkedIn(seed = 0): Promise<CurationResult> {
+  // Read the merged view so employer-direct postings (the +15 signal) are
+  // actually eligible — the JSON-only view never surfaced them.
+  const all = await getAllJobs();
   const now = Date.now();
 
   // Prefer fresh window; fall back to week if too few fresh jobs
   const fresh = all.filter((j) => now - new Date(j.scraped_at).getTime() < FRESH_WINDOW_MS);
-  const pool = fresh.length >= 4 ? fresh : all.filter(
-    (j) => now - new Date(j.scraped_at).getTime() < FALLBACK_WINDOW_MS
-  );
+  const useFresh = fresh.length >= 4;
+  const pool = useFresh
+    ? fresh
+    : all.filter((j) => now - new Date(j.scraped_at).getTime() < FALLBACK_WINDOW_MS);
 
   // Shuffle within score tiers so rerun surfaces different picks
   const scored = seededShuffle(
@@ -75,5 +87,5 @@ export function curateForLinkedIn(seed = 0): CuratedJob[] {
     categoryCounts.set(item.job.category, rc + 1);
   }
 
-  return picks;
+  return { picks, totalInWindow: pool.length, windowDays: useFresh ? 2 : 7 };
 }

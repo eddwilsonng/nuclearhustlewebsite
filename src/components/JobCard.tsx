@@ -12,6 +12,7 @@ interface JobCardProps {
   hideCategory?: boolean; // suppress redundant tag when already on a category page
   isAuthenticated?: boolean;
   initialSaved?: boolean;
+  description?: string; // optional role summary — used on curated surfaces (e.g. /this-week)
 }
 
 function getPostedLabel(dateString: string): string {
@@ -39,7 +40,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   'other':         'Other',
 };
 
-export function JobCard({ job, hideCategory = false, isAuthenticated = false, initialSaved = false }: JobCardProps) {
+export function JobCard({ job, hideCategory = false, isAuthenticated = false, initialSaved = false, description }: JobCardProps) {
   const categoryLabel = CATEGORY_LABELS[job.category] || job.category;
   const isEmployerJob = job.isEmployerJob;
   const isFeatured = job.is_featured && job.featured_until && new Date(job.featured_until) > new Date();
@@ -119,6 +120,13 @@ export function JobCard({ job, hideCategory = false, isAuthenticated = false, in
               />
             </div>
           </div>
+
+          {/* Optional role summary — curated surfaces only (e.g. /this-week) */}
+          {description && (
+            <p className="font-sans text-sm text-stone-500 mt-1.5 leading-relaxed line-clamp-2">
+              {description}
+            </p>
+          )}
 
           {/* Skills row — aligns under the title inside the info column */}
           {hasSkills && (

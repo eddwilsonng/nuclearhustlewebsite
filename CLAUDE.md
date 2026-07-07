@@ -209,6 +209,7 @@ There is no separate admin panel — the employer dashboard IS the admin interfa
 ### Before going live
 - [ ] Run `supabase/schema.sql` in Supabase SQL Editor
 - [ ] Run `supabase/rate-limits-migration.sql`
+- [ ] Run `supabase/weekly-picks-migration.sql` (powers `/this-week` + the Weekly Picks console)
 - [ ] Create `resumes` storage bucket in Supabase dashboard (set to private)
 - [ ] Configure Supabase Auth → Site URL: `https://nuclearhustle.com`
 - [ ] Add `https://nuclearhustle.com/auth/callback` to Supabase Auth redirect URLs

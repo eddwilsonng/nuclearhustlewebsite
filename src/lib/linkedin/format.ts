@@ -1,53 +1,57 @@
-import type { CuratedJob } from './curate';
-import { formatSalary } from '@/lib/salary';
+// Builds the LinkedIn draft from a curated set. Pure and import-free so the
+// admin editor can re-run it client-side as picks are reordered/removed.
+//
+// Voice: facts before pitch, no emoji, no hype (see brand-voice skill). The
+// post body carries ZERO links — LinkedIn suppresses reach on posts with
+// outbound links and only previews the last one — so the single link lives in
+// a first-comment block that gets pasted right after the post.
 
-// Always use production URL — these posts go on LinkedIn, never localhost.
 const SITE_URL = 'https://www.nuclearhustle.com';
 
-const INTROS = [
-  'New nuclear jobs this week ⚛️',
-  'Fresh roles in the nuclear sector 🔬',
-  'Nuclear hiring is active — here\'s what\'s open 🏭',
-  'This week in nuclear jobs ⚡',
-  'Hot nuclear roles posted this week 🔥',
-];
-
-const CATEGORY_EMOJI: Record<string, string> = {
-  engineering: '⚙️',
-  operations: '⚛️',
-  maintenance: '🔧',
-  'health-physics': '☢️',
-  security: '🛡️',
-  training: '📋',
-  administrative: '📊',
-  other: '💼',
-};
-
-function jobLine(cj: CuratedJob): string {
-  const { job } = cj;
-  const emoji = CATEGORY_EMOJI[job.category] ?? '💼';
-  const salary = formatSalary(job.salary);
-  const salaryPart = salary ? ` | ${salary}` : '';
-  const url = `${SITE_URL}/job/${job.slug}`;
-
-  return [
-    `${emoji} ${job.title}`,
-    `${job.company.name} | 🇺🇸 ${job.location}${salaryPart}`,
-    url,
-  ].join('\n');
+export interface PostJob {
+  title: string;
+  company: string;
+  location: string;
+  /** Pre-formatted salary label (e.g. "$120k–$145k/yr") or null. */
+  salaryLabel: string | null;
 }
 
-export function formatLinkedInPost(picks: CuratedJob[]): string {
-  const intro = INTROS[new Date().getDay() % INTROS.length];
-  const lines = picks.map(jobLine).join('\n\n');
+export interface PostMeta {
+  /** Count of new roles in the window — the fact the hook leads with. */
+  totalInWindow: number;
+  /** 2 (last 48h) or 7 (this week) — controls the hook's time phrase. */
+  windowDays: number;
+}
 
-  return [
-    intro,
+function jobBlock(job: PostJob): string {
+  const second = job.salaryLabel ? `${job.location} · ${job.salaryLabel}` : job.location;
+  return `${job.title} — ${job.company}\n${second}`;
+}
+
+export function formatLinkedInPost(
+  jobs: PostJob[],
+  meta: PostMeta
+): { post: string; comment: string } {
+  const n = meta.totalInWindow;
+  const noun = n === 1 ? 'nuclear role' : 'nuclear roles';
+  const windowPhrase = meta.windowDays <= 2 ? 'in the last 48 hours' : 'this week';
+  // When we're showing everything that went up, don't imply a shortlist.
+  const connector =
+    n > jobs.length ? 'The ones worth a look:' : jobs.length === 1 ? 'Here it is:' : 'Here they are:';
+  const hook = `${n} ${noun} went up ${windowPhrase}. ${connector}`;
+
+  const post = [
+    hook,
     '',
-    lines,
+    jobs.map(jobBlock).join('\n\n'),
     '',
-    '—',
-    'Follow Nuclear Hustle for daily US nuclear job updates.',
-    '#NuclearEnergy #NuclearJobs #NuclearPower #NuclearIndustry',
+    'Full list, with salary on every role — link in the comments.',
+    'New roles go up daily.',
+    '',
+    '#NuclearJobs #NuclearEnergy',
   ].join('\n');
+
+  const comment = `The full set, updated weekly: ${SITE_URL}/this-week`;
+
+  return { post, comment };
 }

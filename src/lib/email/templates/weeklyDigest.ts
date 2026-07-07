@@ -7,6 +7,7 @@ import { emailBodyOnly, emailPreheader, emailPrimaryCta } from '../emailShell';
 import { escapeHtml } from '../escapeHtml';
 import { formatPostedLabel, isNewThisWeek } from '../formatPostedLabel';
 import { unsubscribeUrl } from '../unsubscribe';
+import { jobOneLiner } from '@/lib/jobs/oneLiner';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.nuclearhustle.com';
 const MAX_PER_CATEGORY = 5;
@@ -27,15 +28,6 @@ function formatJobLocation(job: JobWithCompany): string {
     return `${job.location}, ${stateName}`;
   }
   return job.location;
-}
-
-function jobOneLiner(job: JobWithCompany): string | null {
-  const about = job.structured_description?.about;
-  if (!about) return null;
-  const firstSentence = about.split(/(?<=[.!?])\s+/)[0] ?? about;
-  const trimmed = firstSentence.trim();
-  if (trimmed.length <= 120) return trimmed;
-  return `${trimmed.slice(0, 117).trim()}…`;
 }
 
 function isFeaturedJob(job: JobWithCompany): boolean {

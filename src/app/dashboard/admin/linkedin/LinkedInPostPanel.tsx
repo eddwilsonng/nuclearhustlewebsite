@@ -3,14 +3,16 @@
 import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
 
-export function LinkedInPostPanel({ post }: { post: string }) {
+export function LinkedInPostPanel({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(post);
+    await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
+
+  const rows = Math.min(20, Math.max(2, text.split('\n').length + 1));
 
   return (
     <div className="relative">
@@ -32,8 +34,8 @@ export function LinkedInPostPanel({ post }: { post: string }) {
       </button>
       <textarea
         readOnly
-        value={post}
-        rows={Math.max(16, post.split('\n').length + 2)}
+        value={text}
+        rows={rows}
         className="w-full font-mono text-xs text-stone-900 bg-[#EDE8DF] border border-[#CFC8BC] p-4 pr-24 resize-none focus:outline-none leading-relaxed"
       />
     </div>
