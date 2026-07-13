@@ -1,5 +1,170 @@
 [
   {
+    "slug": "nuclear-operations-instructor-pottstown-pennsylvan-1",
+    "state": "pennsylvania",
+    "category": "training"
+  },
+  {
+    "slug": "security-ffd-coordinator-ontario-new-york-1998",
+    "state": "new-york",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-mgr-business-operations-pottstown-pennsylvan-40",
+    "state": "pennsylvania",
+    "category": "administrative"
+  },
+  {
+    "slug": "manager-engineering-programs-ontario-new-york-28",
+    "state": "new-york",
+    "category": "engineering"
+  },
+  {
+    "slug": "ic-technician-trainee-ontario-new-york-1999",
+    "state": "new-york",
+    "category": "maintenance"
+  },
+  {
+    "slug": "armed-security-officer-middletown-pennsylva-49",
+    "state": "pennsylvania",
+    "category": "security"
+  },
+  {
+    "slug": "engineer-strategic-oswego-new-york-47",
+    "state": "new-york",
+    "category": "engineering"
+  },
+  {
+    "slug": "supervisor-operational-chemistry-oswego-new-york-35",
+    "state": "new-york",
+    "category": "health-physics"
+  },
+  {
+    "slug": "supervisor-valve-service-warrenville-illinois-2000",
+    "state": "illinois",
+    "category": "other"
+  },
+  {
+    "slug": "engineer-electrical-design-oswego-new-york-830",
+    "state": "new-york",
+    "category": "engineering"
+  },
+  {
+    "slug": "electrical-engineering-analyst-cordova-illinois-59",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-mechanical-civil-structural-morris-illinois-86",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "sr-environmental-specialist-warrenville-illinois-32",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "engineering-analyst-hvac-specialist-marseilles-illinois-2002",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-mechanical-valves-ontario-new-york-2003",
+    "state": "new-york",
+    "category": "engineering"
+  },
+  {
+    "slug": "training-project-specialist-clinton-illinois-85",
+    "state": "illinois",
+    "category": "training"
+  },
+  {
+    "slug": "supervisor-maintenance-ic-oswego-new-york-103",
+    "state": "new-york",
+    "category": "maintenance"
+  },
+  {
+    "slug": "manager-engineering-corp-byron-illinois-1610",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "project-manager-marseilles-illinois-99",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-mgr-site-project-management-pottstown-pennsylvan-110",
+    "state": "pennsylvania",
+    "category": "administrative"
+  },
+  {
+    "slug": "associate-equipment-operator-oswego-new-york-108",
+    "state": "new-york",
+    "category": "operations"
+  },
+  {
+    "slug": "maint-program-specialist-morris-illinois-126",
+    "state": "illinois",
+    "category": "maintenance"
+  },
+  {
+    "slug": "sr-project-manager-lusby-maryland-128",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "supervisor-rad-protection-cordova-illinois-130",
+    "state": "illinois",
+    "category": "health-physics"
+  },
+  {
+    "slug": "drexel-co-op-fallwinter-2026-peach-bottom-delta-pennsylvania-137",
+    "state": "pennsylvania",
+    "category": "other"
+  },
+  {
+    "slug": "manager-turbine-support-pottstown-pennsylvan-136",
+    "state": "pennsylvania",
+    "category": "administrative"
+  },
+  {
+    "slug": "equipment-specialist-breaker-overhaul-baltimore-maryland-837",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "drexel-electrical-engineer-co-op-fallwinter-2026-p-coatesville-pennsylv-135",
+    "state": "pennsylvania",
+    "category": "engineering"
+  },
+  {
+    "slug": "sr-maintenance-scheduler-lusby-maryland-145",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "prin-project-manager-holtwood-pennsylvani-839",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "prin-project-manager-wharton-texas-fort-w-2020",
+    "state": "texas",
+    "category": "administrative"
+  },
+  {
+    "slug": "work-week-manager-byron-illinois-2021",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "supervisor-rad-protection-cordova-illinois-192",
+    "state": "illinois",
+    "category": "health-physics"
+  },
+  {
     "slug": "nuclear-reactor-operator-oswego-new-york-2",
     "state": "new-york",
     "category": "operations"
@@ -30,11 +195,6 @@
     "category": "engineering"
   },
   {
-    "slug": "security-officer-trainee-pottstown-pennsylvan-26",
-    "state": "pennsylvania",
-    "category": "security"
-  },
-  {
     "slug": "technical-instructional-specialist-pottstown-pennsylvan-38",
     "state": "pennsylvania",
     "category": "training"
@@ -48,11 +208,6 @@
     "slug": "simulator-software-engineer-clinton-illinois-22",
     "state": "illinois",
     "category": "engineering"
-  },
-  {
-    "slug": "sr-ops-training-instructor-corp-coatesville-pennsylv-829",
-    "state": "illinois",
-    "category": "training"
   },
   {
     "slug": "engineer-electrical-ontario-new-york-831",
@@ -110,11 +265,6 @@
     "category": "administrative"
   },
   {
-    "slug": "rx-services-technician-oswego-new-york-1611",
-    "state": "new-york",
-    "category": "maintenance"
-  },
-  {
     "slug": "sr-data-scientist-hurstbourne-acres-ke-140",
     "state": "illinois",
     "category": "administrative"
@@ -140,11 +290,6 @@
     "category": "administrative"
   },
   {
-    "slug": "sr-work-week-manager-lusby-maryland-153",
-    "state": "maryland",
-    "category": "administrative"
-  },
-  {
     "slug": "sr-geospatial-reality-capture-spec-baltimore-maryland-1616",
     "state": "maryland",
     "category": "administrative"
@@ -160,11 +305,6 @@
     "category": "engineering"
   },
   {
-    "slug": "ops-training-instructor-morris-illinois-824",
-    "state": "illinois",
-    "category": "training"
-  },
-  {
     "slug": "manager-engineering-programs-oswego-new-york-18",
     "state": "new-york",
     "category": "engineering"
@@ -175,16 +315,6 @@
     "category": "engineering"
   },
   {
-    "slug": "supervisor-maintenance-byron-illinois-84",
-    "state": "illinois",
-    "category": "maintenance"
-  },
-  {
-    "slug": "auxiliary-operator-trainee-ontario-new-york-91",
-    "state": "new-york",
-    "category": "operations"
-  },
-  {
     "slug": "maintenance-welder-baltimore-maryland-89",
     "state": "maryland",
     "category": "maintenance"
@@ -193,11 +323,6 @@
     "slug": "facilities-maintenance-technician-baltimore-maryland-98",
     "state": "maryland",
     "category": "maintenance"
-  },
-  {
-    "slug": "cycle-manager-cordova-illinois-117",
-    "state": "illinois",
-    "category": "administrative"
   },
   {
     "slug": "supervisor-maintenance-planner-marseilles-illinois-129",
@@ -242,11 +367,6 @@
   {
     "slug": "supervisor-mechanical-maintenance-clinton-illinois-107",
     "state": "illinois",
-    "category": "maintenance"
-  },
-  {
-    "slug": "sr-maint-program-specialist-middletown-pennsylva-111",
-    "state": "pennsylvania",
     "category": "maintenance"
   },
   {
