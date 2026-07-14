@@ -52,6 +52,14 @@ export default async function ThisWeekPage() {
     description: jobOneLiner(job, { maxSentences: 1, maxLength: 200 }) ?? undefined,
   }));
   const count = picks.length;
+  const refreshedLabel = week
+    ? new Date(week.publishedAt).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC',
+      })
+    : null;
 
   const breadcrumbData = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://www.nuclearhustle.com/' },
@@ -93,6 +101,12 @@ export default async function ThisWeekPage() {
             <BrowseAlertLink href="/signup">★ Get weekly job alerts →</BrowseAlertLink>
           )}
         </div>
+
+        {refreshedLabel && (
+          <p className="mt-4 font-mono text-xs tracking-widest uppercase text-stone-500">
+            Refreshed {refreshedLabel}
+          </p>
+        )}
       </BrowsePageHeader>
 
       <div className="max-w-6xl mx-auto px-6 py-8">

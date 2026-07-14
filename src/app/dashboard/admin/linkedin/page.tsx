@@ -52,9 +52,14 @@ export default async function AdminLinkedInPage({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-4 mb-1">
-        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900">
-          Weekly Picks
-        </h1>
+        <div className="flex items-baseline gap-3">
+          <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900">
+            Weekly Picks
+          </h1>
+          <span className="font-mono text-xs tracking-widest uppercase text-stone-400">
+            {weekLabel(currentWeekId)}
+          </span>
+        </div>
         <LinkedInRerunButton currentSeed={seed} />
       </div>
       <p className="font-mono text-xs text-stone-400 tracking-wide mb-8">
