@@ -1,13 +1,103 @@
 [
   {
+    "slug": "engineer-analyst-valve-specialist-braceville-illinois-55",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-electrical-analytical-braceville-illinois-53",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "performance-specialist-braceville-illinois-78",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "electrical-supervisor-middletown-pennsylva-2342",
+    "state": "pennsylvania",
+    "category": "other"
+  },
+  {
+    "slug": "sr-project-manager-marseilles-illinois-2004",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "electrical-maintenance-supervisor-byron-illinois-105",
+    "state": "illinois",
+    "category": "maintenance"
+  },
+  {
+    "slug": "prin-project-manager-marseilles-illinois-2005",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "perf-improvement-specialist-clinton-illinois-100",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "engineer-sr-business-analyst-oswego-new-york-oswe-2346",
+    "state": "new-york",
+    "category": "engineering"
+  },
+  {
+    "slug": "sr-chemist-byron-illinois-2009",
+    "state": "illinois",
+    "category": "other"
+  },
+  {
+    "slug": "director-site-engineering-clinton-illinois-119",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "supervisor-maintenance-planner-oswego-new-york-191",
+    "state": "new-york",
+    "category": "maintenance"
+  },
+  {
+    "slug": "manager-operational-technology-oswego-new-york-cord-131",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "electrical-technician-ontario-new-york-2347",
+    "state": "new-york",
+    "category": "maintenance"
+  },
+  {
+    "slug": "generation-station-clerk-clinton-illinois-2348",
+    "state": "illinois",
+    "category": "other"
+  },
+  {
+    "slug": "maintenance-planner-baltimore-maryland-147",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "principal-project-manager-middletown-pennsylva-2017",
+    "state": "pennsylvania",
+    "category": "administrative"
+  },
+  {
+    "slug": "engineer-lusby-maryland-187",
+    "state": "maryland",
+    "category": "engineering"
+  },
+  {
+    "slug": "programs-engineer-lusby-maryland-2028",
+    "state": "maryland",
+    "category": "engineering"
+  },
+  {
     "slug": "nuclear-operations-instructor-pottstown-pennsylvan-1",
     "state": "pennsylvania",
     "category": "training"
-  },
-  {
-    "slug": "security-ffd-coordinator-ontario-new-york-1998",
-    "state": "new-york",
-    "category": "administrative"
   },
   {
     "slug": "sr-mgr-business-operations-pottstown-pennsylvan-40",
