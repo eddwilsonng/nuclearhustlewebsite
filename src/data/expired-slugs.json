@@ -1,5 +1,155 @@
 [
   {
+    "slug": "sr-manager-site-training-clinton-illinois-13",
+    "state": "illinois",
+    "category": "training"
+  },
+  {
+    "slug": "supervisor-security-access-ffd-byron-illinois-2564",
+    "state": "illinois",
+    "category": "other"
+  },
+  {
+    "slug": "engineer-strategic-braceville-illinois-17",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "security-officer-trainee-pottstown-pennsylvan-26",
+    "state": "pennsylvania",
+    "category": "security"
+  },
+  {
+    "slug": "engineer-risk-assessment-oswego-new-york-48",
+    "state": "new-york",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-electrical-braceville-illinois-67",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "environmental-specialist-oswego-new-york-71",
+    "state": "new-york",
+    "category": "administrative"
+  },
+  {
+    "slug": "engineer-mechanical-warrenville-illinois-75",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-in-vessel-visual-inspection-morris-illinois-76",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "instrument-maintenance-planner-cordova-illinois-81",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-mt-instructor-cordova-illinois-102",
+    "state": "illinois",
+    "category": "training"
+  },
+  {
+    "slug": "operations-instructor-lead-lusby-maryland-94",
+    "state": "maryland",
+    "category": "training"
+  },
+  {
+    "slug": "maintenance-planner-electrical-byron-illinois-2571",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "mgr-site-emergency-preparedness-morris-illinois-106",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "supervisor-site-records-byron-illinois-2572",
+    "state": "illinois",
+    "category": "other"
+  },
+  {
+    "slug": "sr-maint-program-specialist-middletown-pennsylva-111",
+    "state": "pennsylvania",
+    "category": "maintenance"
+  },
+  {
+    "slug": "supervisor-chemistry-programs-lusby-maryland-74",
+    "state": "maryland",
+    "category": "health-physics"
+  },
+  {
+    "slug": "outage-specialist-middletown-pennsylva-2575",
+    "state": "pennsylvania",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-engineering-business-analyst-ontario-new-york-116",
+    "state": "new-york",
+    "category": "engineering"
+  },
+  {
+    "slug": "cycle-manager-lusby-maryland-2010",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "manager-fin-lusby-maryland-2011",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "inprocessing-access-ffd-specialist-wilmington-illinois-2582",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "customer-care-specialist-coatesville-pennsylv-2013",
+    "state": "pennsylvania",
+    "category": "administrative"
+  },
+  {
+    "slug": "rx-services-technician-oswego-new-york-1611",
+    "state": "new-york",
+    "category": "maintenance"
+  },
+  {
+    "slug": "mgr-site-regulatory-assurance-oswego-new-york-2586",
+    "state": "new-york",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-work-week-manager-lusby-maryland-153",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "maintenance-fin-supervisor-clinton-illinois-2018",
+    "state": "illinois",
+    "category": "maintenance"
+  },
+  {
+    "slug": "sr-operations-specialist-lusby-maryland-2590",
+    "state": "maryland",
+    "category": "operations"
+  },
+  {
+    "slug": "engineer-electrical-delta-pennsylvania-2339",
+    "state": "pennsylvania",
+    "category": "engineering"
+  },
+  {
+    "slug": "manager-of-engineering-pottstown-pennsylvan-2359",
+    "state": "pennsylvania",
+    "category": "engineering"
+  },
+  {
     "slug": "engineer-analyst-valve-specialist-braceville-illinois-55",
     "state": "illinois",
     "category": "engineering"
@@ -65,11 +215,6 @@
     "category": "administrative"
   },
   {
-    "slug": "electrical-technician-ontario-new-york-2347",
-    "state": "new-york",
-    "category": "maintenance"
-  },
-  {
     "slug": "generation-station-clerk-clinton-illinois-2348",
     "state": "illinois",
     "category": "other"
@@ -83,11 +228,6 @@
     "slug": "principal-project-manager-middletown-pennsylva-2017",
     "state": "pennsylvania",
     "category": "administrative"
-  },
-  {
-    "slug": "engineer-lusby-maryland-187",
-    "state": "maryland",
-    "category": "engineering"
   },
   {
     "slug": "programs-engineer-lusby-maryland-2028",
@@ -275,11 +415,6 @@
     "category": "engineering"
   },
   {
-    "slug": "engineer-risk-assessment-kennett-square-penns-24",
-    "state": "maryland",
-    "category": "engineering"
-  },
-  {
     "slug": "manager-engineering-pottstown-pennsylvan-57",
     "state": "pennsylvania",
     "category": "engineering"
@@ -420,11 +555,6 @@
     "category": "maintenance"
   },
   {
-    "slug": "manager-turbine-support-warrenville-illinois-168",
-    "state": "illinois",
-    "category": "administrative"
-  },
-  {
     "slug": "sr-security-specialist-clinton-illinois-179",
     "state": "illinois",
     "category": "security"
@@ -473,11 +603,6 @@
     "slug": "manager-it-end-user-services-braceville-illinois-125",
     "state": "illinois",
     "category": "administrative"
-  },
-  {
-    "slug": "nuclear-training-instructor-eunice-new-mexico-1364",
-    "state": "new-mexico",
-    "category": "training"
   },
   {
     "slug": "hrpc-administrator-eunice-new-mexico-1368",
