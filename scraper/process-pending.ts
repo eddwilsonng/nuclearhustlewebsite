@@ -175,7 +175,6 @@ export async function runAiReview(opts: {
         throw new Error('Anthropic API credits exhausted — aborting remaining reviews');
       }
     }
-    }
 
     if (++processedSinceSave >= SAVE_EVERY) {
       fs.writeFileSync(JOBS_PATH, JSON.stringify(data, null, 2) + '\n');
