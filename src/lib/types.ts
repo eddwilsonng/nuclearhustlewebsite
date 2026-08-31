@@ -39,7 +39,7 @@ export interface Job {
   description?: string;
   structured_description?: StructuredDescription | null;
   skills?: string[];
-  status?: 'pending_review' | 'published' | 'rejected' | 'expired';
+  status?: 'pending_review' | 'published' | 'rejected' | 'expired' | 'duplicate';
   agent_confidence?: 'high' | 'low';
   review_notes?: string;
   // Hygiene lifecycle (set by scraper merge + scraper/hygiene.ts).

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { EnrichedJob } from './enrich';
+import { invokedAsScript } from './cli';
 import { recordAgentRun } from '../src/lib/ops/runLog';
 import { submitToIndexNow, jobUrl } from '../src/lib/indexnow';
 
@@ -81,7 +82,17 @@ async function probe(url: string): Promise<ProbeResult> {
   }
 }
 
-async function runHygiene(): Promise<void> {
+export interface HygieneRunResult {
+  candidates: number;
+  dead: number;
+  alive: number;
+  inconclusive: number;
+  expired: number;
+  totalExpired: number;
+  newlyExpiredSlugs: string[];
+}
+
+export async function runHygiene(): Promise<HygieneRunResult> {
   const startedAt = new Date();
   const now = startedAt.toISOString();
   const jobs = loadJobs();
@@ -166,9 +177,21 @@ async function runHygiene(): Promise<void> {
       totalExpired: expiredIndex.length,
     },
   });
+
+  return {
+    candidates: candidates.length,
+    dead,
+    alive,
+    inconclusive,
+    expired,
+    totalExpired: expiredIndex.length,
+    newlyExpiredSlugs,
+  };
 }
 
-runHygiene().catch((err) => {
-  console.error('Hygiene run failed:', err);
-  process.exit(1);
-});
+if (invokedAsScript('hygiene.ts')) {
+  runHygiene().catch((err) => {
+    console.error('Hygiene run failed:', err);
+    process.exit(1);
+  });
+}

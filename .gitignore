@@ -52,3 +52,6 @@ src/data/jobs.backup-*.json
 
 # Operations agent run log (local)
 .agent-runs.json
+
+# Ingest last-run report (local; agent reads this after npm run ingest)
+scraper/last-run.json

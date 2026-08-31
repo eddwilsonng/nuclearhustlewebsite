@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import expiredSlugs from "@/data/expired-slugs.json";
+import duplicateRedirects from "@/data/duplicate-redirects.json";
 
 // Slugs of jobs the hygiene process has marked expired. The page already 404s
 // for these (publishedJobs() excludes status:'expired'); middleware upgrades
@@ -8,6 +9,14 @@ import expiredSlugs from "@/data/expired-slugs.json";
 type ExpiredEntry = { slug: string; state: string | null; category: string };
 const expiredMap = new Map<string, ExpiredEntry>(
   (expiredSlugs as ExpiredEntry[]).map((e) => [e.slug, e])
+);
+
+// Superseded duplicate listings (same company+title+location, older req no
+// longer seen in scrapes) → 301 to the surviving slug. Unlike expiry, the job
+// still exists at the survivor URL, so we consolidate ranking signal there
+// instead of returning 410. Checked before the expired 410 branch.
+const duplicateMap = new Map<string, string>(
+  Object.entries(duplicateRedirects as Record<string, string>)
 );
 
 function gonePage(entry: ExpiredEntry): string {
@@ -54,6 +63,12 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith("/job/")) {
     const parts = pathname.split("/").filter(Boolean); // ['job', '<slug>']
     if (parts.length === 2) {
+      const survivor = duplicateMap.get(parts[1]);
+      if (survivor) {
+        const url = request.nextUrl.clone();
+        url.pathname = `/job/${survivor}`;
+        return NextResponse.redirect(url, 301);
+      }
       const entry = expiredMap.get(parts[1]);
       if (entry) {
         return new NextResponse(gonePage(entry), {

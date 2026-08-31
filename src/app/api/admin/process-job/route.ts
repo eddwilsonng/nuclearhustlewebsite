@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { formatJobDescription } from '@/lib/formatJobDescription';
-import { reviewJobDescription } from '@/lib/reviewJobDescription';
+import { processJobDescription } from '@/lib/processJobDescription';
 import fs from 'fs';
 import path from 'path';
 
@@ -37,17 +36,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Pass 1: format
-    const formatted = await formatJobDescription(job.description, job.title, job.company_id);
-
-    // Pass 2: agent review
-    const reviewed = await reviewJobDescription(formatted, job.title, job.company_id, job.category);
+    const reviewed = await processJobDescription(job.description, job.title, job.company_id, job.category);
 
     data.jobs[jobIndex] = {
       ...job,
       structured_description: reviewed.structured_description,
       review_notes: reviewed.review_notes,
       agent_confidence: reviewed.agent_confidence,
+      skills: reviewed.structured_description.skills ?? job.skills,
       status: 'pending_review',
     };
 

@@ -2,10 +2,16 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createScraper } from './scrapers';
 import { ScraperResult } from './types';
-import { COMPANIES } from './companies';
-import { EnrichedJob, mergeCompanyJobs, fetchJobDescription, MergeStats } from './enrich';
+import { COMPANIES, getActiveCompanies } from './companies';
+import {
+  EnrichedJob,
+  mergeCompanyJobs,
+  fetchJobDescription,
+  MergeStats,
+} from './enrich';
 import { closeBrowser, createContext, createPage } from './browser';
 import { recordAgentRun } from '../src/lib/ops/runLog';
+import { invokedAsScript } from './cli';
 
 const JOBS_PATH = path.join(__dirname, '..', 'src', 'data', 'jobs.json');
 const COMPANIES_PATH = path.join(__dirname, '..', 'src', 'data', 'companies.json');
@@ -23,9 +29,27 @@ function loadExisting(): EnrichedJob[] {
   }
 }
 
-async function runScrapers(): Promise<void> {
+export interface ScrapeRunResult {
+  before: number;
+  after: number;
+  totals: MergeStats;
+  successCount: number;
+  companyCount: number;
+  failedCompanies: { id: string; name: string; error?: string }[];
+  skippedCompanies: string[];
+  added: EnrichedJob[];
+}
+
+export async function runScrapers(): Promise<ScrapeRunResult> {
+  const sources = getActiveCompanies();
+  const skippedCompanies = COMPANIES.filter((c) => c.enabled === false).map((c) => c.name);
+
   console.log('Starting Nuclear Hustle job scraper...');
-  console.log(`Scraping ${COMPANIES.length} companies\n`);
+  console.log(`Scraping ${sources.length} companies`);
+  if (skippedCompanies.length > 0) {
+    console.log(`Skipping ${skippedCompanies.length} disabled: ${skippedCompanies.join(', ')}`);
+  }
+  console.log('');
 
   const now = new Date().toISOString();
   let allJobs = loadExisting();
@@ -34,42 +58,63 @@ async function runScrapers(): Promise<void> {
 
   const results: ScraperResult[] = [];
   const totals: MergeStats = { new: 0, updated: 0, kept: 0, dropped: 0 };
+  const added: EnrichedJob[] = [];
 
-  // Phase 1: scrape each company, fetch missing descriptions, merge (status-preserving).
   console.log('=== Phase 1: Scraping + merging per company ===\n');
 
-  for (const company of COMPANIES) {
+  for (const company of sources) {
     try {
       const scraper = createScraper(company);
       const result = await scraper.scrape();
       results.push(result);
 
-      // Fetch descriptions for jobs that arrived without one (API adapters include them).
-      const needDesc = result.jobs.filter((j) => !j.description);
-      if (needDesc.length > 0) {
-        const context = await createContext();
-        const page = await createPage(context);
-        for (const job of needDesc) {
-          const description = await fetchJobDescription(page, job.url);
-          if (description) job.description = description;
-          await sleep(500);
-        }
-        await page.close();
-        await context.close();
-      }
+      const merged = mergeCompanyJobs(allJobs, company.id, result.jobs, now);
+      allJobs = merged.jobs;
+      added.push(...merged.added);
+      totals.new += merged.stats.new;
+      totals.updated += merged.stats.updated;
+      totals.kept += merged.stats.kept;
+      totals.dropped += merged.stats.dropped;
 
-      const { jobs, stats } = mergeCompanyJobs(allJobs, company.id, result.jobs, now);
-      allJobs = jobs;
-      totals.new += stats.new;
-      totals.updated += stats.updated;
-      totals.kept += stats.kept;
-      totals.dropped += stats.dropped;
+      // Descriptions only for newly added jobs (keyword-filtered). Never walk
+      // the full ATS dump — Westinghouse can return 500 tiles with no body.
+      const MAX_DESC = 30;
+      const needDesc = merged.added.filter((j) => !j.description).slice(0, MAX_DESC);
+      if (needDesc.length > 0) {
+        const totalNew = merged.added.filter((j) => !j.description).length;
+        console.log(
+          `  Fetching descriptions for ${needDesc.length} new jobs` +
+            (totalNew > MAX_DESC ? ` (capped from ${totalNew})` : '') +
+            '...'
+        );
+        try {
+          const context = await createContext();
+          const page = await createPage(context);
+          for (const job of needDesc) {
+            const description = await fetchJobDescription(page, job.url);
+            if (description) {
+              job.description = description;
+              const live = allJobs.find((j) => j.id === job.id);
+              if (live) live.description = description;
+            }
+            await sleep(400);
+          }
+          await page.close();
+          await context.close();
+        } catch (err) {
+          console.log(
+            `  Description fetch skipped (${needDesc.length} jobs): ${err instanceof Error ? err.message : err}`
+          );
+        }
+      }
 
       console.log(
         `${company.name}: ${result.jobs.length} scraped -> ` +
-          `+${stats.new} new, ${stats.updated} updated, ${stats.dropped} filtered out` +
+          `+${merged.stats.new} new, ${merged.stats.updated} updated, ${merged.stats.dropped} filtered out` +
           `${result.success ? '' : ' [SCRAPE FAILED]'}`
       );
+
+      fs.writeFileSync(JOBS_PATH, JSON.stringify({ jobs: allJobs }, null, 2) + '\n');
 
       await sleep(1000);
     } catch (error) {
@@ -83,10 +128,8 @@ async function runScrapers(): Promise<void> {
     }
   }
 
-  // Persist.
   fs.writeFileSync(JOBS_PATH, JSON.stringify({ jobs: allJobs }, null, 2) + '\n');
 
-  // Update last_scraped for successful companies.
   if (fs.existsSync(COMPANIES_PATH)) {
     const companiesData = JSON.parse(fs.readFileSync(COMPANIES_PATH, 'utf-8'));
     for (const result of results) {
@@ -99,8 +142,15 @@ async function runScrapers(): Promise<void> {
 
   await closeBrowser();
 
-  // Summary.
   const successCount = results.filter((r) => r.success).length;
+  const failedCompanies = results
+    .filter((r) => !r.success)
+    .map((r) => ({
+      id: r.companyId,
+      name: COMPANIES.find((c) => c.id === r.companyId)?.name ?? r.companyId,
+      error: r.error,
+    }));
+
   console.log('\n--- Summary ---');
   for (const result of results) {
     const company = COMPANIES.find((c) => c.id === result.companyId);
@@ -133,6 +183,19 @@ async function runScrapers(): Promise<void> {
       companies: successCount,
     },
   });
+
+  return {
+    before,
+    after: allJobs.length,
+    totals,
+    successCount,
+    companyCount: results.length,
+    failedCompanies,
+    skippedCompanies,
+    added,
+  };
 }
 
-runScrapers().catch(console.error);
+if (invokedAsScript('index.ts')) {
+  runScrapers().catch(console.error);
+}

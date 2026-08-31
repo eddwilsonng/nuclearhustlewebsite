@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createScraper } from './scrapers';
 import { getCompany } from './companies';
-import { EnrichedJob, mergeCompanyJobs, fetchJobDescription } from './enrich';
+import { EnrichedJob, mergeCompanyJobs, fetchJobDescription, normalizeUrl } from './enrich';
 import { closeBrowser, createContext, createPage } from './browser';
 import { recordAgentRun } from '../src/lib/ops/runLog';
 
@@ -72,7 +72,21 @@ async function runSingle(companyId: string): Promise<void> {
     status.phase = 'Fetching descriptions';
     writeStatus(status);
 
-    const needDesc = result.jobs.filter((j) => !j.description);
+    const existing: EnrichedJob[] = fs.existsSync(JOBS_PATH)
+      ? JSON.parse(fs.readFileSync(JOBS_PATH, 'utf-8')).jobs || []
+      : [];
+
+    const existingByUrl = new Map(
+      existing
+        .filter((j) => j.company_id === companyId)
+        .map((j) => [normalizeUrl(j.url), j])
+    );
+    const needDesc = result.jobs.filter((j) => {
+      if (j.description) return false;
+      const prev = existingByUrl.get(normalizeUrl(j.url));
+      if (prev?.description) return false;
+      return true;
+    });
     if (needDesc.length > 0) {
       console.log(`Fetching descriptions for ${needDesc.length} jobs...`);
       const context = await createContext();
@@ -89,10 +103,6 @@ async function runSingle(companyId: string): Promise<void> {
     // Phase 3: Merge (status-preserving, relevance-filtered)
     status.phase = 'Merging results';
     writeStatus(status);
-
-    const existing: EnrichedJob[] = fs.existsSync(JOBS_PATH)
-      ? JSON.parse(fs.readFileSync(JOBS_PATH, 'utf-8')).jobs || []
-      : [];
 
     const now = new Date().toISOString();
     const { jobs: allJobs, stats } = mergeCompanyJobs(existing, companyId, result.jobs, now);

@@ -33,6 +33,11 @@ export interface CompanyConfig {
   careersUrl: string;
   scraperType: ScraperType;
   /**
+   * When false, the ingest/scrape run skips this source. Default true.
+   * Use for adapters that aren't producing reliable results yet.
+   */
+  enabled?: boolean;
+  /**
    * Slug/identifier used by API-based ATS adapters.
    * - greenhouse: board token, e.g. "nuscalepower"
    * - lever: company handle, e.g. "oklo"

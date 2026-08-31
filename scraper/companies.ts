@@ -20,6 +20,10 @@ export interface ScrapeSource extends CompanyConfig {
   verified?: boolean;
 }
 
+export function getActiveCompanies(): ScrapeSource[] {
+  return COMPANIES.filter((c) => c.enabled !== false);
+}
+
 export const COMPANIES: ScrapeSource[] = [
   // ---- Workday operators (clean JSON API) ----
   {
@@ -110,9 +114,7 @@ export const COMPANIES: ScrapeSource[] = [
     verified: true,
   },
 
-  // ---- Custom scrapers needing repair (Phase B follow-ups) ----
-  // NextEra runs a JS-rendered search app; TVA sits behind Cloudflare. Both need
-  // browser-based scraping with anti-bot handling — left on the legacy custom path.
+  // ---- Custom / Playwright scrapers ----
   {
     id: 'nextera',
     name: 'NextEra Energy',
@@ -126,9 +128,7 @@ export const COMPANIES: ScrapeSource[] = [
     scraperType: 'custom',
   },
 
-  // ---- Additional operators from the master list (need a dedicated ATS adapter) ----
-  // These run on Taleo / Dayforce / SuccessFactors / Phenom / iCIMS. Wired as `custom`
-  // (GenericBrowserScraper) for now; each likely needs its own adapter to be reliable.
+  // ---- Additional operators ----
   {
     id: 'southern-nuclear',
     name: 'Southern Nuclear',

@@ -12,6 +12,7 @@ export interface StructuredDescription {
   qualifications?: string;
   desired?: string;
   location_details?: string;
+  skills?: string[];
 }
 
 export interface EnrichedJob {
@@ -31,6 +32,7 @@ export interface EnrichedJob {
   agent_confidence?: 'high' | 'low';
   review_notes?: string;
   structured_description?: StructuredDescription | null;
+  skills?: string[];
   salary?: Salary | null;
   // Hygiene lifecycle. last_seen_at is refreshed whenever the job's URL is
   // returned by a scrape; link_check_failures is the consecutive dead-probe
@@ -84,7 +86,7 @@ export function mergeCompanyJobs(
   companyId: string,
   scraped: ScrapedJob[],
   now: string
-): { jobs: EnrichedJob[]; stats: MergeStats } {
+): { jobs: EnrichedJob[]; stats: MergeStats; added: EnrichedJob[] } {
   const otherCompanyJobs = existingAll.filter((j) => j.company_id !== companyId);
   const existingCompanyJobs = existingAll.filter((j) => j.company_id === companyId);
 
@@ -99,6 +101,7 @@ export function mergeCompanyJobs(
   }, 0);
 
   const merged: EnrichedJob[] = [];
+  const added: EnrichedJob[] = [];
   const stats: MergeStats = { new: 0, updated: 0, kept: 0, dropped: 0 };
 
   for (const job of scraped) {
@@ -145,7 +148,7 @@ export function mergeCompanyJobs(
     }
 
     const id = String(++maxId);
-    merged.push({
+    const created: EnrichedJob = {
       id,
       company_id: companyId,
       title: job.title,
@@ -163,7 +166,9 @@ export function mergeCompanyJobs(
       review_notes: verdict.reason,
       last_seen_at: now,
       link_check_failures: 0,
-    });
+    };
+    merged.push(created);
+    added.push(created);
     stats.new++;
   }
 
@@ -173,7 +178,7 @@ export function mergeCompanyJobs(
     stats.kept++;
   }
 
-  return { jobs: [...otherCompanyJobs, ...merged], stats };
+  return { jobs: [...otherCompanyJobs, ...merged], stats, added };
 }
 
 const DESCRIPTION_SELECTORS = [
@@ -191,9 +196,7 @@ const DESCRIPTION_SELECTORS = [
 // Fetch a job description from a detail page (used for sources that don't include it inline).
 export async function fetchJobDescription(page: Page, url: string): Promise<string | null> {
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-    await new Promise((r) => setTimeout(r, 1500));
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 12000 });
 
     for (const selector of DESCRIPTION_SELECTORS) {
       try {
