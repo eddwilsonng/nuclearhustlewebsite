@@ -11,7 +11,15 @@ One command. Do not run `scrape`, `process-jobs`, and `hygiene` separately unles
 npm run ingest
 ```
 
-That crawls enabled sources, keyword-filters, one-pass Haiku review, auto-publishes high-confidence nuclear jobs, expires dead listings, and writes `scraper/last-run.json`.
+That crawls enabled sources, keyword-filters, one-pass Haiku review (format + nuclear verdict + skills + **fit**), auto-publishes high-confidence nuclear jobs, expires dead listings, and writes `scraper/last-run.json`.
+
+To backfill the "Why this role" fit block on already-published jobs (local, no API):
+
+```bash
+npm run process-jobs -- --fit-only
+```
+
+Same as `npx tsx scraper/fit-local.ts`. Safe to run from this chat.
 
 ## After it finishes
 
@@ -28,6 +36,7 @@ That crawls enabled sources, keyword-filters, one-pass Haiku review, auto-publis
 
 ## Rules
 
+- Never publish without `structured_description`. If Haiku is skipped (no credits), run `npx tsx scraper/format-local.ts` before anything goes live — raw ATS dumps look broken on `/job/[slug]`.
 - Ingest does not commit or push. Vercel only updates after a commit.
 - GitHub Action is crawl + hygiene only — it does not auto-publish.
 - `run-single.ts --company=<id>` still works to test one source.

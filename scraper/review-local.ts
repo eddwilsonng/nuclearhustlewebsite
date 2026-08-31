@@ -7,6 +7,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import plantsData from '../src/data/plants.json';
 import { submitToIndexNow, jobUrl } from '../src/lib/indexnow';
+import {
+  formatJobDescriptionLocal,
+  isMixedFleetFalsePositive,
+} from '../src/lib/formatJobDescriptionLocal';
 
 const JOBS_PATH = path.join(__dirname, '..', 'src', 'data', 'jobs.json');
 
@@ -64,6 +68,10 @@ function decide(job: {
   const hay = `${job.title} ${job.location || ''} ${job.company_id}`;
   const title = job.title;
 
+  if (/\bgeneral application\b|\bopen call\b/i.test(title)) {
+    return { verdict: 'reject', reason: 'Talent-pool / general application, not a listing' };
+  }
+
   if (REJECT_RE.test(hay) && !STRONG_RE.test(title)) {
     return { verdict: 'reject', reason: 'Non-nuclear signal in title/location' };
   }
@@ -72,6 +80,9 @@ function decide(job: {
   }
 
   if (STRONG_RE.test(title)) {
+    if (isMixedFleetFalsePositive(job)) {
+      return { verdict: 'reject', reason: 'Mixed-fleet PMC/generation role, not a nuclear plant listing' };
+    }
     return { verdict: 'publish', reason: 'Nuclear signal in title' };
   }
 
@@ -105,6 +116,7 @@ async function main() {
       status?: string;
       review_notes?: string;
       agent_confidence?: string;
+      structured_description?: unknown;
     }>;
   };
 
@@ -116,9 +128,16 @@ async function main() {
     if (job.status !== 'pending_review') continue;
     const { verdict, reason } = decide(job);
     if (verdict === 'publish') {
+      if (!job.description || job.description.length < 80) {
+        job.review_notes = `Local review: ${reason} — held, no description to format`;
+        job.agent_confidence = 'low';
+        flagged.push({ title: job.title, company_id: job.company_id, reason: 'No description' });
+        continue;
+      }
       job.status = 'published';
       job.review_notes = `Local review: ${reason}`;
       job.agent_confidence = 'high';
+      job.structured_description = formatJobDescriptionLocal(job.description, job.title);
       published.push({ title: job.title, company_id: job.company_id, slug: job.slug });
     } else if (verdict === 'reject') {
       job.status = 'rejected';

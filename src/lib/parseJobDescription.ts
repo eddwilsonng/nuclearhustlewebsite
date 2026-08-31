@@ -63,11 +63,13 @@ export function parseJobDescription(rawText: string): ParsedJobDescription {
     sections: [],
   };
 
-  // Step 1: Insert line breaks before section headers
-  let text = rawText;
+  // Step 1: Split glued ATS words, then insert breaks only at sentence boundaries.
+  // Matching after any whitespace turns "friendly work environment" into a fake header.
+  let text = rawText
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/([a-z])\.([A-Z])/g, '$1. $2');
   for (const header of SECTION_HEADERS) {
-    // Match header preceded by punctuation or start, case insensitive
-    const regex = new RegExp(`([.!?\\s])(${header})\\b`, 'gi');
+    const regex = new RegExp(`(^|[.!?])\\s*(${header})\\b`, 'gi');
     text = text.replace(regex, '$1\n\n$2');
   }
 
