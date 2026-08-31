@@ -8,7 +8,11 @@ type Field =
   | 'location_details';
 
 const SECTION_MAP: { match: string; field: Field }[] = [
+  { match: 'Specific responsibilities may include', field: 'responsibilities' },
+  { match: 'Required Education and Experience', field: 'qualifications' },
+  { match: 'Principal Accountabilities', field: 'responsibilities' },
   { match: 'Responsibilities and Duties', field: 'responsibilities' },
+  { match: 'General Summary', field: 'about' },
   { match: 'Summary', field: 'about' },
   { match: 'Bonus Qualifications', field: 'desired' },
   { match: 'Job Duties / Responsibilities', field: 'responsibilities' },
@@ -80,7 +84,10 @@ const UNIQUE_HEADERS = new Set(
     'Specific responsibilities may include',
     'Bonus Qualifications',
     'Primary Duties and Accountabilities',
+    'Principal Accountabilities',
     'Responsibilities and Duties',
+    'Required Education and Experience',
+    'General Summary',
     'Summary',
     'Job Duties / Responsibilities',
     'Primary Purpose of Position',
@@ -181,8 +188,8 @@ function insertSectionBreaks(text: string): string {
     const token = `<<HDR:${tokens.length}>>`;
     tokens.push(match);
     const re = unique
-      ? new RegExp(`\\b${escapeRe(match)}\\b\\s*:?`, 'gi')
-      : new RegExp(`(^|[.!?])\\s*${escapeRe(match)}\\b\\s*:?`, 'gi');
+      ? new RegExp(`\\b${escapeRe(match)}(?=[A-Z\\s:]|$)\\s*:?`, 'gi')
+      : new RegExp(`(^|[.!?])\\s*${escapeRe(match)}(?=[A-Z\\s:]|$)\\s*:?`, 'gi');
     t = t.replace(re, unique ? `\n\n${token}\n` : `$1\n\n${token}\n`);
   }
   for (let i = tokens.length - 1; i >= 0; i--) {

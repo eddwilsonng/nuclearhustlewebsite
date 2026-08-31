@@ -63,10 +63,13 @@ export function getJobsWithCompany(filters?: {
     );
   }
 
-  return jobs.map((job) => ({
-    ...job,
-    company: companies.find((c) => c.id === job.company_id)!,
-  }));
+  return jobs
+    .slice()
+    .sort((a, b) => b.scraped_at.localeCompare(a.scraped_at))
+    .map((job) => ({
+      ...job,
+      company: companies.find((c) => c.id === job.company_id)!,
+    }));
 }
 
 export function getJobById(id: string): JobWithCompany | undefined {
