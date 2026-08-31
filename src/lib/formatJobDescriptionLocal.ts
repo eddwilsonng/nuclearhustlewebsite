@@ -45,7 +45,8 @@ const SECTION_MAP: { match: string; field: Field }[] = [
   { match: 'Duties', field: 'responsibilities' },
   { match: 'Travel', field: 'location_details' },
   { match: 'Preferred', field: 'desired' },
-].sort((a, b) => b.match.length - a.match.length);
+];
+SECTION_MAP.sort((a, b) => b.match.length - a.match.length);
 
 const MARKETING =
   /join (our|the) team|more than a career|make a difference|friendly work environment|who we are|total rewards|powered by passion|thanks for your interest|you'll find a friendly|build an exciting|we're creating healthier|cultivating a workplace|11:59|job posting expire|submit your application|important application/i;
