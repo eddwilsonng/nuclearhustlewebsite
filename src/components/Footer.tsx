@@ -16,24 +16,24 @@ const ROLE_LINKS: { href: string; label: string }[] = [
 ];
 
 const linkClass =
-  'font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors';
+  'font-sans text-sm text-secondary hover:text-ink';
 
 export function Footer() {
   const topStates = getActiveStates().slice(0, 6);
 
   return (
-    <footer className="border-t border-[#CFC8BC] bg-[#EDE8DF] mt-auto">
+    <footer className="mt-auto border-t border-rule bg-canvas">
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-10 mb-12">
 
           {/* Brand */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <span className="font-mono font-bold text-xs tracking-widest uppercase text-stone-900">
-                nuclearhustle
+            <Link href="/" className="mb-4 inline-flex items-center">
+              <span className="font-sans text-sm font-semibold tracking-tight text-ink">
+                Nuclear Hustle
               </span>
             </Link>
-            <p className="font-mono text-xs text-stone-500 leading-relaxed max-w-[200px]">
+            <p className="font-sans text-sm text-secondary leading-relaxed max-w-[200px]">
               The specialist job board for nuclear energy professionals.
             </p>
             <a
@@ -43,16 +43,16 @@ export function Footer() {
               className="inline-flex items-center gap-2 mt-4 group"
               aria-label="Nuclear Hustle on LinkedIn"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-stone-400 group-hover:text-stone-900 transition-colors" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-secondary group-hover:text-ink transition-colors" aria-hidden="true">
                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
               </svg>
-              <span className="font-mono text-xs text-stone-500 group-hover:text-stone-900 transition-colors">LinkedIn</span>
+              <span className="font-sans text-sm text-secondary group-hover:text-ink">LinkedIn</span>
             </a>
           </div>
 
           {/* Jobs by role */}
           <div>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-500 mb-4">Jobs by role</p>
+            <p className="font-mono text-xs uppercase tracking-widest text-secondary mb-4">Jobs by role</p>
             <ul className="space-y-3">
               {ROLE_LINKS.map(({ href, label }) => (
                 <li key={href}>
@@ -66,7 +66,7 @@ export function Footer() {
 
           {/* Jobs by location */}
           <div>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-500 mb-4">Jobs by location</p>
+            <p className="font-mono text-xs uppercase tracking-widest text-secondary mb-4">Jobs by location</p>
             <ul className="space-y-3">
               {topStates.map(({ state }) => (
                 <li key={state.slug}>
@@ -85,7 +85,7 @@ export function Footer() {
 
           {/* Employers */}
           <div>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-500 mb-4">Employers</p>
+            <p className="font-mono text-xs uppercase tracking-widest text-secondary mb-4">Employers</p>
             <ul className="space-y-3">
               <li>
                 <Link href="/signup/employer" className={linkClass}>
@@ -107,7 +107,7 @@ export function Footer() {
 
           {/* Plants */}
           <div>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-500 mb-4">Plants</p>
+            <p className="font-mono text-xs uppercase tracking-widest text-secondary mb-4">Plants</p>
             <ul className="space-y-3">
               <li>
                 <Link href="/plants" className={linkClass}>All plants directory</Link>
@@ -135,50 +135,50 @@ export function Footer() {
 
           {/* Site */}
           <div>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-500 mb-4">Site</p>
+            <p className="font-mono text-xs uppercase tracking-widest text-secondary mb-4">Site</p>
             <ul className="space-y-3">
               <li>
-                <Link href="/this-week" className="font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors">
+                <Link href="/this-week" className={linkClass}>
                   This week&rsquo;s picks
                 </Link>
               </li>
               <li>
-                <Link href="/nuclear-salary" className="font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors">
+                <Link href="/nuclear-salary" className={linkClass}>
                   Salary guide
                 </Link>
               </li>
               <li>
-                <Link href="/nuclear-skills" className="font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors">
+                <Link href="/nuclear-skills" className={linkClass}>
                   Skills report
                 </Link>
               </li>
               <li>
-                <Link href="/status" className="font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors">
+                <Link href="/status" className={linkClass}>
                   Fleet status
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors">
+                <Link href="/about" className={linkClass}>
                   About
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors">
+                <Link href="/contact" className={linkClass}>
                   Contact
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors">
+                <Link href="/privacy" className={linkClass}>
                   Privacy policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors">
+                <Link href="/terms" className={linkClass}>
                   Terms of use
                 </Link>
               </li>
               <li>
-                <Link href="/sitemap" className="font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors">
+                <Link href="/sitemap" className={linkClass}>
                   Sitemap
                 </Link>
               </li>
@@ -187,11 +187,11 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-[#CFC8BC] pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <p className="font-mono text-[10px] tracking-widest uppercase text-stone-500">
+        <div className="flex flex-col items-start justify-between gap-3 border-t border-rule pt-6 sm:flex-row sm:items-center">
+          <p className="font-mono text-xs uppercase tracking-widest text-secondary">
             © {YEAR} Nuclear Hustle. All rights reserved.
           </p>
-          <p className="font-mono text-[10px] text-stone-500">
+          <p className="font-sans text-sm text-secondary">
             Reactor data from the U.S. NRC. Job listings aggregated from public employer career sites.
           </p>
         </div>

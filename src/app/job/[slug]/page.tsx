@@ -20,10 +20,11 @@ import { ApplicationForm } from "@/components/job/ApplicationForm";
 import { ViewTracker } from "@/components/job/ViewTracker";
 import { SaveJobButton } from "@/components/job/SaveJobButton";
 import { FlagJobButton } from "@/components/job/FlagJobButton";
-import { getSkillIconCategory } from "@/lib/seo/skillIcons";
+import { ShareJobButton } from "@/components/job/ShareJobButton";
 import { groupSkills } from "@/lib/skills/taxonomy";
 import { fitMetaDescription, hasUsableFit } from "@/lib/jobs/fit";
-import { Award, Zap, Monitor, Shield, Tag } from "lucide-react";
+import { getPostedLabel } from "@/lib/jobs/dates";
+import { getJobFacts, structuredText } from "@/lib/jobs/facts";
 import { createClient } from "@/lib/supabase/server";
 import {
   BrowsePageHeader,
@@ -33,21 +34,13 @@ import {
   BrowseTitle,
   BrowseBadge,
   BrowseTagLink,
-  BrowseChip,
   BrowseMetaLink,
 } from "@/components/BrowsePageHeader";
-
-// Some scraped/AI rows store structured-description fields as arrays (e.g.
-// responsibilities as a list) instead of strings. Coerce safely so rendering
-// never calls a string method on a non-string — which 500s the whole page.
-function asText(value: unknown): string {
-  if (value == null) return "";
-  if (Array.isArray(value)) {
-    return value.map((v) => (typeof v === "string" ? v : String(v))).join("\n");
-  }
-  if (typeof value === "string") return value;
-  return "";
-}
+import { JobAlertForm } from "@/components/JobAlertForm";
+import {
+  ExternalLinkButton,
+  LinkButton,
+} from "@/components/ui/LinkButton";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -102,27 +95,6 @@ export async function generateMetadata({
   };
 }
 
-function getPostedLabel(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffDays = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
-  );
-  if (diffDays === 0) return "Posted today";
-  if (diffDays === 1) return "Posted yesterday";
-  if (diffDays < 7) return `Posted ${diffDays} days ago`;
-  // Beyond a week: neutral month/year so old dates don't kill intent
-  return `Posted ${date.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`;
-}
-
-const SKILL_ICONS = {
-  award: Award,
-  zap: Zap,
-  monitor: Monitor,
-  shield: Shield,
-  tag: Tag,
-};
-
 export default async function JobPage({ params }: PageProps) {
   const { slug } = await params;
   const job = await getAnyJobBySlug(slug);
@@ -135,20 +107,38 @@ export default async function JobPage({ params }: PageProps) {
   const isAuthenticated = !!user;
 
   let initialSaved = false;
+  let defaultName = "";
+  let defaultEmail = "";
   if (user) {
-    const { data } = await supabase
-      .from("saved_jobs")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("job_slug", slug)
-      .maybeSingle();
-    initialSaved = !!data;
+    const [{ data: saved }, { data: profile }] = await Promise.all([
+      supabase
+        .from("saved_jobs")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("job_slug", slug)
+        .maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", user.id)
+        .maybeSingle(),
+    ]);
+    initialSaved = !!saved;
+    defaultName = profile?.full_name ?? "";
+    defaultEmail = profile?.email ?? user.email ?? "";
   }
 
   const isEmployerJob = job.isEmployerJob;
-  const relatedJobs = isEmployerJob ? [] : getRelatedJobs(job, 4);
+  const relatedJobs = getRelatedJobs(job, 4);
   const categoryInfo = getCategoryInfo(job.category);
   const stateInfo = job.state ? getStateBySlug(job.state) : null;
+  const facts = getJobFacts(job);
+  const salaryLabel = formatSalary(job.salary);
+  const grouped = groupSkills(job.structured_description?.skills);
+  const isFeatured =
+    job.is_featured &&
+    job.featured_until &&
+    new Date(job.featured_until) > new Date();
 
   const locationParts = job.location.split(",").map((s: string) => s.trim());
   const city = locationParts[0] || job.location;
@@ -167,22 +157,20 @@ export default async function JobPage({ params }: PageProps) {
     temporary: "TEMPORARY",
     internship: "INTERN",
   };
-  const employmentType =
-    employmentTypeMap[job.employment_type?.toLowerCase() ?? ""] || "FULL_TIME";
-  const employmentLabel = job.employment_type
-    ? job.employment_type.charAt(0).toUpperCase() +
-      job.employment_type.slice(1).toLowerCase()
-    : "Full-time";
+  const employmentSchema =
+    employmentTypeMap[job.employment_type?.toLowerCase() ?? ""] ||
+    (facts.employmentType === "Contract"
+      ? "CONTRACTOR"
+      : facts.employmentType === "Part-time"
+        ? "PART_TIME"
+        : "FULL_TIME");
 
   const descriptionFallback = [
-    `${job.company.name} is hiring a ${job.title} to join their team in ${job.location}.`,
+    `${job.company.name} is hiring a ${job.title} in ${job.location}.`,
     `This is a ${categoryInfo.name.toLowerCase()} role in the nuclear power industry.`,
-    categoryInfo.description,
-    `Responsibilities will include work typical of a ${job.title} at a nuclear power facility, ensuring safe and efficient plant operations in compliance with NRC regulations.`,
-    `To apply, visit ${job.company.name}'s careers page directly.`,
   ].join(" ");
 
-  const structuredData = {
+  const structuredData: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     title: job.title,
@@ -203,8 +191,8 @@ export default async function JobPage({ params }: PageProps) {
         addressCountry: "US",
       },
     },
-    directApply: false,
-    employmentType,
+    directApply: isEmployerJob && job.application_type === "form",
+    employmentType: employmentSchema,
     industry: "Nuclear Energy",
     identifier: {
       "@type": "PropertyValue",
@@ -213,6 +201,19 @@ export default async function JobPage({ params }: PageProps) {
     },
     url: `${siteUrl}/job/${job.slug}`,
   };
+
+  if (job.salary?.min || job.salary?.max) {
+    structuredData.baseSalary = {
+      "@type": "MonetaryAmount",
+      currency: "USD",
+      value: {
+        "@type": "QuantitativeValue",
+        minValue: job.salary.min ?? job.salary.max,
+        maxValue: job.salary.max ?? job.salary.min,
+        unitText: job.salary.period === "hour" ? "HOUR" : "YEAR",
+      },
+    };
+  }
 
   const applyUrl = job.url;
   const applyLabel =
@@ -232,6 +233,39 @@ export default async function JobPage({ params }: PageProps) {
     { name: job.title, url: `${siteUrl}/job/${job.slug}` },
   ];
 
+  const factRows = [
+    salaryLabel ? { label: "Salary", value: salaryLabel } : null,
+    { label: "Location", value: facts.plant ? `${facts.plant.name}, ${job.location}` : job.location },
+    facts.workMode ? { label: "Work mode", value: facts.workMode } : null,
+    facts.schedule ? { label: "Schedule", value: facts.schedule } : null,
+    facts.travel ? { label: "Travel", value: facts.travel } : null,
+    facts.employmentType ? { label: "Type", value: facts.employmentType } : null,
+    categoryInfo.name !== "Other" ? { label: "Field", value: categoryInfo.name } : null,
+    { label: "Posted", value: getPostedLabel(job.scraped_at, "long") },
+  ].filter(Boolean) as { label: string; value: string }[];
+
+  const credentialSections = [
+    { label: "Training and certifications", items: grouped.certifications },
+    { label: "Security clearance", items: grouped.clearances },
+    { label: "Skills and tools", items: grouped.skills },
+  ].filter((section) => section.items.length > 0);
+
+  const applyControl = applyExternal ? (
+    <ExternalLinkButton
+      href={applyHref}
+      target="_blank"
+      variant="primary"
+      fullWidth
+    >
+      {applyLabel}
+      <span className="sr-only"> (opens in a new tab)</span>
+    </ExternalLinkButton>
+  ) : (
+    <LinkButton href={applyHref} variant="primary" fullWidth>
+      {applyLabel}
+    </LinkButton>
+  );
+
   return (
     <>
       <script
@@ -249,25 +283,26 @@ export default async function JobPage({ params }: PageProps) {
         <ViewTracker jobId={job.id.replace(/^employer-/, "")} />
       )}
 
-      <div className="min-h-screen bg-[#EDE8DF]">
+      <div className="bg-canvas pb-24 md:pb-0">
         <BrowsePageHeader className="py-8 md:py-10">
           <BrowseBreadcrumb>
             <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-            <span className="text-stone-500">//</span>
+            <span aria-hidden="true">/</span>
             <BrowseBreadcrumbLink href="/jobs">Jobs</BrowseBreadcrumbLink>
             {stateInfo && (
               <>
-                <span className="text-stone-500">//</span>
+                <span aria-hidden="true">/</span>
                 <BrowseBreadcrumbLink href={`/jobs/${stateInfo.slug}`}>
                   {stateInfo.name}
                 </BrowseBreadcrumbLink>
               </>
             )}
-            <span className="text-stone-500">//</span>
+            <span aria-hidden="true">/</span>
             <BrowseBreadcrumbTruncated>{job.title}</BrowseBreadcrumbTruncated>
           </BrowseBreadcrumb>
 
-          <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            {isFeatured && <BrowseBadge>Featured</BrowseBadge>}
             {isEmployerJob && <BrowseBadge>Direct employer</BrowseBadge>}
             {categoryInfo.name !== "Other" && (
               <BrowseTagLink href={`/jobs/role/${job.category}`}>
@@ -283,9 +318,9 @@ export default async function JobPage({ params }: PageProps) {
 
           <BrowseTitle>{job.title}</BrowseTitle>
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-sm text-stone-400">
+          <p className="font-sans text-base text-inverse-ink/80">
             {isEmployerJob ? (
-              <span className="font-semibold text-stone-200">
+              <span className="font-semibold text-inverse-ink">
                 {job.company.name}
               </span>
             ) : (
@@ -293,426 +328,268 @@ export default async function JobPage({ params }: PageProps) {
                 {job.company.name}
               </BrowseMetaLink>
             )}
-            <span className="text-stone-500">·</span>
-            <span>{job.location}</span>
-            <span className="text-stone-500">·</span>
-            <span className="text-stone-500" suppressHydrationWarning>
-              {getPostedLabel(job.scraped_at)}
-            </span>
-          </div>
-
-          <div className="flex flex-wrap gap-2 mt-4">
-            <BrowseChip>
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-              Nuclear industry
-            </BrowseChip>
-            {job.employment_type && <BrowseChip>{employmentLabel}</BrowseChip>}
-            <BrowseChip>US only</BrowseChip>
-          </div>
+            <span aria-hidden="true"> · </span>
+            {facts.plant ? facts.plant.name : job.location}
+            {salaryLabel && (
+              <>
+                <span aria-hidden="true"> · </span>
+                <span className="font-semibold text-inverse-ink">{salaryLabel}</span>
+              </>
+            )}
+          </p>
         </BrowsePageHeader>
 
-        {/* Body */}
-        <main className="max-w-6xl mx-auto px-6 py-10 pb-24 md:pb-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {/* Left: description */}
-            <div className="md:col-span-2 min-w-0">
-              {job.structured_description ? (
-                <div className="space-y-10">
-                  {hasUsableFit(job.structured_description) &&
-                    job.structured_description.fit && (
-                      <JobFitBlock fit={job.structured_description.fit} />
-                    )}
-                  {[
-                    {
-                      key: "about",
-                      label: "About this role",
-                      value: asText(job.structured_description.about),
-                    },
-                    {
-                      key: "responsibilities",
-                      label: "Responsibilities",
-                      value: asText(
-                        job.structured_description.responsibilities,
-                      ),
-                    },
-                    {
-                      key: "qualifications",
-                      label: "Qualifications",
-                      value: asText(job.structured_description.qualifications),
-                    },
-                    {
-                      key: "desired",
-                      label: "Desired",
-                      value: asText(job.structured_description.desired),
-                    },
-                    {
-                      key: "location_details",
-                      label: "Location",
-                      value: asText(
-                        job.structured_description.location_details,
-                      ),
-                    },
-                    {
-                      key: "what_we_offer",
-                      label: "What we offer",
-                      value: asText(job.structured_description.what_we_offer),
-                    },
-                  ]
-                    .filter(({ value }) => value.trim())
-                    .map(({ key, label, value }) => (
-                      <JobDescriptionSection key={key} label={label}>
-                        <JobDescriptionBlock text={value} />
-                      </JobDescriptionSection>
-                    ))}
-                </div>
-              ) : job.description ? (
-                <StructuredJobDescription
-                  description={job.description}
-                  companyName={job.company.name}
-                  jobTitle={job.title}
-                  location={job.location}
-                  categoryName={categoryInfo.name}
-                />
-              ) : (
-                <div className="space-y-4 text-stone-500 leading-relaxed text-sm">
-                  <p>
-                    {job.company.name} is hiring a <strong>{job.title}</strong>{" "}
-                    to join their team in {job.location}. This is a{" "}
-                    {categoryInfo.name.toLowerCase()} role in the nuclear power
-                    industry.
-                  </p>
-                  <p>{categoryInfo.description}</p>
-                  <p>
-                    Click the apply button to view the full job description and
-                    submit your application on {job.company.name}&apos;s careers
-                    website.
-                  </p>
-                </div>
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-6 py-10 md:grid-cols-3">
+          <div className="min-w-0 space-y-10 md:col-span-2">
+            {hasUsableFit(job.structured_description) &&
+              job.structured_description?.fit && (
+                <JobFitBlock fit={job.structured_description.fit} />
               )}
 
-              {/* Bottom apply nudge — desktop only; mobile uses sticky bar */}
-              <div className="hidden md:block mt-12 pt-8 border-t border-[#CFC8BC]">
-                <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-3">
-                  Ready to apply?
-                </p>
-                <a
-                  href={applyHref}
-                  target={applyExternal ? "_blank" : undefined}
-                  rel={applyExternal ? "noopener noreferrer" : undefined}
-                  className="inline-block font-mono text-xs tracking-widest uppercase py-3 px-8 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
-                >
-                  {applyLabel} →
-                </a>
+            {credentialSections.length > 0 && (
+              <section>
+                <h2 className="font-sans text-2xl font-bold text-ink">
+                  Credentials that matter
+                </h2>
+                <div className="mt-4 space-y-5">
+                  {credentialSections.map(({ label, items }) => (
+                    <div key={label}>
+                      <h3 className="font-mono text-xs uppercase tracking-widest text-secondary">
+                        {label}
+                      </h3>
+                      <ul className="mt-2 flex flex-wrap gap-2">
+                        {items.map((item) => (
+                          <li
+                            key={item}
+                            className="border border-rule bg-surface px-2.5 py-1.5 font-mono text-xs text-ink"
+                          >
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {job.structured_description ? (
+              [
+                {
+                  key: "qualifications",
+                  label: "Required qualifications",
+                  value: structuredText(job.structured_description.qualifications),
+                },
+                {
+                  key: "about",
+                  label: "About this role",
+                  value: structuredText(job.structured_description.about),
+                },
+                {
+                  key: "responsibilities",
+                  label: "Responsibilities",
+                  value: structuredText(job.structured_description.responsibilities),
+                },
+                {
+                  key: "desired",
+                  label: "Preferred qualifications",
+                  value: structuredText(job.structured_description.desired),
+                },
+                {
+                  key: "location_details",
+                  label: "Location, schedule, and travel",
+                  value: structuredText(job.structured_description.location_details),
+                },
+                {
+                  key: "what_we_offer",
+                  label: "What they offer",
+                  value: structuredText(job.structured_description.what_we_offer),
+                },
+              ]
+                .filter(({ value }) => value)
+                .map(({ key, label, value }) => (
+                  <JobDescriptionSection key={key} label={label}>
+                    <JobDescriptionBlock text={value} />
+                  </JobDescriptionSection>
+                ))
+            ) : job.description ? (
+              <StructuredJobDescription
+                description={job.description}
+                companyName={job.company.name}
+                jobTitle={job.title}
+                location={job.location}
+                categoryName={categoryInfo.name}
+              />
+            ) : (
+              <p className="max-w-prose font-sans text-base leading-relaxed text-secondary">
+                {job.company.name} is hiring a {job.title} in {job.location}.
+                Use Apply to read the full posting on their careers site.
+              </p>
+            )}
+
+            <section className="border-t border-rule pt-8">
+              <h2 className="font-sans text-2xl font-bold text-ink">
+                Similar roles
+              </h2>
+              <div className="mt-4">
+                <JobAlertForm
+                  heading={`Get ${categoryInfo.name.toLowerCase()} jobs by email`}
+                  description="Monday digest. No spam."
+                />
+              </div>
+            </section>
+
+            {isEmployerJob && job.application_type === "form" && (
+              <section id="apply" className="border-t border-rule pt-8">
+                <h2 className="mb-6 font-sans text-2xl font-bold text-ink">
+                  Apply for {job.title}
+                </h2>
+                <ApplicationForm
+                  jobId={job.slug}
+                  jobTitle={job.title}
+                  companyName={job.company.name}
+                  defaultName={defaultName}
+                  defaultEmail={defaultEmail}
+                />
+              </section>
+            )}
+          </div>
+
+          <aside className="md:col-span-1">
+            <div className="sticky top-20 space-y-4">
+              <div className="card-raised hidden border border-control bg-raised p-5 md:block">
+                {applyControl}
                 {applyExternal && (
-                  <p className="mt-2 font-mono text-[10px] text-stone-400">
-                    You&apos;ll be taken to {job.company.name}&apos;s careers
-                    page.
+                  <p className="mt-2 text-center font-sans text-sm text-secondary">
+                    Opens {job.company.name}’s careers page in a new tab.
+                  </p>
+                )}
+                <div className="mt-3 flex justify-center gap-2">
+                  <SaveJobButton
+                    jobSlug={job.slug}
+                    jobId={job.id}
+                    initialSaved={initialSaved}
+                    isAuthenticated={isAuthenticated}
+                    showLabel
+                  />
+                  <ShareJobButton title={job.title} />
+                </div>
+              </div>
+
+              <div className="border border-rule p-5">
+                <h2 className="font-sans text-sm font-semibold text-ink">
+                  Job details
+                </h2>
+                <dl className="mt-4 space-y-3">
+                  {factRows.map((row) => (
+                    <div
+                      key={row.label}
+                      className="flex items-baseline justify-between gap-4 border-b border-rule pb-3 last:border-0 last:pb-0"
+                    >
+                      <dt className="font-mono text-xs uppercase tracking-widest text-secondary">
+                        {row.label}
+                      </dt>
+                      <dd className="text-right font-sans text-sm font-semibold text-ink">
+                        {row.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              <div className="border border-rule p-5">
+                <h2 className="font-sans text-sm font-semibold text-ink">
+                  About the company
+                </h2>
+                {isEmployerJob ? (
+                  <p className="mt-2 font-sans text-sm font-semibold text-ink">
+                    {job.company.name}
+                  </p>
+                ) : (
+                  <Link
+                    href={`/companies/${job.company.id}`}
+                    className="mt-2 block font-sans text-sm font-semibold text-ink hover:underline"
+                  >
+                    {job.company.name}
+                  </Link>
+                )}
+                {job.company.description && (
+                  <p className="mt-2 font-sans text-sm leading-relaxed text-secondary">
+                    {job.company.description}
                   </p>
                 )}
               </div>
             </div>
+          </aside>
+        </div>
 
-            {/* Right: sidebar */}
-            <div className="md:col-span-1">
-              <div className="sticky top-6 space-y-4">
-                {/* Apply card — desktop sidebar only; mobile uses sticky bar */}
-                <div className="card-raised hidden md:block border border-[#CFC8BC] p-5">
-                  <a
-                    href={applyHref}
-                    target={applyExternal ? "_blank" : undefined}
-                    rel={applyExternal ? "noopener noreferrer" : undefined}
-                    className="block w-full text-center font-mono text-xs tracking-widest uppercase py-3.5 px-4 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
-                  >
-                    {applyLabel} →
-                  </a>
-                  {applyExternal && (
-                    <p className="mt-2.5 font-mono text-[10px] text-stone-400 leading-relaxed text-center">
-                      Opens {job.company.name}&apos;s careers page
-                    </p>
-                  )}
-                  <div className="mt-3 pt-3 border-t border-[#CFC8BC] flex justify-center">
-                    <SaveJobButton
-                      jobSlug={job.slug}
-                      jobId={job.id}
-                      initialSaved={initialSaved}
-                      isAuthenticated={isAuthenticated}
-                      showLabel
-                      className="text-stone-400 hover:text-stone-900"
-                    />
-                  </div>
-                </div>
-
-                {/* Job details */}
-                <div className="border border-[#CFC8BC] p-5 space-y-4">
-                  <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
-                    Job details
-                  </p>
-
-                  <div className="space-y-3">
-                    {/* Only show Type if it's a real known value, not a guess */}
-                    {job.employment_type && (
-                      <>
-                        <div className="flex justify-between items-baseline gap-4">
-                          <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
-                            Type
-                          </span>
-                          <span className="font-mono text-xs text-stone-900 font-semibold">
-                            {employmentLabel}
-                          </span>
-                        </div>
-                        <div className="h-px bg-[#CFC8BC]" />
-                      </>
-                    )}
-                    {/* Only show Field if it's a meaningful category */}
-                    {categoryInfo.name !== "Other" && (
-                      <>
-                        <div className="flex justify-between items-baseline gap-4">
-                          <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
-                            Field
-                          </span>
-                          <span className="font-mono text-xs text-stone-900 font-semibold">
-                            {categoryInfo.name}
-                          </span>
-                        </div>
-                        <div className="h-px bg-[#CFC8BC]" />
-                      </>
-                    )}
-                    {formatSalary(job.salary) && (
-                      <>
-                        <div className="flex justify-between items-baseline gap-4">
-                          <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
-                            Salary
-                          </span>
-                          <span className="font-mono text-xs text-stone-900 font-semibold">
-                            {formatSalary(job.salary)}
-                          </span>
-                        </div>
-                        <div className="h-px bg-[#CFC8BC]" />
-                      </>
-                    )}
-                    <div className="flex justify-between items-baseline gap-4">
-                      <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
-                        Location
-                      </span>
-                      <span className="font-mono text-xs text-stone-900 font-semibold text-right">
-                        {job.location}
-                      </span>
-                    </div>
-                    <div className="h-px bg-[#CFC8BC]" />
-                    <div className="flex justify-between items-baseline gap-4">
-                      <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
-                        Industry
-                      </span>
-                      <span className="font-mono text-xs text-stone-900 font-semibold">
-                        Nuclear energy
-                      </span>
-                    </div>
-                    <div className="h-px bg-[#CFC8BC]" />
-                    <div
-                      className="flex justify-between items-baseline gap-4"
-                      suppressHydrationWarning
-                    >
-                      <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
-                        Posted
-                      </span>
-                      <span
-                        className="font-mono text-xs text-stone-900 font-semibold"
-                        suppressHydrationWarning
-                      >
-                        {new Date(job.scraped_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Requirements — certifications, clearances, and skills as
-                    distinct facets (normalized via the shared taxonomy). */}
-                {(() => {
-                  const { certifications, clearances, skills } = groupSkills(
-                    job.structured_description?.skills,
-                  );
-
-                  const sections = [
-                    {
-                      label: "Training & Certifications",
-                      items: certifications,
-                    },
-                    { label: "Security Clearance", items: clearances },
-                    { label: "Skills & Tools", items: skills },
-                  ].filter((s) => s.items.length > 0);
-
-                  if (sections.length === 0) return null;
-
-                  return sections.map(({ label, items }) => (
-                    <div key={label} className="border border-[#CFC8BC] p-5">
-                      <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-3">
-                        {label}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {items.map((item) => {
-                          const Icon = SKILL_ICONS[getSkillIconCategory(item)];
-                          return (
-                            <span
-                              key={item}
-                              className="flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-stone-900 border border-[#CFC8BC] bg-[#E5DFD5] px-2.5 py-1.5"
-                            >
-                              <Icon
-                                size={11}
-                                className="text-stone-500 flex-shrink-0"
-                              />
-                              {item}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ));
-                })()}
-
-                {/* Company card */}
-                <div className="border border-[#CFC8BC] p-5">
-                  <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-3">
-                    About the company
-                  </p>
-                  {job.company.logo_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={job.company.logo_url}
-                      alt={`${job.company.name} logo`}
-                      className="h-12 w-12 object-contain border border-[#CFC8BC] bg-white mb-3"
-                    />
-                  )}
-                  {isEmployerJob ? (
-                    <p className="font-mono text-sm font-bold text-stone-900 mb-2">
-                      {job.company.name}
-                    </p>
-                  ) : (
-                    <Link
-                      href={`/companies/${job.company.id}`}
-                      className="font-mono text-sm font-bold text-stone-900 hover:text-yellow-500 transition-colors mb-2 block"
-                    >
-                      {job.company.name} →
-                    </Link>
-                  )}
-                  {job.company.description && (
-                    <p className="text-xs text-stone-500 leading-relaxed mb-3">
-                      {job.company.description}
-                    </p>
-                  )}
-                  {job.company.careers_url && (
-                    <a
-                      href={job.company.careers_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
-                    >
-                      Careers page ↗
-                    </a>
-                  )}
-                </div>
-
-                {/* Set up alert nudge — Rule 8: page-bg fill (not surface tint) so it
-                    doesn't blend into the sidebar, outline button stays secondary to Apply. */}
-                <div className="border border-[#CFC8BC] p-5 bg-[#EDE8DF]">
-                  <p className="font-mono text-[10px] tracking-widest uppercase text-stone-500 mb-1.5">
-                    Don&apos;t miss similar roles
-                  </p>
-                  <p className="font-sans text-xs text-stone-500 leading-relaxed mb-3">
-                    Get notified when new {categoryInfo.name.toLowerCase()} jobs
-                    are posted.
-                  </p>
-                  <Link
-                    href="/signup/job-seeker"
-                    className="block w-full text-center font-mono text-[10px] tracking-widest uppercase py-2.5 border border-[#CFC8BC] text-stone-500 hover:bg-[#EDE8DF] hover:text-stone-900 transition-colors"
-                  >
-                    Create free alert →
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Flag listing */}
-          <div className="mt-10 pt-6 border-t border-[#CFC8BC] flex justify-end">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="flex justify-end border-t border-rule pt-6">
             <FlagJobButton jobSlug={job.slug} />
           </div>
 
-          {/* Related jobs */}
           {relatedJobs.length > 0 && (
-            <div className="mt-16 pt-10 border-t border-[#CFC8BC]">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">
-                More like this
-              </p>
-              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-6">
+            <section className="mt-10 border-t border-rule pt-10 pb-16">
+              <h2 className="mb-6 font-sans text-2xl font-bold text-ink">
                 Related jobs
               </h2>
-              <div className="border border-[#CFC8BC]">
+              <div className="border border-rule">
                 {relatedJobs.map((relatedJob) => (
                   <Link
                     key={relatedJob.id}
                     href={`/job/${relatedJob.slug}`}
-                    className="flex items-center justify-between gap-4 px-5 py-4 border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors group"
+                    className="flex items-center justify-between gap-4 border-b border-rule px-5 py-4 last:border-b-0 hover:bg-surface"
                   >
                     <div className="min-w-0">
-                      <h3 className="font-sans text-[15px] font-semibold tracking-tight text-stone-900 group-hover:text-yellow-500 transition-colors truncate">
+                      <h3 className="truncate font-sans text-base font-semibold text-ink">
                         {relatedJob.title}
                       </h3>
-                      <p className="font-mono text-xs text-stone-500 mt-0.5 truncate">
-                        {relatedJob.company.name} // {relatedJob.location}
+                      <p className="mt-0.5 truncate font-sans text-sm text-secondary">
+                        {relatedJob.company.name} · {relatedJob.location}
                       </p>
                     </div>
-                    <span className="font-mono text-xs text-stone-400 shrink-0 group-hover:text-stone-900 transition-colors">
+                    <span aria-hidden="true" className="text-secondary">
                       →
                     </span>
                   </Link>
                 ))}
               </div>
-            </div>
+            </section>
           )}
-
-          {/* Application form */}
-          {isEmployerJob && job.application_type === "form" && (
-            <div id="apply" className="mt-16 pt-10 border-t border-[#CFC8BC]">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">
-                Apply now
-              </p>
-              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-8">
-                Apply for {job.title}
-              </h2>
-              <div className="max-w-xl">
-                <ApplicationForm
-                  jobId={job.slug}
-                  jobTitle={job.title}
-                  companyName={job.company.name}
-                />
-              </div>
-            </div>
-          )}
-        </main>
+        </div>
       </div>
 
-      {/* Mobile sticky apply bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#EDE8DF] border-t border-[#CFC8BC] px-4 py-3 flex items-center gap-3">
+      <div className="fixed right-0 bottom-0 left-0 z-40 flex items-center gap-3 border-t border-rule bg-canvas px-4 py-3 md:hidden">
         <div className="min-w-0 flex-1">
-          <p className="font-mono text-xs font-bold text-stone-900 truncate">
+          <p className="truncate font-sans text-sm font-semibold text-ink">
             {job.title}
           </p>
-          <p className="font-mono text-[10px] text-stone-400 truncate">
+          <p className="truncate font-sans text-sm text-secondary">
             {job.company.name}
-            {formatSalary(job.salary) && <> · {formatSalary(job.salary)}</>}
+            {salaryLabel && <> · {salaryLabel}</>}
           </p>
         </div>
-        <a
-          href={applyHref}
-          target={applyExternal ? "_blank" : undefined}
-          rel={applyExternal ? "noopener noreferrer" : undefined}
-          className="shrink-0 font-mono text-xs tracking-widest uppercase py-2.5 px-5 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
-        >
-          Apply →
-        </a>
+        <SaveJobButton
+          jobSlug={job.slug}
+          jobId={job.id}
+          initialSaved={initialSaved}
+          isAuthenticated={isAuthenticated}
+        />
+        {applyExternal ? (
+          <ExternalLinkButton
+            href={applyHref}
+            target="_blank"
+            variant="primary"
+            size="compact"
+          >
+            Apply
+            <span className="sr-only"> on {job.company.name}, opens in a new tab</span>
+          </ExternalLinkButton>
+        ) : (
+          <LinkButton href={applyHref} variant="primary" size="compact">
+            Apply
+          </LinkButton>
+        )}
       </div>
     </>
   );
@@ -735,27 +612,13 @@ function StructuredJobDescription({
 
   if (parsed.sections.length === 0) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">
-            About this role
-          </h2>
-          <p className="text-stone-900 leading-relaxed text-sm">
-            {parsed.overview ||
-              `${companyName} is hiring a ${jobTitle} to join their team in ${location}. This is a ${categoryName.toLowerCase()} role in the nuclear power industry.`}
-          </p>
-        </div>
-        {description.length > 200 && (
-          <div>
-            <h2 className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">
-              Full description
-            </h2>
-            <p className="text-stone-500 leading-relaxed text-sm whitespace-pre-line">
-              {description}
-            </p>
-          </div>
-        )}
-      </div>
+      <section>
+        <h2 className="mb-4 font-sans text-2xl font-bold text-ink">About this role</h2>
+        <p className="max-w-prose font-sans text-base leading-relaxed text-secondary">
+          {parsed.overview ||
+            `${companyName} is hiring a ${jobTitle} in ${location}. This is a ${categoryName.toLowerCase()} role.`}
+        </p>
+      </section>
     );
   }
 
@@ -776,9 +639,9 @@ function StructuredJobDescription({
               {section.content.map((item, itemIndex) => (
                 <li
                   key={itemIndex}
-                  className="flex items-start gap-3 text-stone-500 text-sm leading-relaxed"
+                  className="flex items-start gap-3 font-sans text-base leading-relaxed text-secondary"
                 >
-                  <span className="text-yellow-500 mt-[0.35rem] flex-shrink-0 font-mono leading-none">
+                  <span className="mt-[0.45rem] shrink-0 font-mono leading-none text-ink" aria-hidden="true">
                     —
                   </span>
                   <span>{item}</span>

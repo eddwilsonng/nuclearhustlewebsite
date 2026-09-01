@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { JobListItem, Company } from '@/lib/types';
-import { JobCategory, getCategoryInfo } from '@/lib/categorize';
-import { FilterSidebar } from './FilterSidebar';
-import { PaginatedJobResults } from './PaginatedJobResults';
-import { JobAlertForm } from './JobAlertForm';
+import { useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { JobListItem, Company } from "@/lib/types";
+import { JobCategory, getCategoryInfo } from "@/lib/categorize";
+import { FilterSidebar } from "./FilterSidebar";
+import { PaginatedJobResults } from "./PaginatedJobResults";
+import { JobAlertForm } from "./JobAlertForm";
 
 interface JobListProps {
   jobs: JobListItem[];
@@ -14,19 +15,29 @@ interface JobListProps {
 }
 
 export function JobList({ jobs, companies, initialPage = 1 }: JobListProps) {
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<JobCategory | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("q") ?? "";
+  const selectedCompany = searchParams.get("company");
+  const selectedCategory = (searchParams.get("role") as JobCategory | null) || null;
 
-  // Role options derived from the full job set so counts stay stable as other
-  // filters change. 'other' is hidden to match the role chips above the list.
+  function setParam(key: string, value: string | null) {
+    const next = new URLSearchParams(searchParams.toString());
+    if (value) next.set(key, value);
+    else next.delete(key);
+    next.delete("page");
+    const query = next.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }
+
   const categoryOptions = useMemo(() => {
     const counts = new Map<JobCategory, number>();
     for (const job of jobs) {
       counts.set(job.category, (counts.get(job.category) || 0) + 1);
     }
     return Array.from(counts.entries())
-      .filter(([category]) => category !== 'other')
+      .filter(([category]) => category !== "other")
       .map(([category, count]) => ({
         category,
         name: getCategoryInfo(category).name,
@@ -52,21 +63,27 @@ export function JobList({ jobs, companies, initialPage = 1 }: JobListProps) {
         (job) =>
           job.title.toLowerCase().includes(query) ||
           job.location.toLowerCase().includes(query) ||
-          job.company.name.toLowerCase().includes(query)
+          job.company.name.toLowerCase().includes(query),
       );
     }
 
     return result.sort((a, b) => {
-      const aFeatured = a.is_featured && a.featured_until && new Date(a.featured_until) > new Date() ? 1 : 0;
-      const bFeatured = b.is_featured && b.featured_until && new Date(b.featured_until) > new Date() ? 1 : 0;
+      const aFeatured =
+        a.is_featured && a.featured_until && new Date(a.featured_until) > new Date()
+          ? 1
+          : 0;
+      const bFeatured =
+        b.is_featured && b.featured_until && new Date(b.featured_until) > new Date()
+          ? 1
+          : 0;
       return bFeatured - aFeatured;
     });
   }, [jobs, selectedCompany, selectedCategory, searchQuery]);
 
-  const resetKey = `${selectedCompany ?? ''}|${selectedCategory ?? ''}|${searchQuery}`;
+  const resetKey = `${selectedCompany ?? ""}|${selectedCategory ?? ""}|${searchQuery}`;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
+    <div className="flex flex-col gap-8 lg:flex-row">
       <FilterSidebar
         companies={companies}
         categories={categoryOptions}
@@ -75,17 +92,17 @@ export function JobList({ jobs, companies, initialPage = 1 }: JobListProps) {
         searchQuery={searchQuery}
         resultCount={filteredJobs.length}
         totalCount={jobs.length}
-        onCompanyChange={setSelectedCompany}
-        onCategoryChange={setSelectedCategory}
-        onSearchChange={setSearchQuery}
+        onCompanyChange={(value) => setParam("company", value)}
+        onCategoryChange={(value) => setParam("role", value)}
+        onSearchChange={(value) => setParam("q", value || null)}
       />
 
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         {filteredJobs.length === 0 ? (
-          <div className="text-center py-12 bg-[#E5DFD5] px-6">
-            <p className="font-mono text-sm text-stone-500">No jobs found matching your criteria.</p>
-            <p className="font-mono text-xs text-stone-400 mt-2 mb-6">
-              Try adjusting your filters or search terms — or get new jobs by email instead.
+          <div className="bg-surface px-6 py-12 text-center">
+            <p className="font-sans text-base text-ink">No jobs match those filters.</p>
+            <p className="mt-2 mb-6 font-sans text-sm text-secondary">
+              Clear a filter, or get the Monday digest instead.
             </p>
             <div className="flex justify-center">
               <JobAlertForm />

@@ -1,32 +1,29 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Flag } from 'lucide-react';
-import { FlagJobModal } from './FlagJobModal';
+import { useState } from "react";
+import { Flag } from "lucide-react";
+import { FlagJobModal } from "./FlagJobModal";
+import { Button } from "@/components/ui/Button";
 
 interface FlagJobButtonProps {
   jobSlug: string;
 }
 
 export function FlagJobButton({ jobSlug }: FlagJobButtonProps) {
-  const [showModal, setShowModal] = useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
     <>
-      <button
-        onClick={() => setShowModal(true)}
-        className="flex items-center gap-1.5 font-mono text-xs text-stone-400 hover:text-stone-500 transition-colors"
+      <Button
+        onClick={() => setOpen(true)}
+        variant="quiet"
+        size="compact"
+        aria-label="Flag this listing"
       >
-        <Flag size={12} />
-        Flag this listing
-      </button>
-
-      {showModal && (
-        <FlagJobModal
-          jobSlug={jobSlug}
-          onClose={() => setShowModal(false)}
-        />
-      )}
+        <Flag size={16} aria-hidden="true" />
+        Flag listing
+      </Button>
+      <FlagJobModal jobSlug={jobSlug} open={open} onOpenChange={setOpen} />
     </>
   );
 }

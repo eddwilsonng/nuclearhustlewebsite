@@ -9,22 +9,28 @@ export const metadata = {
 export default function EmployerSignupPage() {
   return (
     <div className="w-full max-w-lg">
-      <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">Employer</p>
-      <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 leading-tight mb-1">Post jobs, find talent.</h1>
-      <p className="font-mono text-xs text-stone-400 mb-10">Reach qualified nuclear industry professionals</p>
+      <p className="mb-2 font-mono text-xs uppercase tracking-widest text-secondary">
+        Employer
+      </p>
+      <h1 className="mb-1 font-sans text-3xl font-bold leading-tight text-ink md:text-4xl">
+        Post jobs, find talent.
+      </h1>
+      <p className="mb-10 font-sans text-sm text-secondary">
+        Reach qualified nuclear industry professionals
+      </p>
 
       <EmployerSignupForm />
 
-      <div className="mt-8 pt-6 border-t border-[#CFC8BC] space-y-2">
-        <p className="font-mono text-xs tracking-widest uppercase text-stone-400">
+      <div className="mt-8 space-y-2 border-t border-rule pt-6">
+        <p className="font-sans text-sm text-secondary">
           Looking for a job?{" "}
-          <Link href="/signup/job-seeker" className="text-stone-900 hover:text-yellow-500 transition-colors">
+          <Link href="/signup/job-seeker" className="font-semibold text-ink underline underline-offset-2">
             Job seeker sign up →
           </Link>
         </p>
-        <p className="font-mono text-xs tracking-widest uppercase text-stone-400">
+        <p className="font-sans text-sm text-secondary">
           Have an account?{" "}
-          <Link href="/login" className="text-stone-900 hover:text-yellow-500 transition-colors">
+          <Link href="/login" className="font-semibold text-ink underline underline-offset-2">
             Log in →
           </Link>
         </p>

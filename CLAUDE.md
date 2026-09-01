@@ -4,7 +4,7 @@ Nuclear industry job board with employer and job seeker accounts. Specialist job
 
 ## Tech Stack
 
-- **Frontend**: Next.js 16, React 19, Tailwind CSS, `font-mono` design system
+- **Frontend**: Next.js 16, React 19, Tailwind CSS 4, Base UI
 - **Backend**: Supabase (Auth, Database, Storage)
 - **Maps**: `react-simple-maps` — pure SVG US map, no tiles, no watermarks
 - **Scraper**: Cheerio + Playwright for job aggregation
@@ -20,18 +20,24 @@ npm run lint       # ESLint
 
 ## Brand / Design Tokens
 
-All UI uses a consistent monospace-first cream palette. Never use default Tailwind rounded corners or shadows — the brand is sharp/flat.
+Canonical source: [`design.md`](design.md). Semantic tokens live in `src/app/globals.css`.
 
-| Token | Value | Usage |
+| Role | Class | Usage |
 |---|---|---|
-| Background | `bg-[#EDE8DF]` | Page background, cards |
-| Border | `border-[#CFC8BC]` | All dividers and card borders |
-| Hover bg | `bg-[#E5DFD5]` | Row hover states |
-| Accent | `bg-yellow-400` | Primary CTAs only |
-| Font | `font-mono` | Everything — labels, headings, body |
-| Label style | `text-xs tracking-widest uppercase` | Section labels, chips |
+| Canvas | `bg-canvas` | Page background |
+| Surface | `bg-surface` | Hover, grouped regions |
+| Rule | `border-rule` | Decorative dividers |
+| Control | `border-control` | Interactive borders |
+| Ink | `text-ink` | Primary text |
+| Secondary | `text-secondary` | Body and meta |
+| Signal | `bg-signal` | Primary candidate CTAs |
 
-**Design rules:** see the `design-system` skill (`.claude/skills/design-system/`) before any UI/styling change.
+Geist Sans for headings, navigation, job titles, and prose. Geist Mono for short metadata and identifiers. No 9px/10px text. No nested interactive controls. Yellow is reserved for conversion.
+
+**Design rules:** [`design.md`](design.md) is the canonical design authority.
+Read it and the `design-system` skill (`.claude/skills/design-system/`) before
+any UI or styling change. Linear/Vercel are quality references, not visual
+templates; new UI must remain recognisably Nuclear Hustle.
 **Copy voice:** see the `brand-voice` skill (`.claude/skills/brand-voice/`) before writing public body copy — page intros, About/mission, job descriptions, email body. Headlines, CTAs, and SEO titles/meta are exempt (conversion/SEO-led).
 
 ## Project Structure

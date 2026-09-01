@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { getFeaturedJobs } from '@/lib/data/employer';
 import { JobCard } from '@/components/JobCard';
+import { LinkButton } from '@/components/ui/LinkButton';
 
 export async function FeaturedJobsSection({ postHref = '/signup/employer' }: { postHref?: string }) {
   const featuredJobs = await getFeaturedJobs();
@@ -8,23 +8,22 @@ export async function FeaturedJobsSection({ postHref = '/signup/employer' }: { p
   return (
     <>
       {featuredJobs.length > 0 ? (
-        <div className="border border-yellow-400">
+        <div className="border border-signal">
           {featuredJobs.map((job) => (
             <JobCard key={job.id} job={job} />
           ))}
         </div>
       ) : (
-        <div className="border border-dashed border-[#CFC8BC] p-10 text-center">
-          <p className="font-mono text-xs tracking-widest uppercase text-stone-500 mb-3">No featured listings yet</p>
-          <p className="font-sans text-stone-500 text-sm mb-6 max-w-sm mx-auto">
+        <div className="border border-dashed border-rule p-10 text-center">
+          <p className="mb-3 font-mono text-xs uppercase tracking-widest text-secondary">
+            No featured listings yet
+          </p>
+          <p className="mx-auto mb-6 max-w-sm font-sans text-sm text-secondary">
             Get your role in front of thousands of nuclear professionals. Featured listings appear at the top of the board.
           </p>
-          <Link
-            href={postHref}
-            className="font-mono text-xs tracking-widest uppercase px-5 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors inline-block"
-          >
+          <LinkButton href={postHref} variant="primary">
             Post a featured job
-          </Link>
+          </LinkButton>
         </div>
       )}
     </>
@@ -33,8 +32,10 @@ export async function FeaturedJobsSection({ postHref = '/signup/employer' }: { p
 
 export function FeaturedJobsSkeleton() {
   return (
-    <div className="border border-dashed border-[#CFC8BC] p-10 text-center">
-      <p className="font-mono text-xs tracking-widest uppercase text-stone-400">Loading featured listings…</p>
+    <div className="border border-dashed border-rule p-10 text-center">
+      <p className="font-mono text-xs uppercase tracking-widest text-secondary">
+        Loading featured listings…
+      </p>
     </div>
   );
 }

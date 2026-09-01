@@ -16,16 +16,17 @@ function unsubscribePage(message: string): NextResponse {
         <meta charset="utf-8" />
         <title>Unsubscribe — Nuclear Hustle</title>
         <style>
-          body { font-family: monospace; background: #EDE8DF; color: #111; margin: 0; padding: 48px 24px; }
-          .card { max-width: 480px; margin: 0 auto; border: 1px solid #CFC8BC; background: #EDE8DF; padding: 32px; }
-          h1 { font-size: 20px; margin: 0 0 12px; }
-          p { font-size: 13px; color: #555; line-height: 1.6; margin: 0 0 20px; }
-          a { color: #111; }
+          body { font-family: ui-sans-serif, system-ui, sans-serif; background: #ede8df; color: #1c1917; margin: 0; padding: 48px 24px; }
+          .card { max-width: 480px; margin: 0 auto; border: 1px solid #cfc8bc; background: #ede8df; padding: 32px; }
+          .eyebrow { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: #57534e; margin: 0 0 16px; }
+          h1 { font-size: 28px; line-height: 1.15; margin: 0 0 12px; }
+          p { font-size: 16px; color: #57534e; line-height: 1.65; margin: 0 0 20px; }
+          a { color: #1c1917; }
         </style>
       </head>
       <body>
         <div class="card">
-          <p style="font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #999; margin-bottom: 16px;">Nuclear Hustle</p>
+          <p class="eyebrow">Nuclear Hustle</p>
           <h1>Job alerts</h1>
           <p>${message}</p>
           <a href="https://www.nuclearhustle.com/jobs">Browse open roles &rarr;</a>

@@ -1,67 +1,72 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState, useRef } from 'react';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu } from "@base-ui/react/menu";
+import { LinkButton } from "@/components/ui/LinkButton";
 
 const BROWSE_LINKS = [
-  { href: '/jobs', label: 'Jobs' },
-  { href: '/companies', label: 'Companies' },
-  { href: '/status', label: 'Fleet Status' },
-  { href: '/about', label: 'About' },
+  { href: "/jobs", label: "Jobs" },
+  { href: "/companies", label: "Companies" },
+  { href: "/status", label: "Fleet Status" },
+  { href: "/about", label: "About" },
 ];
 
 const RESOURCES_LINKS = [
-  { href: '/nuclear-salary', label: 'Nuclear Salary Guide', desc: 'Pay ranges by role & state' },
-  { href: '/nuclear-skills', label: 'Nuclear Skills Report', desc: 'Most in-demand skills & certs' },
+  {
+    href: "/nuclear-salary",
+    label: "Nuclear Salary Guide",
+    desc: "Pay ranges by role and state",
+  },
+  {
+    href: "/nuclear-skills",
+    label: "Nuclear Skills Report",
+    desc: "In-demand skills and credentials",
+  },
 ];
 
-function ResourcesDropdown({ active }: { active: boolean }) {
-  const [open, setOpen] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+function navLinkClass(active: boolean) {
+  return `relative font-sans text-sm transition-colors duration-150 ${
+    active ? "font-semibold text-ink" : "text-secondary hover:text-ink"
+  }`;
+}
 
-  const show = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setOpen(true);
-  };
-  const hide = () => {
-    timeoutRef.current = setTimeout(() => setOpen(false), 120);
-  };
-
+function ResourcesMenu({ active }: { active: boolean }) {
   return (
-    <div className="relative" onMouseEnter={show} onMouseLeave={hide}>
-      <button
-        className={`group relative font-mono text-xs tracking-widest uppercase transition-colors flex items-center gap-1 ${
-          active ? 'text-stone-900' : 'text-stone-500 hover:text-stone-900'
-        }`}
+    <Menu.Root>
+      <Menu.Trigger
+        className={`${navLinkClass(active)} inline-flex min-h-11 items-center gap-1`}
       >
         Resources
-        <span className={`text-[8px] transition-transform ${open ? 'rotate-180' : ''}`}>▾</span>
-        <span
-          className={`absolute -bottom-[6px] left-0 h-0.5 bg-yellow-400 transition-all duration-200 ${
-            active ? 'w-full' : 'w-0 group-hover:w-full'
-          }`}
-        />
-      </button>
-
-      {open && (
-        <div className="card-raised absolute top-full left-0 mt-3 w-56 bg-[#EDE8DF] border border-[#CFC8BC] z-50">
-          {RESOURCES_LINKS.map(({ href, label, desc }) => (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setOpen(false)}
-              className="block px-4 py-3 border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors group"
-            >
-              <span className="block font-mono text-xs font-semibold text-stone-900 group-hover:text-yellow-500 transition-colors">
-                {label}
-              </span>
-              <span className="block font-mono text-[10px] text-stone-500 mt-0.5">{desc}</span>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
+        <span aria-hidden="true" className="text-xs">
+          ▾
+        </span>
+      </Menu.Trigger>
+      <Menu.Portal>
+        <Menu.Positioner sideOffset={8} className="z-50">
+          <Menu.Popup className="card-raised min-w-64 border border-control bg-raised py-1 outline-none">
+            {RESOURCES_LINKS.map(({ href, label, desc }) => (
+              <Menu.Item
+                key={href}
+                render={
+                  <Link
+                    href={href}
+                    className="block px-4 py-3 no-underline outline-none data-highlighted:bg-surface"
+                  />
+                }
+              >
+                <span className="block font-sans text-sm font-semibold text-ink">
+                  {label}
+                </span>
+                <span className="mt-0.5 block font-sans text-sm text-secondary">
+                  {desc}
+                </span>
+              </Menu.Item>
+            ))}
+          </Menu.Popup>
+        </Menu.Positioner>
+      </Menu.Portal>
+    </Menu.Root>
   );
 }
 
@@ -73,61 +78,45 @@ export function DesktopNav({
   children?: React.ReactNode;
 }) {
   const pathname = usePathname();
-
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
-
   const resourcesActive = RESOURCES_LINKS.some(({ href }) => isActive(href));
 
   return (
-    <nav className="hidden md:flex items-center gap-6">
+    <nav aria-label="Primary" className="hidden items-center gap-6 md:flex">
       {BROWSE_LINKS.map(({ href, label }) => {
         const active = isActive(href);
         return (
           <Link
             key={href}
             href={href}
-            aria-current={active ? 'page' : undefined}
-            className={`group relative font-mono text-xs tracking-widest uppercase transition-colors ${
-              active ? 'text-stone-900' : 'text-stone-500 hover:text-stone-900'
-            }`}
+            aria-current={active ? "page" : undefined}
+            className={`inline-flex min-h-11 items-center ${navLinkClass(active)}`}
           >
             {label}
-            <span
-              className={`absolute -bottom-[6px] left-0 h-0.5 bg-yellow-400 transition-all duration-200 ${
-                active ? 'w-full' : 'w-0 group-hover:w-full'
-              }`}
-            />
           </Link>
         );
       })}
-      <ResourcesDropdown active={resourcesActive} />
+      <ResourcesMenu active={resourcesActive} />
 
-      <span className="h-4 w-px bg-[#CFC8BC]" aria-hidden="true" />
+      <span className="h-4 w-px bg-rule" aria-hidden="true" />
 
       {isAuthed ? (
         children
       ) : (
-        <>
+        <div className="flex items-center gap-3">
           <Link
             href="/signup/employer"
-            className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] hover:border-stone-400 text-stone-500 hover:text-stone-900 transition-colors"
+            className="inline-flex min-h-11 items-center font-sans text-sm text-secondary hover:text-ink"
           >
-            Post a Job
+            Post a job
           </Link>
-          <Link
-            href="/login"
-            className="font-mono text-xs tracking-widest uppercase text-stone-500 hover:text-stone-900 transition-colors"
-          >
-            Log In
-          </Link>
-          <Link
-            href="/signup"
-            className="font-mono text-xs tracking-widest uppercase px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
-          >
-            Sign Up
-          </Link>
-        </>
+          {pathname !== "/login" && (
+            <LinkButton href="/login" variant="secondary" size="compact">
+              Log in
+            </LinkButton>
+          )}
+        </div>
       )}
     </nav>
   );

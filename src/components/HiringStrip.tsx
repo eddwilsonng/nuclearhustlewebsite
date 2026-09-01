@@ -1,36 +1,36 @@
-import Link from 'next/link';
-import { getCompanies, getJobsByCompany } from '@/lib/data/static';
+import Link from "next/link";
+import { getCompanies, getJobsByCompany } from "@/lib/data/static";
 
 const FEATURED_OPERATOR_IDS = [
-  'constellation',
-  'duke',
-  'dominion',
-  'entergy',
-  'nextera',
-  'tva',
+  "constellation",
+  "duke",
+  "dominion",
+  "entergy",
+  "nextera",
+  "tva",
 ] as const;
 
 const SHORT_NAMES: Record<(typeof FEATURED_OPERATOR_IDS)[number], string> = {
-  constellation: 'Constellation',
-  duke: 'Duke Energy',
-  dominion: 'Dominion',
-  entergy: 'Entergy',
-  nextera: 'NextEra',
-  tva: 'TVA',
+  constellation: "Constellation",
+  duke: "Duke Energy",
+  dominion: "Dominion",
+  entergy: "Entergy",
+  nextera: "NextEra",
+  tva: "TVA",
 };
 
 function getInitials(name: string): string {
   return name
-    .split(' ')
+    .split(" ")
     .map((word) => word[0])
-    .join('')
+    .join("")
     .slice(0, 2)
     .toUpperCase();
 }
 
 export function HiringStrip() {
   const companies = getCompanies().filter((c) =>
-    FEATURED_OPERATOR_IDS.includes(c.id as (typeof FEATURED_OPERATOR_IDS)[number])
+    FEATURED_OPERATOR_IDS.includes(c.id as (typeof FEATURED_OPERATOR_IDS)[number]),
   );
 
   const operators = FEATURED_OPERATOR_IDS.map((id) => {
@@ -52,43 +52,36 @@ export function HiringStrip() {
   }>;
 
   return (
-    <section className="border-b border-[#CFC8BC] bg-[#E5DFD5]">
-      <div className="max-w-6xl mx-auto px-6 py-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-4">
+    <section className="border-b border-rule bg-surface">
+      <div className="mx-auto max-w-6xl px-6 py-8">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">
-              Hiring from
-            </p>
-            <p className="font-mono text-xs text-stone-500">
-              America&apos;s largest nuclear operators
-            </p>
+            <h2 className="font-sans text-sm font-semibold text-ink">
+              Hiring from America’s largest nuclear operators
+            </h2>
           </div>
           <Link
             href="/companies"
-            className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors shrink-0"
+            className="font-sans text-sm text-secondary hover:text-ink"
           >
             All operators →
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-[#CFC8BC] border border-[#CFC8BC]">
+        <div className="grid grid-cols-2 gap-px border border-rule bg-rule sm:grid-cols-3 lg:grid-cols-6">
           {operators.map((operator) => (
             <Link
               key={operator.id}
               href={`/companies/${operator.id}`}
-              className="bg-[#E5DFD5] hover:bg-[#EDE8DF] px-3 py-4 flex flex-col items-center justify-center text-center gap-2 transition-colors group min-h-[88px]"
+              className="flex min-h-[5.5rem] flex-col items-center justify-center gap-1 bg-surface px-3 py-4 text-center transition-colors duration-150 hover:bg-canvas"
             >
-              <div className="w-9 h-9 border border-[#CFC8BC] bg-[#EDE8DF] group-hover:border-stone-400 flex items-center justify-center transition-colors">
-                <span className="font-mono text-[10px] font-bold text-stone-500 group-hover:text-stone-900 transition-colors">
-                  {operator.initials}
-                </span>
-              </div>
-              <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 group-hover:text-stone-900 leading-tight transition-colors">
+              <span className="font-sans text-sm font-semibold text-ink">
                 {operator.shortName}
               </span>
               {operator.jobCount > 0 && (
-                <span className="font-mono text-[10px] text-stone-500">
-                  <span className="font-bold text-stone-900 tabular-nums">{operator.jobCount}</span> open
+                <span className="font-mono text-xs text-secondary">
+                  <span className="tabular-nums text-ink">{operator.jobCount}</span>{" "}
+                  open
                 </span>
               )}
             </Link>

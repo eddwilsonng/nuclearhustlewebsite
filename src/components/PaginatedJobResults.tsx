@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { JobListItem } from '@/lib/types';
 import { JobCard } from './JobCard';
+import { Button } from '@/components/ui/Button';
 import {
   JOBS_PAGE_SIZE,
   buildJobsPageUrl,
@@ -68,13 +69,13 @@ export function PaginatedJobResults({
 
   return (
     <div>
-      <p className="font-mono text-xs text-stone-500 mb-4">
-        Showing{' '}
-        <strong className="text-stone-900">{visibleJobs.length}</strong> of{' '}
-        <strong className="text-stone-900">{jobs.length}</strong> jobs
+      <p className="mb-4 font-sans text-sm text-secondary">
+        Showing{" "}
+        <strong className="text-ink">{visibleJobs.length}</strong> of{" "}
+        <strong className="text-ink">{jobs.length}</strong> jobs
       </p>
 
-      <div className="border border-[#CFC8BC]">
+      <div className="border border-rule">
         {visibleJobs.map((job) => (
           <JobCard key={job.id} job={job} hideCategory={hideCategory} />
         ))}
@@ -82,25 +83,21 @@ export function PaginatedJobResults({
 
       {hasMore && (
         <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={loadMore}
-            className="font-mono text-xs tracking-widest uppercase px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors w-full sm:w-auto"
-          >
+          <Button type="button" onClick={loadMore} variant="primary">
             Load {Math.min(remaining, JOBS_PAGE_SIZE)} more jobs
-            <span className="text-stone-900 font-normal normal-case tracking-normal ml-1">
+            <span className="ml-1 font-normal">
               ({remaining} remaining)
             </span>
-          </button>
+          </Button>
         </div>
       )}
 
       {totalPages > 1 && (
         <nav
           aria-label="Job listing pages"
-          className="mt-8 pt-6 border-t border-[#CFC8BC]"
+          className="mt-8 border-t border-rule pt-6"
         >
-          <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-3 text-center">
+          <p className="mb-3 text-center font-mono text-xs uppercase tracking-widest text-secondary">
             Pages
           </p>
           <ul className="flex flex-wrap items-center justify-center gap-1">
@@ -108,7 +105,7 @@ export function PaginatedJobResults({
               <li>
                 <Link
                   href={buildJobsPageUrl(resolvedBasePath, currentPage - 1)}
-                  className="font-mono text-xs tracking-widest uppercase px-3 py-2 border border-[#CFC8BC] text-stone-500 hover:border-stone-400 hover:text-stone-900 transition-colors"
+                  className="inline-flex min-h-11 items-center border border-control px-3 py-2 font-sans text-sm text-secondary hover:border-ink hover:text-ink"
                 >
                   ← Prev
                 </Link>
@@ -119,7 +116,7 @@ export function PaginatedJobResults({
               item === null ? (
                 <li
                   key={`gap-${i}`}
-                  className="font-mono text-xs text-stone-400 px-1 select-none"
+                  className="select-none px-1 font-sans text-sm text-muted"
                   aria-hidden="true"
                 >
                   …
@@ -128,11 +125,11 @@ export function PaginatedJobResults({
                 <li key={item}>
                   <Link
                     href={buildJobsPageUrl(resolvedBasePath, item)}
-                    aria-current={item === currentPage ? 'page' : undefined}
-                    className={`font-mono text-xs tracking-widest uppercase min-w-[2.25rem] text-center px-2 py-2 border transition-colors ${
+                    aria-current={item === currentPage ? "page" : undefined}
+                    className={`inline-flex min-h-11 min-w-11 items-center justify-center border px-2 py-2 font-sans text-sm ${
                       item === currentPage
-                        ? 'border-yellow-400 bg-yellow-50 text-stone-900 font-bold'
-                        : 'border-[#CFC8BC] text-stone-500 hover:border-stone-400 hover:text-stone-900'
+                        ? "border-ink bg-surface font-semibold text-ink"
+                        : "border-control text-secondary hover:border-ink hover:text-ink"
                     }`}
                   >
                     {item}
@@ -145,7 +142,7 @@ export function PaginatedJobResults({
               <li>
                 <Link
                   href={buildJobsPageUrl(resolvedBasePath, currentPage + 1)}
-                  className="font-mono text-xs tracking-widest uppercase px-3 py-2 border border-[#CFC8BC] text-stone-500 hover:border-stone-400 hover:text-stone-900 transition-colors"
+                  className="inline-flex min-h-11 items-center border border-control px-3 py-2 font-sans text-sm text-secondary hover:border-ink hover:text-ink"
                 >
                   Next →
                 </Link>

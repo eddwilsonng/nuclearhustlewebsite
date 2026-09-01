@@ -67,7 +67,7 @@ export default async function ThisWeekPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-[#EDE8DF]">
+    <div className="min-h-screen bg-canvas">
       <Script
         id="breadcrumb-schema"
         type="application/ld+json"
@@ -77,9 +77,7 @@ export default async function ThisWeekPage() {
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-500" aria-hidden="true">
-            //
-          </span>
+          <span aria-hidden="true">/</span>
           <BrowseBreadcrumbCurrent>This Week</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
 
@@ -103,7 +101,7 @@ export default async function ThisWeekPage() {
         </div>
 
         {refreshedLabel && (
-          <p className="mt-4 font-mono text-xs tracking-widest uppercase text-stone-500">
+          <p className="mt-4 font-mono text-xs tracking-widest uppercase text-secondary">
             Refreshed {refreshedLabel}
           </p>
         )}
@@ -112,12 +110,12 @@ export default async function ThisWeekPage() {
       <div className="max-w-6xl mx-auto px-6 py-8">
         {count > 0 ? (
           <>
-            <p className="font-mono text-sm text-stone-500 max-w-2xl mb-6 leading-relaxed">
+            <p className="mb-6 max-w-2xl font-sans text-base leading-relaxed text-secondary">
               A short list of roles worth a look this week, chosen from everything posted across the
               US nuclear fleet. New jobs go up daily — browse the full board any time.
             </p>
 
-            <div className="border border-[#CFC8BC]">
+            <div className="border border-rule">
               {picks.map(({ item, description }) => (
                 <JobCard key={item.id} job={item} description={description} />
               ))}
@@ -126,18 +124,18 @@ export default async function ThisWeekPage() {
             <div className="mt-6">
               <Link
                 href="/jobs"
-                className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors underline underline-offset-2"
+                className="font-mono text-xs tracking-widest uppercase text-secondary hover:text-ink transition-colors underline underline-offset-2"
               >
                 Browse all jobs →
               </Link>
             </div>
           </>
         ) : (
-          <div className="border border-[#CFC8BC] p-10 text-center">
-            <p className="font-mono text-sm text-stone-400 mb-2">
+          <div className="border border-rule p-10 text-center">
+            <p className="mb-2 font-sans text-base text-secondary">
               This week&rsquo;s picks haven&rsquo;t been published yet.
             </p>
-            <p className="font-mono text-xs text-stone-400 mb-6">
+            <p className="mb-6 font-sans text-sm text-secondary">
               New roles are added daily — get notified the moment one is posted.
             </p>
             <div className="flex justify-center mb-4">
@@ -145,7 +143,7 @@ export default async function ThisWeekPage() {
             </div>
             <Link
               href="/jobs"
-              className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors underline underline-offset-2"
+              className="font-mono text-xs tracking-widest uppercase text-secondary hover:text-ink transition-colors underline underline-offset-2"
             >
               Or browse all jobs →
             </Link>

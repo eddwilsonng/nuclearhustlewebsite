@@ -1,8 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Heart } from 'lucide-react';
-import { SaveJobModal } from './SaveJobModal';
+import { useState } from "react";
+import { Heart } from "lucide-react";
+import { SaveJobModal } from "./SaveJobModal";
+import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/cn";
 
 interface SaveJobButtonProps {
   jobSlug: string;
@@ -19,32 +21,29 @@ export function SaveJobButton({
   initialSaved = false,
   isAuthenticated = false,
   showLabel = false,
-  className = '',
+  className = "",
 }: SaveJobButtonProps) {
   const [saved, setSaved] = useState(initialSaved);
-  const [showModal, setShowModal] = useState(false);
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  async function handleClick(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-
+  async function handleClick() {
     if (!isAuthenticated) {
-      setShowModal(true);
+      setOpen(true);
       return;
     }
 
     setLoading(true);
     try {
-      const method = saved ? 'DELETE' : 'POST';
-      const res = await fetch('/api/jobs/save', {
+      const method = saved ? "DELETE" : "POST";
+      const res = await fetch("/api/jobs/save", {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jobSlug, jobId }),
       });
 
       if (res.status === 401) {
-        setShowModal(true);
+        setOpen(true);
         return;
       }
       if (res.ok) {
@@ -57,29 +56,27 @@ export function SaveJobButton({
 
   return (
     <>
-      <button
+      <Button
         onClick={handleClick}
         disabled={loading}
-        aria-label={saved ? 'Unsave job' : 'Save job'}
-        className={`flex items-center gap-1.5 transition-colors disabled:opacity-50 ${className}`}
+        variant={showLabel ? "secondary" : "quiet"}
+        size="compact"
+        aria-pressed={saved}
+        aria-label={saved ? "Unsave job" : "Save job"}
+        className={cn("relative z-10", className)}
       >
         <Heart
-          size={14}
-          className={saved ? 'fill-yellow-400 text-yellow-400' : 'text-stone-400'}
+          size={16}
+          aria-hidden="true"
+          className={saved ? "fill-signal text-ink" : "text-secondary"}
         />
-        {showLabel && (
-          <span className="font-mono text-[10px] tracking-widest uppercase">
-            {saved ? 'Saved' : 'Save job'}
-          </span>
-        )}
-      </button>
-
-      {showModal && (
-        <SaveJobModal
-          onClose={() => setShowModal(false)}
-          redirectPath={`/job/${jobSlug}`}
-        />
-      )}
+        {showLabel && (saved ? "Saved" : "Save")}
+      </Button>
+      <SaveJobModal
+        open={open}
+        onOpenChange={setOpen}
+        redirectPath={`/job/${jobSlug}`}
+      />
     </>
   );
 }

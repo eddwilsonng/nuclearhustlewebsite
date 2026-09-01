@@ -1,7 +1,14 @@
-'use client';
+"use client";
 
-import { Company } from '@/lib/types';
-import { JobCategory } from '@/lib/categorize';
+import { Company } from "@/lib/types";
+import { JobCategory } from "@/lib/categorize";
+import { Button } from "@/components/ui/Button";
+import {
+  FieldGroup,
+  FieldLabel,
+  Input,
+  Select,
+} from "@/components/ui/Field";
 
 interface CategoryOption {
   category: JobCategory;
@@ -22,12 +29,6 @@ interface FilterSidebarProps {
   onSearchChange: (query: string) => void;
 }
 
-const fieldClass =
-  'w-full px-3 py-2 font-mono text-sm border border-[#CFC8BC] bg-[#EDE8DF] text-stone-800 placeholder:text-stone-400 focus:border-yellow-400 focus:outline-none transition-colors';
-
-const labelClass =
-  'block font-mono text-xs tracking-widest uppercase text-stone-500 mb-2';
-
 export function FilterSidebar({
   companies,
   categories,
@@ -40,83 +41,86 @@ export function FilterSidebar({
   onCategoryChange,
   onSearchChange,
 }: FilterSidebarProps) {
-  const hasActiveFilters = Boolean(selectedCompany || selectedCategory || searchQuery);
+  const hasActiveFilters = Boolean(
+    selectedCompany || selectedCategory || searchQuery,
+  );
+  const selectedCategoryName = categories.find(
+    (c) => c.category === selectedCategory,
+  )?.name;
+  const selectedCompanyName = companies.find(
+    (c) => c.id === selectedCompany,
+  )?.name;
 
-  const selectedCategoryName = categories.find((c) => c.category === selectedCategory)?.name;
-  const selectedCompanyName = companies.find((c) => c.id === selectedCompany)?.name;
-
-  // Active filters surfaced as removable chips so the current state is visible
-  // without opening a dropdown (Rule 6: a filter UI must show its active state).
   const activeChips: { label: string; onRemove: () => void }[] = [
-    ...(searchQuery ? [{ label: `“${searchQuery}”`, onRemove: () => onSearchChange('') }] : []),
-    ...(selectedCategoryName ? [{ label: selectedCategoryName, onRemove: () => onCategoryChange(null) }] : []),
-    ...(selectedCompanyName ? [{ label: selectedCompanyName, onRemove: () => onCompanyChange(null) }] : []),
+    ...(searchQuery
+      ? [{ label: `“${searchQuery}”`, onRemove: () => onSearchChange("") }]
+      : []),
+    ...(selectedCategoryName
+      ? [{ label: selectedCategoryName, onRemove: () => onCategoryChange(null) }]
+      : []),
+    ...(selectedCompanyName
+      ? [{ label: selectedCompanyName, onRemove: () => onCompanyChange(null) }]
+      : []),
   ];
 
   return (
-    <aside className="w-full lg:w-64 shrink-0">
-      <div className="border border-[#CFC8BC] lg:sticky lg:top-6">
-        <div className="flex items-center justify-between border-b border-[#CFC8BC] px-4 py-3">
-          <span className="font-mono text-xs tracking-widest uppercase text-stone-500">
-            Filter
-          </span>
+    <aside className="w-full shrink-0 lg:w-64">
+      <div className="border border-rule lg:sticky lg:top-6">
+        <div className="flex items-center justify-between border-b border-rule px-4 py-3">
+          <p className="font-sans text-sm font-semibold text-ink">Filter</p>
           {hasActiveFilters && (
-            <button
+            <Button
               type="button"
+              variant="quiet"
+              size="compact"
               onClick={() => {
                 onCompanyChange(null);
                 onCategoryChange(null);
-                onSearchChange('');
+                onSearchChange("");
               }}
-              className="font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 border border-[#CFC8BC] text-stone-500 hover:border-stone-400 hover:text-stone-900 transition-colors"
             >
               Clear all
-            </button>
+            </Button>
           )}
         </div>
 
         {activeChips.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 border-b border-[#CFC8BC] px-4 py-3">
+          <div className="flex flex-wrap gap-1.5 border-b border-rule px-4 py-3">
             {activeChips.map((chip) => (
               <button
                 key={chip.label}
                 type="button"
                 onClick={chip.onRemove}
-                className="flex items-center gap-1 font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 border border-yellow-400 bg-yellow-50 text-stone-900 hover:bg-yellow-100 transition-colors"
+                aria-label={`Remove ${chip.label} filter`}
+                className="flex min-h-8 items-center gap-1 border border-signal bg-signal/20 px-2 py-1 font-sans text-sm text-ink"
               >
                 <span className="max-w-[10rem] truncate">{chip.label}</span>
-                <span aria-hidden="true" className="text-stone-500">✕</span>
+                <span aria-hidden="true">×</span>
               </button>
             ))}
           </div>
         )}
 
         <div className="space-y-5 p-4">
-          {/* Search */}
-          <div>
-            <label htmlFor="search" className={labelClass}>
-              Search
-            </label>
-            <input
-              type="text"
+          <FieldGroup>
+            <FieldLabel htmlFor="search">Search</FieldLabel>
+            <Input
+              type="search"
               id="search"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Job title or location…"
-              className={fieldClass}
+              placeholder="Job title or location"
             />
-          </div>
+          </FieldGroup>
 
-          {/* Role / Category */}
-          <div>
-            <label htmlFor="category" className={labelClass}>
-              Role
-            </label>
-            <select
+          <FieldGroup>
+            <FieldLabel htmlFor="category">Role</FieldLabel>
+            <Select
               id="category"
-              value={selectedCategory || ''}
-              onChange={(e) => onCategoryChange((e.target.value as JobCategory) || null)}
-              className={fieldClass}
+              value={selectedCategory || ""}
+              onChange={(e) =>
+                onCategoryChange((e.target.value as JobCategory) || null)
+              }
             >
               <option value="">All roles</option>
               {categories.map(({ category, name, count }) => (
@@ -124,19 +128,15 @@ export function FilterSidebar({
                   {name} ({count})
                 </option>
               ))}
-            </select>
-          </div>
+            </Select>
+          </FieldGroup>
 
-          {/* Company */}
-          <div>
-            <label htmlFor="company" className={labelClass}>
-              Company
-            </label>
-            <select
+          <FieldGroup>
+            <FieldLabel htmlFor="company">Company</FieldLabel>
+            <Select
               id="company"
-              value={selectedCompany || ''}
+              value={selectedCompany || ""}
               onChange={(e) => onCompanyChange(e.target.value || null)}
-              className={fieldClass}
             >
               <option value="">All companies</option>
               {companies.map((company) => (
@@ -144,19 +144,25 @@ export function FilterSidebar({
                   {company.name}
                 </option>
               ))}
-            </select>
-          </div>
+            </Select>
+          </FieldGroup>
         </div>
 
-        <div className="border-t border-[#CFC8BC] px-4 py-3">
-          <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
+        <div className="border-t border-rule px-4 py-3" aria-live="polite">
+          <p className="font-mono text-xs text-secondary">
             {hasActiveFilters ? (
               <>
-                <span className="text-stone-900 font-semibold tabular-nums">{resultCount}</span> of {totalCount} jobs
+                <span className="font-semibold tabular-nums text-ink">
+                  {resultCount}
+                </span>{" "}
+                of {totalCount} jobs
               </>
             ) : (
               <>
-                <span className="text-stone-900 font-semibold tabular-nums">{totalCount}</span> jobs
+                <span className="font-semibold tabular-nums text-ink">
+                  {totalCount}
+                </span>{" "}
+                jobs
               </>
             )}
           </p>

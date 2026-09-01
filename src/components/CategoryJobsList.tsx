@@ -5,6 +5,7 @@ import type { JobWithCompany } from '@/lib/types';
 import { toJobListItem } from '@/lib/jobUtils';
 import { getStateBySlug } from '@/lib/states';
 import { PaginatedJobResults } from './PaginatedJobResults';
+import { FilterChipButton } from './FilterChip';
 import { JobAlertForm } from './JobAlertForm';
 
 type SortOption = 'recent' | 'featured' | 'alphabetical';
@@ -74,52 +75,42 @@ export function CategoryJobsList({
 
   return (
     <div>
-      {/* Sort options */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
-        <label className="font-mono text-xs tracking-widest uppercase text-stone-400">Sort by</label>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+        <label className="font-mono text-xs uppercase tracking-widest text-secondary">Sort by</label>
         <div className="flex flex-wrap gap-2">
           {(['recent', 'featured', 'alphabetical'] as const).map((option) => (
-            <button
+            <FilterChipButton
               key={option}
-              type="button"
+              active={sortBy === option}
               onClick={() => setSortBy(option)}
-              className={`font-mono text-xs tracking-widest uppercase px-3 py-1 border transition-colors ${
-                sortBy === option
-                  ? 'border-yellow-400 bg-yellow-50 text-stone-900'
-                  : 'border-[#CFC8BC] text-stone-500 hover:border-stone-400 hover:text-stone-900'
-              }`}
+              aria-pressed={sortBy === option}
             >
               {option === 'recent' ? 'Recent' : option === 'featured' ? 'Featured first' : 'Alphabetical'}
-            </button>
+            </FilterChipButton>
           ))}
         </div>
       </div>
 
-      {/* State filter chips */}
       <div className="mb-6">
-        <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-3">Filter by state</p>
-        <div className="flex flex-wrap gap-2 mb-3">
+        <p className="mb-3 font-mono text-xs uppercase tracking-widest text-secondary">Filter by state</p>
+        <div className="mb-3 flex flex-wrap gap-2">
           {visibleStates.map(({ state, count }) => (
-            <button
+            <FilterChipButton
               key={state.slug}
-              type="button"
+              active={selectedState === state.slug}
+              count={count}
               onClick={() => setSelectedState(selectedState === state.slug ? null : state.slug)}
-              className={`font-mono text-xs tracking-widest uppercase px-3 py-1 border transition-colors ${
-                selectedState === state.slug
-                  ? 'border-yellow-400 bg-yellow-50 text-stone-900'
-                  : 'border-[#CFC8BC] text-stone-500 hover:border-stone-400 hover:text-stone-900'
-              }`}
+              aria-pressed={selectedState === state.slug}
             >
               {state.name}
-              <span className="ml-1.5 text-stone-500 font-semibold tabular-nums">({count})</span>
-            </button>
+            </FilterChipButton>
           ))}
         </div>
         {!showAllStates && allStates.length > 8 && (
           <button
             type="button"
             onClick={() => setShowAllStates(true)}
-            className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
+            className="font-sans text-sm text-secondary hover:text-ink"
           >
             Show all states →
           </button>
@@ -128,7 +119,7 @@ export function CategoryJobsList({
           <button
             type="button"
             onClick={() => setShowAllStates(false)}
-            className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
+            className="font-sans text-sm text-secondary hover:text-ink"
           >
             Show fewer →
           </button>
@@ -144,11 +135,11 @@ export function CategoryJobsList({
           resetKey={resetKey}
         />
       ) : (
-        <div className="border border-[#CFC8BC] p-10 text-center">
-          <p className="font-sans text-[15px] text-stone-500 mb-2">
+        <div className="border border-rule p-10 text-center">
+          <p className="mb-2 font-sans text-base text-ink">
             No {categoryName.toLowerCase()} jobs found{selectedState ? ` in ${selectedState}` : ''}.
           </p>
-          <p className="font-sans text-sm text-stone-400 mb-6">
+          <p className="mb-6 font-sans text-sm text-secondary">
             New roles are added daily — get notified the moment one is posted.
           </p>
           <div className="flex justify-center">

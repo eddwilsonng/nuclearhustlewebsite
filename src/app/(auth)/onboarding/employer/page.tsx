@@ -7,10 +7,10 @@ export const metadata = {
 export default function EmployerOnboardingPage() {
   return (
     <div className="w-full max-w-md">
-      <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 leading-tight mb-2">
+      <h1 className="mb-2 font-sans text-3xl font-bold leading-tight text-ink md:text-4xl">
         Almost there.
       </h1>
-      <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-8">
+      <p className="mb-8 font-mono text-xs uppercase tracking-widest text-secondary">
         Tell us about your company
       </p>
 

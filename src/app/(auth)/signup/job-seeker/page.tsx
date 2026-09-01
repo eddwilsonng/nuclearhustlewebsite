@@ -6,25 +6,37 @@ export const metadata = {
   description: "Create your job seeker account on Nuclear Hustle",
 };
 
-export default function JobSeekerSignupPage() {
+export default async function JobSeekerSignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ redirect?: string }>;
+}) {
+  const { redirect } = await searchParams;
+
   return (
     <div className="w-full max-w-md">
-      <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">Job seeker</p>
-      <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 leading-tight mb-1">Create your profile.</h1>
-      <p className="font-mono text-xs text-stone-400 mb-10">Find your next nuclear role</p>
+      <p className="mb-2 font-mono text-xs uppercase tracking-widest text-secondary">
+        Job seeker
+      </p>
+      <h1 className="mb-1 font-sans text-3xl font-bold leading-tight text-ink md:text-4xl">
+        Create your profile.
+      </h1>
+      <p className="mb-10 font-sans text-sm text-secondary">
+        Find your next nuclear role
+      </p>
 
-      <JobSeekerSignupForm />
+      <JobSeekerSignupForm redirect={redirect} />
 
-      <div className="mt-8 pt-6 border-t border-[#CFC8BC] space-y-2">
-        <p className="font-mono text-xs tracking-widest uppercase text-stone-400">
+      <div className="mt-8 space-y-2 border-t border-rule pt-6">
+        <p className="font-sans text-sm text-secondary">
           Hiring instead?{" "}
-          <Link href="/signup/employer" className="text-stone-900 hover:text-yellow-500 transition-colors">
+          <Link href="/signup/employer" className="font-semibold text-ink underline underline-offset-2">
             Employer sign up →
           </Link>
         </p>
-        <p className="font-mono text-xs tracking-widest uppercase text-stone-400">
+        <p className="font-sans text-sm text-secondary">
           Have an account?{" "}
-          <Link href="/login" className="text-stone-900 hover:text-yellow-500 transition-colors">
+          <Link href={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"} className="font-semibold text-ink underline underline-offset-2">
             Log in →
           </Link>
         </p>

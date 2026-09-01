@@ -1,135 +1,125 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { X, Flag } from 'lucide-react';
+import { useId, useState } from "react";
+import { Modal } from "@/components/ui/Dialog";
+import { Button } from "@/components/ui/Button";
+import { FieldError, FieldGroup, FieldLabel, Textarea } from "@/components/ui/Field";
 
 const REASONS = [
-  { id: 'broken_link', label: 'Link is broken' },
-  { id: 'job_filled', label: 'Job has been filled' },
-  { id: 'expired', label: 'Listing is expired' },
-  { id: 'scam', label: 'Looks like a scam' },
-  { id: 'incorrect_details', label: 'Details are incorrect' },
+  { id: "broken_link", label: "Link is broken" },
+  { id: "job_filled", label: "Job has been filled" },
+  { id: "expired", label: "Listing is expired" },
+  { id: "scam", label: "Looks like a scam" },
+  { id: "incorrect_details", label: "Details are incorrect" },
 ] as const;
 
-type ReasonId = typeof REASONS[number]['id'];
+type ReasonId = (typeof REASONS)[number]["id"];
 
 interface FlagJobModalProps {
   jobSlug: string;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function FlagJobModal({ jobSlug, onClose }: FlagJobModalProps) {
+export function FlagJobModal({
+  jobSlug,
+  open,
+  onOpenChange,
+}: FlagJobModalProps) {
+  const notesId = useId();
   const [selected, setSelected] = useState<ReasonId | null>(null);
-  const [notes, setNotes] = useState('');
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
-  const overlayRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
-    }
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [onClose]);
+  const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState<
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
 
   async function handleSubmit() {
     if (!selected) return;
-    setStatus('submitting');
+    setStatus("submitting");
     try {
-      const res = await fetch('/api/jobs/flag', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobSlug, reason: selected, notes: notes.trim() || undefined }),
+      const res = await fetch("/api/jobs/flag", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobSlug,
+          reason: selected,
+          notes: notes.trim() || undefined,
+        }),
       });
-      setStatus(res.ok ? 'success' : 'error');
+      setStatus(res.ok ? "success" : "error");
     } catch {
-      setStatus('error');
+      setStatus("error");
     }
   }
 
   return (
-    <div
-      ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-      onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+    <Modal
+      open={open}
+      onOpenChange={onOpenChange}
+      title={status === "success" ? "Thanks for the report" : "Flag this listing"}
+      description={
+        status === "success"
+          ? "We'll review this listing and take action if needed."
+          : "Tell us what's wrong. We'll check it."
+      }
     >
-      <div className="bg-[#EDE8DF] border border-[#CFC8BC] w-full max-w-sm mx-4 p-6 relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-stone-400 hover:text-stone-900 transition-colors"
-          aria-label="Close"
-        >
-          <X size={16} />
-        </button>
-
-        {status === 'success' ? (
-          <div className="py-4 text-center">
-            <p className="font-mono text-sm font-bold text-stone-900 mb-2">Thanks for the report</p>
-            <p className="font-mono text-xs text-stone-500">We&apos;ll review this listing and take action if needed.</p>
-            <button
-              onClick={onClose}
-              className="mt-6 font-mono text-xs tracking-widest uppercase py-2.5 px-6 border border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5] transition-colors"
-            >
-              Close
-            </button>
+      {status === "success" ? (
+        <Button onClick={() => onOpenChange(false)} variant="secondary">
+          Close
+        </Button>
+      ) : (
+        <div className="space-y-4">
+          <div
+            role="group"
+            aria-label="Issue"
+            className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+          >
+            {REASONS.map((reason) => (
+              <button
+                key={reason.id}
+                type="button"
+                aria-pressed={selected === reason.id}
+                onClick={() => setSelected(reason.id)}
+                className={`min-h-11 border px-3 py-2 text-left font-sans text-sm transition-colors duration-150 ${
+                  selected === reason.id
+                    ? "border-signal bg-signal/20 text-ink"
+                    : "border-control text-secondary hover:bg-surface hover:text-ink"
+                }`}
+              >
+                {reason.label}
+              </button>
+            ))}
           </div>
-        ) : (
-          <>
-            <div className="flex items-center gap-3 mb-1">
-              <Flag size={14} className="text-stone-500" />
-              <p className="font-mono text-sm font-bold text-stone-900">Flag this listing</p>
-            </div>
-            <p className="font-mono text-xs text-stone-500 mb-5">
-              What&apos;s the issue? We&apos;ll review it and take action if needed.
-            </p>
 
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {REASONS.map((r) => (
-                <button
-                  key={r.id}
-                  onClick={() => setSelected(r.id)}
-                  className={`text-left font-mono text-xs px-3 py-2.5 border transition-colors ${
-                    selected === r.id
-                      ? 'border-yellow-400 bg-yellow-50 text-stone-900'
-                      : 'border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5]'
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-
-            <textarea
+          <FieldGroup>
+            <FieldLabel htmlFor={notesId}>Anything else? Optional</FieldLabel>
+            <Textarea
+              id={notesId}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Anything else we should know? (optional)"
               rows={3}
               maxLength={500}
-              className="w-full font-mono text-xs bg-[#EDE8DF] border border-[#CFC8BC] px-3 py-2 text-stone-900 placeholder:text-stone-400 resize-none focus:outline-none focus:border-stone-400 mb-4"
             />
+          </FieldGroup>
 
-            {status === 'error' && (
-              <p className="font-mono text-xs text-red-600 mb-3">Something went wrong. Please try again.</p>
-            )}
+          {status === "error" && (
+            <FieldError>Something went wrong. Please try again.</FieldError>
+          )}
 
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={onClose}
-                className="font-mono text-xs tracking-widest uppercase py-2.5 px-4 border border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={!selected || status === 'submitting'}
-                className="font-mono text-xs tracking-widest uppercase py-2.5 px-4 bg-stone-800 text-white hover:bg-stone-700 transition-colors disabled:opacity-40"
-              >
-                {status === 'submitting' ? 'Sending…' : 'Submit report'}
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => onOpenChange(false)} variant="secondary">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              variant="primary"
+              disabled={!selected || status === "submitting"}
+            >
+              {status === "submitting" ? "Sending…" : "Submit report"}
+            </Button>
+          </div>
+        </div>
+      )}
+    </Modal>
   );
 }

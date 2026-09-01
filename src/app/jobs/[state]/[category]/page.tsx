@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
-import Link from 'next/link';
 import Script from 'next/script';
 import { Suspense } from 'react';
 import {
@@ -13,6 +12,7 @@ import {
 import { getStateBySlug } from '@/lib/states';
 import { getCategoryInfo, getAllCategories, JobCategory } from '@/lib/categorize';
 import { PaginatedJobResults } from '@/components/PaginatedJobResults';
+import { LinkButton } from '@/components/ui/LinkButton';
 import { Sidebar, SidebarSection, SidebarNavList, SidebarCTA, SidebarAlertCard } from '@/components/sidebar/Sidebar';
 import {
   BrowsePageHeader,
@@ -120,7 +120,7 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
   ]);
 
   return (
-    <div className="min-h-screen bg-[#EDE8DF]">
+    <div className="min-h-screen bg-canvas">
       <Script
         id="state-category-schema"
         type="application/ld+json"
@@ -135,11 +135,11 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-500" aria-hidden="true">//</span>
+          <span aria-hidden="true">/</span>
           <BrowseBreadcrumbLink href="/jobs">Jobs</BrowseBreadcrumbLink>
-          <span className="text-stone-500" aria-hidden="true">//</span>
+          <span aria-hidden="true">/</span>
           <BrowseBreadcrumbLink href={`/jobs/${state}`}>{stateInfo.name}</BrowseBreadcrumbLink>
-          <span className="text-stone-500" aria-hidden="true">//</span>
+          <span aria-hidden="true">/</span>
           <BrowseBreadcrumbCurrent>{categoryInfo.name}</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
 
@@ -153,7 +153,7 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
             <strong>{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
             {totalPages > 1 && (
               <>
-                <span className="text-stone-500 mx-2">//</span>
+                <span className="text-muted mx-2" aria-hidden="true">/</span>
                 <span>Page {page} of {totalPages}</span>
               </>
             )}
@@ -173,8 +173,8 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
             {jobs.length > 0 ? (
               <Suspense
                 fallback={
-                  <div className="border border-[#CFC8BC] p-10 text-center">
-                    <p className="font-mono text-xs tracking-widest uppercase text-stone-400">Loading jobs…</p>
+                  <div className="border border-rule p-10 text-center">
+                    <p className="font-sans text-sm text-secondary">Loading jobs…</p>
                   </div>
                 }
               >
@@ -186,26 +186,20 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
                 />
               </Suspense>
             ) : (
-              <div className="border border-[#CFC8BC] p-10 text-center">
-                <p className="font-mono text-sm text-stone-400 mb-2">
+              <div className="border border-rule p-10 text-center">
+                <p className="mb-2 font-sans text-base text-ink">
                   No {categoryInfo.name.toLowerCase()} jobs currently listed in {stateInfo.name}.
                 </p>
-                <p className="font-mono text-xs text-stone-400 mb-6">
-                  New roles are added daily — set up an alert so you don't miss one.
+                <p className="mb-6 font-sans text-sm text-secondary">
+                  New roles are added daily — set up an alert so you don&apos;t miss one.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Link
-                    href="/signup"
-                    className="font-mono text-xs tracking-widest uppercase px-5 py-3 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
-                  >
+                <div className="flex flex-col justify-center gap-3 sm:flex-row">
+                  <LinkButton href="/signup" variant="primary">
                     Get job alerts →
-                  </Link>
-                  <Link
-                    href={`/jobs/${state}`}
-                    className="font-mono text-xs tracking-widest uppercase px-5 py-3 border border-[#CFC8BC] text-stone-500 hover:text-stone-900 hover:border-stone-400 transition-colors"
-                  >
+                  </LinkButton>
+                  <LinkButton href={`/jobs/${state}`} variant="secondary">
                     All {stateInfo.name} jobs →
-                  </Link>
+                  </LinkButton>
                 </div>
               </div>
             )}

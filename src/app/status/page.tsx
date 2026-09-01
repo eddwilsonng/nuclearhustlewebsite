@@ -2,10 +2,19 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import plantsData from '@/data/plants.json';
 import MapLoader from '@/components/status/MapLoader';
+import { Badge } from '@/components/ui/Badge';
 import { US_STATES } from '@/lib/states';
 import { getActiveStates } from '@/lib/data/static';
 import { getNrcStatus, getPlantStatus } from '@/lib/nrc';
 import type { UnitStatus } from '@/lib/nrc';
+import {
+  plantStatusBarClass,
+  plantStatusBadgeTone,
+  plantStatusDotClass,
+  plantStatusLabel,
+  plantStatusTextClass,
+  unitPowerChipClass,
+} from '@/lib/plants/statusUi';
 
 export type { UnitStatus } from '@/lib/nrc';
 
@@ -125,18 +134,18 @@ export default async function StatusPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#EDE8DF]">
+    <div className="min-h-screen bg-canvas">
 
       {/* Page header */}
-      <div className="border-b border-[#CFC8BC] py-8">
+      <div className="border-b border-rule py-8">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
-            <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">Live data</p>
-            <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900">
+            <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-2">Live data</p>
+            <h1 className="font-sans text-3xl md:text-4xl font-bold text-ink">
               US Nuclear Fleet Status
             </h1>
             {stats.reportDate && (
-              <p className="font-mono text-xs text-stone-400 mt-2">
+              <p className="font-mono text-xs text-secondary mt-2">
                 NRC report date: {stats.reportDate.split(' ')[0]}
               </p>
             )}
@@ -146,7 +155,7 @@ export default async function StatusPage() {
           <div className="flex items-center gap-3">
             <a
               href="#all-reactors"
-              className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] text-stone-500 hover:bg-[#E5DFD5] hover:text-stone-900 transition-colors"
+              className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-rule text-secondary hover:bg-surface hover:text-ink transition-colors"
             >
               All reactors ↓
             </a>
@@ -155,34 +164,34 @@ export default async function StatusPage() {
       </div>
 
       {/* Stats bar */}
-      <div className="border-b border-[#CFC8BC]">
+      <div className="border-b border-rule">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-6 divide-x divide-y md:divide-y-0 divide-[#CFC8BC]">
+          <div className="grid grid-cols-2 md:grid-cols-6 divide-x divide-y md:divide-y-0 divide-rule">
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Fleet Capacity</p>
-              <p className="font-mono text-3xl font-bold text-stone-900">
+              <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-1">Fleet Capacity</p>
+              <p className="font-sans text-3xl font-bold text-ink">
                 {stats.fleetCapacity !== null ? `${stats.fleetCapacity}%` : '—'}
               </p>
             </div>
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Full Power</p>
-              <p className="font-mono text-3xl font-bold text-green-500">{stats.fullPower}</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-1">Full Power</p>
+              <p className="font-sans text-3xl font-bold text-success">{stats.fullPower}</p>
             </div>
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Reduced</p>
-              <p className="font-mono text-3xl font-bold text-yellow-500">{stats.reduced}</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-1">Reduced</p>
+              <p className="font-sans text-3xl font-bold text-secondary">{stats.reduced}</p>
             </div>
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Offline</p>
-              <p className="font-mono text-3xl font-bold text-red-500">{stats.offline}</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-1">Offline</p>
+              <p className="font-sans text-3xl font-bold text-danger">{stats.offline}</p>
             </div>
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Restarting</p>
-              <p className="font-mono text-3xl font-bold text-blue-500">{stats.restarting}</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-1">Restarting</p>
+              <p className="font-sans text-3xl font-bold text-ink">{stats.restarting}</p>
             </div>
             <div className="px-6 py-5">
-              <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-1">Operating</p>
-              <p className="font-mono text-3xl font-bold text-stone-900">{stats.totalUnits}</p>
+              <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-1">Operating</p>
+              <p className="font-sans text-3xl font-bold text-ink">{stats.totalUnits}</p>
             </div>
           </div>
         </div>
@@ -190,11 +199,13 @@ export default async function StatusPage() {
 
       {/* Hiring-now summary — links only to states that actually have openings */}
       {hiringChips.length > 0 && (
-        <div className="border-b border-[#CFC8BC] bg-[#E5DFD5]">
+        <div className="border-b border-rule bg-surface">
           <div className="max-w-6xl mx-auto px-6 py-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <p className="font-mono text-xs tracking-widest uppercase text-stone-500 shrink-0">
-              <span className="text-yellow-600 font-bold">Hiring now</span>
-              <span className="text-stone-400 mx-2">{'//'}</span>
+            <p className="font-mono text-xs tracking-widest uppercase text-secondary shrink-0">
+              <span className="text-ink font-bold">Hiring now</span>
+              <span className="mx-2 text-secondary" aria-hidden="true">
+                ·
+              </span>
               {hiringJobTotal} roles at plants in {hiringChips.length} states
             </p>
             <div className="flex flex-wrap gap-2">
@@ -202,10 +213,10 @@ export default async function StatusPage() {
                 <Link
                   key={chip.slug}
                   href={`/jobs/${chip.slug}`}
-                  className="font-mono text-xs tracking-wide px-3 py-1.5 border border-[#CFC8BC] bg-[#EDE8DF] text-stone-900 hover:bg-yellow-400 hover:text-stone-900 hover:border-yellow-400 transition-colors"
+                  className="font-mono text-xs tracking-wide px-3 py-1.5 border border-rule bg-canvas text-ink hover:bg-signal hover:text-ink hover:border-signal transition-colors"
                 >
                   {chip.name}
-                  <span className="text-stone-400 mx-1.5">·</span>
+                  <span className="text-secondary mx-1.5">·</span>
                   <span className="font-bold">{chip.count}</span>
                 </Link>
               ))}
@@ -219,14 +230,14 @@ export default async function StatusPage() {
 
       {/* Plant-by-plant breakdown */}
       <div id="all-reactors" className="max-w-6xl mx-auto px-6 py-12 scroll-mt-4">
-        <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-2">Plant breakdown</p>
-        <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-1">All reactors</h2>
-        <p className="font-mono text-xs text-stone-400 mb-6">
+        <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-2">Plant breakdown</p>
+        <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-1">All reactors</h2>
+        <p className="font-mono text-xs text-secondary mb-6">
           {stats.totalUnits} operating
           {stats.restarting > 0 && ` · ${stats.restarting} restarting`}
         </p>
 
-        <div className="border border-[#CFC8BC]">
+        <div className="border border-rule">
           {plants
             .sort((a, b) => {
               const order = { restarting: -1, offline: 0, reduced: 1, full: 2, unknown: 3 };
@@ -234,31 +245,30 @@ export default async function StatusPage() {
             })
             .map((plant) => {
               const hasJobs = plant.jobCount > 0 && plant.stateSlug;
-              const rowClass = 'flex items-center justify-between gap-4 px-5 py-4 border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors group';
+              const rowClass = 'flex items-center justify-between gap-4 px-5 py-4 border-b border-rule last:border-b-0 hover:bg-surface transition-colors group';
 
               return (
                 <div key={plant.id} className={rowClass}>
                   {/* Left: name + meta — entire left section links to plant profile */}
                   <Link href={`/plants/${plant.id}`} className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className={`w-2 h-2 rounded-full shrink-0 ${
-                      plant.status === 'full'       ? 'bg-green-500' :
-                      plant.status === 'reduced'    ? 'bg-yellow-400' :
-                      plant.status === 'offline'    ? 'bg-red-500' :
-                      plant.status === 'restarting' ? 'bg-blue-500' :
-                      'bg-[#CFC8BC]'
-                    }`} />
+                    <div
+                      className={`size-2 shrink-0 rounded-full ${plantStatusDotClass(plant.status)}`}
+                      aria-hidden="true"
+                    />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 min-w-0">
-                        <p className="font-mono text-sm font-bold text-stone-900 truncate group-hover:underline underline-offset-2">{plant.name}</p>
-                        {plant.status === 'restarting' && (
-                          <span className="shrink-0 font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 border border-blue-200 text-blue-600 bg-blue-50">
-                            Restarting
-                          </span>
-                        )}
+                        <p className="truncate font-sans text-sm font-semibold text-ink group-hover:underline underline-offset-2">
+                          {plant.name}
+                        </p>
+                        <Badge tone={plantStatusBadgeTone(plant.status)} className="shrink-0">
+                          {plantStatusLabel(plant.status)}
+                        </Badge>
                       </div>
-                      <p className="font-mono text-xs text-stone-400 mt-0.5">
+                      <p className="mt-0.5 font-mono text-xs text-secondary">
                         {plant.city}, {plant.state}
-                        <span className="text-stone-400 mx-1.5">{'//'}</span>
+                        <span className="mx-1.5" aria-hidden="true">
+                          ·
+                        </span>
                         {plant.operator}
                       </p>
                     </div>
@@ -272,13 +282,10 @@ export default async function StatusPage() {
                         const label = match ? `U${match[1]}` : '—';
                         return (
                           <div key={unit.nrcName} className="flex flex-col items-center gap-0.5">
-                            <span className="font-mono text-[9px] text-stone-400 uppercase tracking-wider">{label}</span>
-                            <span className={`font-mono text-xs font-bold px-1.5 py-0.5 border ${
-                              unit.power === null     ? 'border-[#CFC8BC] text-stone-400' :
-                              unit.power === 0        ? 'border-red-200 text-red-500 bg-red-50' :
-                              unit.power >= 95        ? 'border-green-200 text-green-600 bg-green-50' :
-                              'border-yellow-50 text-yellow-500 bg-yellow-50'
-                            }`}>
+                            <span className="font-mono text-xs text-secondary uppercase tracking-wider">{label}</span>
+                            <span
+                              className={`border px-1.5 py-0.5 font-mono text-xs font-bold ${unitPowerChipClass(unit.power)}`}
+                            >
                               {unit.power !== null ? `${unit.power}%` : '—'}
                             </span>
                           </div>
@@ -287,25 +294,18 @@ export default async function StatusPage() {
                     </div>
 
                     <div className="hidden sm:block w-24">
-                      <div className="h-1 bg-[#CFC8BC] overflow-hidden">
+                      <div className="h-1 bg-rule overflow-hidden">
                         <div
-                          className={`h-full transition-all ${
-                            plant.status === 'full'    ? 'bg-green-500' :
-                            plant.status === 'reduced' ? 'bg-yellow-400' :
-                            plant.status === 'offline' ? 'bg-red-500' :
-                            'bg-[#CFC8BC]'
-                          }`}
+                          className={`h-full transition-all ${plantStatusBarClass(plant.status)}`}
                           style={{ width: `${plant.avgPower ?? 0}%` }}
                         />
                       </div>
                     </div>
 
-                    <p className={`font-mono text-sm font-bold w-12 text-right ${
-                      plant.status === 'full'    ? 'text-green-600' :
-                      plant.status === 'reduced' ? 'text-yellow-500' :
-                      plant.status === 'offline' ? 'text-red-500' :
-                      'text-stone-400'
-                    }`}>
+                    <p
+                      className={`w-12 text-right font-mono text-sm font-bold ${plantStatusTextClass(plant.status)}`}
+                    >
+                      <span className="sr-only">{plantStatusLabel(plant.status)}, </span>
                       {plant.avgPower !== null ? `${plant.avgPower}%` : '—'}
                     </p>
 
@@ -313,9 +313,9 @@ export default async function StatusPage() {
                       {hasJobs ? (
                         <Link
                           href={`/jobs/${plant.stateSlug}`}
-                          className="font-mono text-[10px] tracking-widest uppercase px-2 py-1 bg-yellow-400 text-stone-900 font-bold whitespace-nowrap hover:bg-yellow-300 transition-colors"
+                          className="font-mono text-xs tracking-widest uppercase px-2 py-1 bg-signal text-ink font-bold whitespace-nowrap hover:bg-signal-hover transition-colors"
                         >
-                          {plant.jobCount} job{plant.jobCount === 1 ? '' : 's'} →
+                          {`${plant.jobCount} job${plant.jobCount === 1 ? "" : "s"} →`}
                         </Link>
                       ) : null}
                     </div>
@@ -325,13 +325,13 @@ export default async function StatusPage() {
             })}
         </div>
 
-        <p className="font-mono text-xs text-stone-400 mt-6">
+        <p className="font-mono text-xs text-secondary mt-6">
           Source: US Nuclear Regulatory Commission daily power reactor status report. Data updated each morning.{' '}
           <a
             href="https://www.nrc.gov/reading-rm/doc-collections/event-status/reactor-status/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-stone-500 transition-colors underline underline-offset-2"
+            className="hover:text-secondary transition-colors underline underline-offset-2"
           >
             NRC source ↗
           </a>

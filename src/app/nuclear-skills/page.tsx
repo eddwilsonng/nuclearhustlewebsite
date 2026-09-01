@@ -11,6 +11,7 @@ import {
   BrowseTitle,
   BrowseDescription,
 } from '@/components/BrowsePageHeader';
+import { LinkButton } from '@/components/ui/LinkButton';
 
 // ── Data computation (runs at build time) ────────────────────────────────────
 
@@ -94,20 +95,20 @@ function RankedList({
 }) {
   const max = items[0]?.count ?? 1;
   return (
-    <div className="border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
+    <div className="border border-rule divide-y divide-rule">
       {items.map(({ name, count }, i) => (
-        <div key={name} className="flex items-center gap-4 px-4 py-3 hover:bg-[#E5DFD5] transition-colors">
-          {numbered && <span className="font-mono text-[10px] text-stone-400 w-5 shrink-0">{i + 1}</span>}
+        <div key={name} className="flex items-center gap-4 px-4 py-3 hover:bg-surface transition-colors">
+          {numbered && <span className="font-mono text-xs text-secondary w-5 shrink-0">{i + 1}</span>}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="font-mono text-xs font-semibold text-stone-900">{name}</span>
-              <span className="font-mono text-[10px] text-stone-500 shrink-0 ml-3">
+              <span className="font-mono text-xs font-semibold text-ink">{name}</span>
+              <span className="font-mono text-xs text-secondary shrink-0 ml-3">
                 {count} job{count !== 1 ? 's' : ''}
                 {showShare ? ` · ${pctOfSkilled(count)}%` : ''}
               </span>
             </div>
-            <div className="h-1.5 bg-[#CFC8BC]">
-              <div className="h-full bg-yellow-400" style={{ width: `${(count / max) * 100}%` }} />
+            <div className="h-1.5 bg-rule">
+              <div className="h-full bg-signal" style={{ width: `${(count / max) * 100}%` }} />
             </div>
           </div>
         </div>
@@ -122,11 +123,11 @@ export default function SkillsReportPage() {
   const coverage = Math.round((jobsWithSkills.length / jobs.length) * 100);
 
   return (
-    <div className="min-h-screen bg-[#EDE8DF]">
+    <div className="min-h-screen bg-canvas">
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-500">//</span>
+          <span aria-hidden="true">/</span>
           <BrowseBreadcrumbCurrent>Skills report</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
 
@@ -138,25 +139,25 @@ export default function SkillsReportPage() {
         </BrowseDescription>
       </BrowsePageHeader>
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <div className="max-w-6xl mx-auto px-6 py-10">
 
         {/* Stat strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-[#CFC8BC] border border-[#CFC8BC] mb-12">
-          <div className="bg-[#EDE8DF] p-6">
-            <p className="font-mono text-3xl font-bold text-stone-900">{jobs.length}</p>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mt-1">Listings total</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-rule border border-rule mb-12">
+          <div className="bg-canvas p-6">
+            <p className="font-sans text-3xl font-bold text-ink">{jobs.length}</p>
+            <p className="font-mono text-xs tracking-widest uppercase text-secondary mt-1">Listings total</p>
           </div>
-          <div className="bg-[#EDE8DF] p-6">
-            <p className="font-mono text-3xl font-bold text-stone-900">{coverage}%</p>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mt-1">With skills data</p>
+          <div className="bg-canvas p-6">
+            <p className="font-sans text-3xl font-bold text-ink">{coverage}%</p>
+            <p className="font-mono text-xs tracking-widest uppercase text-secondary mt-1">With skills data</p>
           </div>
-          <div className="bg-[#EDE8DF] p-6">
-            <p className="font-mono text-3xl font-bold text-stone-900">{certifications.length}</p>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mt-1">Certifications tracked</p>
+          <div className="bg-canvas p-6">
+            <p className="font-sans text-3xl font-bold text-ink">{certifications.length}</p>
+            <p className="font-mono text-xs tracking-widest uppercase text-secondary mt-1">Certifications tracked</p>
           </div>
-          <div className="bg-[#EDE8DF] p-6">
-            <p className="font-mono text-3xl font-bold text-stone-900">{skills.length}</p>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mt-1">Unique skills</p>
+          <div className="bg-canvas p-6">
+            <p className="font-sans text-3xl font-bold text-ink">{skills.length}</p>
+            <p className="font-mono text-xs tracking-widest uppercase text-secondary mt-1">Unique skills</p>
           </div>
         </div>
 
@@ -165,9 +166,9 @@ export default function SkillsReportPage() {
 
             {/* Certifications */}
             <section>
-              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">Credentials</p>
-              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-3">Most-requested training &amp; certifications</h2>
-              <p className="font-mono text-xs text-stone-900 leading-relaxed mb-6">
+              <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-1">Credentials</p>
+              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-3">Most-requested training &amp; certifications</h2>
+              <p className="font-sans text-sm text-ink leading-relaxed mb-6">
                 {topCert && (
                   <>
                     {topCert.name} leads — required or preferred in {topCert.count} of {jobsWithSkills.length} skilled listings ({pctOfSkilled(topCert.count)}%).{' '}
@@ -181,9 +182,9 @@ export default function SkillsReportPage() {
             {/* Clearances */}
             {clearances.length > 0 && (
               <section>
-                <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">Access</p>
-                <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-3">Security clearance &amp; site access</h2>
-                <p className="font-mono text-xs text-stone-900 leading-relaxed mb-6">
+                <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-1">Access</p>
+                <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-3">Security clearance &amp; site access</h2>
+                <p className="font-sans text-sm text-ink leading-relaxed mb-6">
                   Most plant roles require unescorted site access — granted after a background check and fitness-for-duty screening. A handful of roles also call for DOE clearances.
                 </p>
                 <RankedList items={clearances} showShare />
@@ -192,21 +193,21 @@ export default function SkillsReportPage() {
 
             {/* Skills */}
             <section>
-              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">Most in demand</p>
-              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-3">Top 20 skills across all listings</h2>
-              <p className="font-mono text-xs text-stone-900 leading-relaxed mb-6">
+              <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-1">Most in demand</p>
+              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-3">Top 20 skills across all listings</h2>
+              <p className="font-sans text-sm text-ink leading-relaxed mb-6">
                 Beyond credentials, employers consistently expect regulatory fluency (NRC regulations, 10 CFR, ASME and ANSI standards), reactor-type knowledge (PWR, BWR, AP1000), and radiation protection awareness.
               </p>
               <RankedList items={topSkills} showShare numbered />
-              <p className="font-mono text-[10px] text-stone-400 mt-2">
+              <p className="mt-2 font-sans text-sm text-secondary">
                 % shown as share of {jobsWithSkills.length} listings with skills data. Skills extracted from job descriptions using AI and normalized to a shared vocabulary.
               </p>
             </section>
 
             {/* By job category */}
             <section>
-              <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">By role</p>
-              <h2 className="font-mono text-xl sm:text-2xl font-bold text-stone-900 mb-6">Top skills per job category</h2>
+              <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-1">By role</p>
+              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-6">Top skills per job category</h2>
 
               <div className="space-y-8">
                 {Object.entries(CATEGORIES).map(([slug, label]) => {
@@ -219,11 +220,11 @@ export default function SkillsReportPage() {
                       <div className="flex items-baseline gap-3 mb-3">
                         <Link
                           href={`/jobs/role/${slug}`}
-                          className="font-mono text-xs font-bold text-stone-900 hover:text-yellow-500 transition-colors"
+                          className="font-sans text-sm font-semibold text-ink underline-offset-2 hover:underline"
                         >
                           {label} →
                         </Link>
-                        <span className="font-mono text-[10px] text-stone-400">
+                        <span className="font-mono text-xs text-secondary">
                           {catWithSkills.length} of {catJobs.length} listings
                         </span>
                       </div>
@@ -240,37 +241,34 @@ export default function SkillsReportPage() {
           <div className="lg:col-span-1">
             <div className="sticky top-6 space-y-6">
 
-              <div className="border border-yellow-300 bg-yellow-50 p-5">
-                <p className="font-mono text-[10px] tracking-widest uppercase text-yellow-700 mb-2">Browse open roles</p>
-                <p className="font-mono text-xs text-stone-500 leading-relaxed mb-4">
+              <div className="border border-signal bg-surface p-5">
+                <p className="font-mono text-xs tracking-widest uppercase text-ink mb-2">Browse open roles</p>
+                <p className="mb-4 font-sans text-sm leading-relaxed text-secondary">
                   Find nuclear jobs that match your skills and certifications.
                 </p>
-                <Link
-                  href="/jobs"
-                  className="block text-center font-mono text-xs tracking-widest uppercase px-4 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-bold transition-colors"
-                >
+                <LinkButton href="/jobs" variant="primary" fullWidth>
                   Browse all jobs →
-                </Link>
+                </LinkButton>
               </div>
 
-              <div className="border border-[#CFC8BC] p-5 space-y-3">
-                <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400">Browse by role</p>
+              <div className="border border-rule p-5 space-y-3">
+                <p className="font-mono text-xs tracking-widest uppercase text-secondary">Browse by role</p>
                 {Object.entries(CATEGORIES).map(([slug, label]) => (
                   <Link
                     key={slug}
                     href={`/jobs/role/${slug}`}
-                    className="block font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors border-b border-[#CFC8BC] pb-3 last:border-b-0 last:pb-0"
+                    className="block font-mono text-xs text-secondary hover:text-ink transition-colors border-b border-rule pb-3 last:border-b-0 last:pb-0"
                   >
                     {label} →
                   </Link>
                 ))}
               </div>
 
-              <div className="border border-[#CFC8BC] p-5">
-                <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-2">Also see</p>
+              <div className="border border-rule p-5">
+                <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-2">Also see</p>
                 <Link
                   href="/nuclear-salary"
-                  className="block font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors"
+                  className="block font-mono text-xs text-secondary hover:text-ink transition-colors"
                 >
                   Nuclear salary guide →
                 </Link>
@@ -279,7 +277,7 @@ export default function SkillsReportPage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

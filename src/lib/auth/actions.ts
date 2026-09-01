@@ -43,6 +43,14 @@ export type ActionState = {
   success?: boolean;
 };
 
+function safeInternalPath(value: FormDataEntryValue | null): string | null {
+  if (typeof value !== "string") return null;
+  if (!value.startsWith("/") || value.startsWith("//") || value.includes("\\")) {
+    return null;
+  }
+  return value;
+}
+
 export async function signIn(
   prevState: ActionState,
   formData: FormData
@@ -73,15 +81,7 @@ export async function signIn(
     };
   }
 
-  const redirectTo = formData.get("redirect") as string;
-  const safePath =
-    redirectTo &&
-    redirectTo.startsWith("/") &&
-    !redirectTo.startsWith("//") &&
-    !redirectTo.includes("\\")
-      ? redirectTo
-      : "/dashboard";
-  redirect(safePath);
+  redirect(safeInternalPath(formData.get("redirect")) ?? "/dashboard");
 }
 
 export async function signUpJobSeeker(
@@ -153,7 +153,7 @@ export async function signUpJobSeeker(
     };
   }
 
-  redirect("/dashboard");
+  redirect(safeInternalPath(formData.get("redirect")) ?? "/dashboard");
 }
 
 export async function signUpEmployer(

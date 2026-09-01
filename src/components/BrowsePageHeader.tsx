@@ -1,22 +1,26 @@
-import Link from 'next/link';
+import Link from "next/link";
+import { Badge } from "@/components/ui/Badge";
+import { cn } from "@/lib/cn";
 
 interface BrowsePageHeaderProps {
   children: React.ReactNode;
   className?: string;
 }
 
-/** Dark inverse header for browse/listing pages — separates wayfinding from content. */
 export function BrowsePageHeader({ children, className }: BrowsePageHeaderProps) {
   return (
-    <header className={`bg-stone-900 border-b border-stone-800 py-12 ${className ?? ''}`}>
-      <div className="max-w-6xl mx-auto px-6">{children}</div>
+    <header className={cn("border-b border-white/10 bg-inverse py-12", className)}>
+      <div className="mx-auto max-w-6xl px-6">{children}</div>
     </header>
   );
 }
 
 export function BrowseBreadcrumb({ children }: { children: React.ReactNode }) {
   return (
-    <nav className="flex flex-wrap items-center gap-2 font-mono text-xs tracking-widest uppercase text-stone-500 mb-6">
+    <nav
+      aria-label="Breadcrumb"
+      className="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-widest text-inverse-ink/60"
+    >
       {children}
     </nav>
   );
@@ -30,28 +34,26 @@ export function BrowseBreadcrumbLink({
   children: React.ReactNode;
 }) {
   return (
-    <Link href={href} className="text-stone-500 hover:text-[#EDE8DF] transition-colors">
+    <Link href={href} className="text-inverse-ink/70 hover:text-inverse-ink">
       {children}
     </Link>
   );
 }
 
 export function BrowseBreadcrumbCurrent({ children }: { children: React.ReactNode }) {
-  return <span className="text-stone-300">{children}</span>;
+  return <span className="text-inverse-ink">{children}</span>;
 }
 
 export function BrowseBreadcrumbTruncated({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-stone-300 truncate max-w-[12rem] sm:max-w-xs">{children}</span>
+    <span className="max-w-[12rem] truncate text-inverse-ink sm:max-w-xs">
+      {children}
+    </span>
   );
 }
 
 export function BrowseBadge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="font-mono text-[10px] tracking-widest uppercase border border-yellow-400/40 text-yellow-400 bg-yellow-400/10 px-2.5 py-1">
-      {children}
-    </span>
-  );
+  return <Badge tone="inverse">{children}</Badge>;
 }
 
 export function BrowseTagLink({
@@ -64,7 +66,7 @@ export function BrowseTagLink({
   return (
     <Link
       href={href}
-      className="font-mono text-[10px] tracking-widest uppercase border border-stone-700 text-stone-400 px-2.5 py-1 hover:border-yellow-400/60 hover:text-yellow-400 transition-colors"
+      className="border border-white/20 px-2.5 py-1 font-mono text-xs uppercase tracking-widest text-inverse-ink/80 hover:border-signal hover:text-inverse-ink"
     >
       {children}
     </Link>
@@ -73,7 +75,7 @@ export function BrowseTagLink({
 
 export function BrowseChip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase border border-stone-700 text-stone-400 px-2.5 py-1">
+    <span className="inline-flex items-center gap-1.5 border border-white/20 px-2.5 py-1 font-mono text-xs uppercase tracking-widest text-inverse-ink/80">
       {children}
     </span>
   );
@@ -89,7 +91,7 @@ export function BrowseMetaLink({
   return (
     <Link
       href={href}
-      className="font-semibold text-stone-200 hover:text-yellow-400 transition-colors"
+      className="font-semibold text-inverse-ink hover:underline"
     >
       {children}
     </Link>
@@ -98,7 +100,7 @@ export function BrowseMetaLink({
 
 export function BrowseLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="font-mono text-xs tracking-widest uppercase text-yellow-400 mb-2">
+    <p className="mb-2 font-mono text-xs uppercase tracking-widest text-signal">
       {children}
     </p>
   );
@@ -106,7 +108,7 @@ export function BrowseLabel({ children }: { children: React.ReactNode }) {
 
 export function BrowseTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h1 className="font-mono text-3xl md:text-4xl font-bold text-[#EDE8DF] mb-3 leading-tight">
+    <h1 className="mb-3 font-sans text-3xl leading-tight font-bold text-inverse-ink md:text-4xl">
       {children}
     </h1>
   );
@@ -114,7 +116,7 @@ export function BrowseTitle({ children }: { children: React.ReactNode }) {
 
 export function BrowseMeta({ children }: { children: React.ReactNode }) {
   return (
-    <p className="font-mono text-sm text-stone-400 [&_strong]:text-stone-200">
+    <p className="font-sans text-sm text-inverse-ink/75 [&_strong]:text-inverse-ink">
       {children}
     </p>
   );
@@ -122,7 +124,9 @@ export function BrowseMeta({ children }: { children: React.ReactNode }) {
 
 export function BrowseDescription({ children }: { children: React.ReactNode }) {
   return (
-    <p className="font-mono text-sm text-stone-400 max-w-xl mt-3">{children}</p>
+    <p className="mt-3 max-w-xl font-sans text-sm leading-relaxed text-inverse-ink/75">
+      {children}
+    </p>
   );
 }
 
@@ -136,7 +140,7 @@ export function BrowseAlertLink({
   return (
     <Link
       href={href}
-      className="font-mono text-xs tracking-widest uppercase text-yellow-400 border border-yellow-400/40 bg-yellow-400/10 hover:bg-yellow-400/20 px-3 py-1 transition-colors"
+      className="border border-signal/50 bg-signal/10 px-3 py-2 font-sans text-sm text-inverse-ink hover:bg-signal/20"
     >
       {children}
     </Link>

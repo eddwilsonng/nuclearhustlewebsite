@@ -27,11 +27,11 @@ export default function CompaniesPage() {
   })).sort((a, b) => b.jobCount - a.jobCount);
 
   return (
-    <div className="min-h-screen bg-[#EDE8DF]">
+    <div className="min-h-screen bg-canvas">
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-500">//</span>
+          <span aria-hidden="true">/</span>
           <BrowseBreadcrumbCurrent>Companies</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
         <BrowseLabel>Directory</BrowseLabel>
@@ -41,40 +41,40 @@ export default function CompaniesPage() {
         </BrowseMeta>
       </BrowsePageHeader>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        <div className="border border-[#CFC8BC]">
+      <div className="mx-auto max-w-6xl px-6 py-8">
+        <div className="border border-rule">
           {companiesWithStats.map((company, index) => (
             <Link
               key={company.id}
               href={`/companies/${company.id}`}
-              className="flex items-center justify-between gap-6 px-6 py-5 border-b border-[#CFC8BC] last:border-b-0 hover:bg-[#E5DFD5] transition-colors group"
+              className="group flex items-center justify-between gap-6 border-b border-rule px-6 py-5 last:border-b-0 hover:bg-surface"
             >
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="flex-shrink-0 w-10 h-10 border border-[#CFC8BC] flex items-center justify-center">
-                  <span className="font-mono text-xs font-bold text-stone-500">
+              <div className="flex min-w-0 items-center gap-4">
+                <div className="flex size-10 shrink-0 items-center justify-center border border-rule">
+                  <span className="font-mono text-xs font-bold text-secondary">
                     {String(index + 1).padStart(2, '0')}
                   </span>
                 </div>
                 <div className="min-w-0">
-                  <h2 className="font-sans text-[15px] font-bold tracking-tight text-stone-900 group-hover:text-yellow-500 transition-colors">
+                  <h2 className="font-sans text-base font-semibold tracking-tight text-ink">
                     {company.name}
                   </h2>
-                  <p className="font-mono text-xs text-stone-500 mt-0.5">
+                  <p className="mt-0.5 font-sans text-sm text-secondary">
                     {company.plants.length} plant{company.plants.length !== 1 ? 's' : ''}
                   </p>
                 </div>
               </div>
 
-              <div className="flex-shrink-0 flex items-center gap-6">
-                <span className="font-mono text-xs tracking-widest uppercase border border-[#CFC8BC] px-3 py-1 text-stone-500">
-                  <span className="font-semibold text-stone-900 tabular-nums">{company.jobCount}</span> job{company.jobCount !== 1 ? 's' : ''}
+              <div className="flex shrink-0 items-center gap-6">
+                <span className="border border-rule px-3 py-1 font-sans text-sm text-secondary">
+                  <span className="font-semibold tabular-nums text-ink">{company.jobCount}</span> job{company.jobCount !== 1 ? 's' : ''}
                 </span>
-                <span className="font-mono text-xs text-stone-400 group-hover:text-stone-900 transition-colors">→</span>
+                <span className="font-sans text-sm text-muted group-hover:text-ink" aria-hidden="true">→</span>
               </div>
             </Link>
           ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

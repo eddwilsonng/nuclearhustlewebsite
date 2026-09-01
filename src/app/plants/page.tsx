@@ -26,16 +26,16 @@ export default function PlantsPage() {
   const totalUnits = plantsData.plants.reduce((sum, p) => sum + p.units.length, 0);
 
   return (
-    <div className="min-h-screen bg-[#EDE8DF]">
+    <div className="min-h-screen bg-canvas">
 
       {/* Header */}
-      <div className="border-b border-[#CFC8BC] py-10">
+      <div className="border-b border-rule py-10">
         <div className="max-w-6xl mx-auto px-6">
-          <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-3">Directory</p>
-          <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 mb-3">
+          <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-3">Directory</p>
+          <h1 className="font-sans text-3xl md:text-4xl font-bold text-ink mb-3">
             US Nuclear Power Plants
           </h1>
-          <p className="font-mono text-sm text-stone-500">
+          <p className="font-mono text-sm text-secondary">
             {plantsData.plants.length} plants · {totalUnits} reactors · {sortedStates.length} states
           </p>
         </div>
@@ -51,44 +51,44 @@ export default function PlantsPage() {
             return (
               <div key={stateCode}>
                 <div className="flex items-baseline justify-between mb-3">
-                  <p className="font-mono text-xs tracking-widest uppercase text-stone-400">
+                  <p className="font-mono text-xs tracking-widest uppercase text-secondary">
                     {stateName}
                   </p>
                   {stateInfo?.slug && (
                     <Link
                       href={`/jobs/${stateInfo.slug}`}
-                      className="font-mono text-xs text-stone-400 hover:text-stone-500 transition-colors"
+                      className="font-sans text-sm text-secondary hover:text-ink"
                     >
                       {stateName} jobs →
                     </Link>
                   )}
                 </div>
 
-                <div className="border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
+                <div className="border border-rule divide-y divide-rule">
                   {plants.map(plant => (
                     <Link
                       key={plant.id}
                       href={`/plants/${plant.id}`}
-                      className="flex items-center justify-between px-5 py-4 hover:bg-[#E5DFD5] transition-colors group"
+                      className="flex items-center justify-between px-5 py-4 hover:bg-surface transition-colors group"
                     >
                       <div>
-                        <p className="font-sans text-[15px] font-bold tracking-tight text-stone-900 group-hover:text-yellow-500 transition-colors">
+                        <p className="font-sans text-base font-semibold tracking-tight text-ink">
                           {plant.name}
                         </p>
-                        <p className="font-mono text-xs text-stone-500 mt-0.5">
+                        <p className="font-mono text-xs text-secondary mt-0.5">
                           {plant.city} · {plant.operator}
                         </p>
                       </div>
                       <div className="shrink-0 flex items-center gap-4">
-                        <span className="hidden sm:block font-mono text-xs text-stone-500">
-                          {plant.units.length} unit{plant.units.length > 1 ? 's' : ''}
+                        <span className="hidden sm:block font-mono text-xs text-secondary">
+                          {`${plant.units.length} unit${plant.units.length > 1 ? "s" : ""}`}
                         </span>
                         {(plant as { restarting?: boolean }).restarting && (
-                          <span className="font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 border border-yellow-400 bg-yellow-50 text-yellow-700">
+                          <span className="font-mono text-xs tracking-widest uppercase px-2 py-0.5 border border-signal bg-surface text-ink">
                             Restarting
                           </span>
                         )}
-                        <span className="font-mono text-xs text-stone-400 group-hover:text-stone-900">→</span>
+                        <span className="font-mono text-xs text-secondary group-hover:text-ink">→</span>
                       </div>
                     </Link>
                   ))}
@@ -98,9 +98,9 @@ export default function PlantsPage() {
           })}
         </div>
 
-        <p className="font-mono text-xs text-stone-400 mt-10">
+        <p className="font-mono text-xs text-secondary mt-10">
           Data sourced from the US Nuclear Regulatory Commission.{' '}
-          <Link href="/status" className="hover:text-stone-500 transition-colors underline underline-offset-2">
+          <Link href="/status" className="underline underline-offset-2 hover:text-ink">
             View live fleet status →
           </Link>
         </p>

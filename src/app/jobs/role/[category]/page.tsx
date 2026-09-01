@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import { getJobsByCategory, getActiveStates, getActiveCategories, getActiveEngineeringDisciplines, getCompanies } from '@/lib/data/static';
 import { getCategoryInfo, getAllCategories, JobCategory } from '@/lib/categorize';
 import { CategoryJobsList } from '@/components/CategoryJobsList';
+import { FilterChip } from '@/components/FilterChip';
 import { JobAlertForm } from '@/components/JobAlertForm';
 import { Sidebar, SidebarSection, SidebarNavList, SidebarCTA } from '@/components/sidebar/Sidebar';
 import {
@@ -119,7 +120,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   ]);
 
   return (
-    <div className="min-h-screen bg-[#EDE8DF]">
+    <div className="min-h-screen bg-canvas">
       <Script
         id="category-schema"
         type="application/ld+json"
@@ -134,9 +135,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-500" aria-hidden="true">//</span>
+          <span aria-hidden="true">/</span>
           <BrowseBreadcrumbLink href="/jobs">Jobs</BrowseBreadcrumbLink>
-          <span className="text-stone-500" aria-hidden="true">//</span>
+          <span aria-hidden="true">/</span>
           <BrowseBreadcrumbCurrent>{categoryInfo.name}</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
 
@@ -148,7 +149,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             <strong>{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
             {totalPages > 1 && (
               <>
-                <span className="text-stone-500 mx-2">//</span>
+                <span className="text-muted mx-2" aria-hidden="true">/</span>
                 <span>Page {page} of {totalPages}</span>
               </>
             )}
@@ -167,20 +168,15 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
       {/* Engineering discipline sub-nav */}
       {engineeringDisciplines.length > 0 && (
-        <div className="border-b border-[#CFC8BC]">
-          <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center gap-2">
-            <span className="font-mono text-xs tracking-widest uppercase text-stone-500 mr-1">
+        <div className="border-b border-rule">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-6 py-4">
+            <span className="mr-1 font-mono text-xs uppercase tracking-widest text-secondary">
               Discipline
             </span>
             {engineeringDisciplines.map(({ slug, name, count }) => (
-              <Link
-                key={slug}
-                href={`/jobs/role/engineering/${slug}`}
-                className="font-mono text-xs tracking-widest uppercase border border-[#CFC8BC] px-3 py-1 text-stone-500 hover:border-yellow-400 hover:text-stone-900 transition-colors"
-              >
+              <FilterChip key={slug} href={`/jobs/role/engineering/${slug}`} count={count}>
                 {name}
-                <span className="ml-1.5 text-stone-400">{count}</span>
-              </Link>
+              </FilterChip>
             ))}
           </div>
         </div>
@@ -194,8 +190,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             {jobs.length > 0 ? (
               <Suspense
                 fallback={
-                  <div className="border border-[#CFC8BC] p-10 text-center">
-                    <p className="font-mono text-xs tracking-widest uppercase text-stone-400">Loading jobs…</p>
+                  <div className="border border-rule p-10 text-center">
+                    <p className="font-sans text-sm text-secondary">Loading jobs…</p>
                   </div>
                 }
               >
@@ -208,19 +204,19 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                 />
               </Suspense>
             ) : (
-              <div className="border border-[#CFC8BC] p-10 text-center">
-                <p className="font-mono text-sm text-stone-400 mb-2">
+              <div className="border border-rule p-10 text-center">
+                <p className="mb-2 font-sans text-base text-ink">
                   No {categoryInfo.name.toLowerCase()} jobs currently listed.
                 </p>
-                <p className="font-mono text-xs text-stone-400 mb-6">
+                <p className="mb-6 font-sans text-sm text-secondary">
                   New roles are added daily — get notified the moment one is posted.
                 </p>
-                <div className="flex justify-center mb-4">
+                <div className="mb-4 flex justify-center">
                   <JobAlertForm />
                 </div>
                 <Link
                   href="/jobs"
-                  className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors underline underline-offset-2"
+                  className="font-sans text-sm text-secondary underline underline-offset-2 hover:text-ink"
                 >
                   Or browse all jobs →
                 </Link>

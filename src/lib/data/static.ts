@@ -300,8 +300,18 @@ export function getRelatedJobs(job: Job, limit: number = 5): JobWithCompany[] {
   const companies = companiesData.companies as Company[];
 
   const related = allJobs
-    .filter((j) => j.id !== job.id && (j.category === job.category || j.company_id === job.company_id))
-    .slice(0, limit);
+    .filter((j) => j.id !== job.id)
+    .map((j) => {
+      let score = 0;
+      if (j.company_id === job.company_id) score += 4;
+      if (j.category === job.category) score += 3;
+      if (j.state && job.state && j.state === job.state) score += 2;
+      score += new Date(j.scraped_at).getTime() / 1e13;
+      return { job: j, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(({ job: j }) => j);
 
   return related.map((j) => ({
     ...j,

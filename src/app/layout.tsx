@@ -59,17 +59,22 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#EDE8DF] flex flex-col min-h-screen overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen overflow-x-hidden bg-canvas text-ink antialiased`}
         suppressHydrationWarning
       >
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }} />
-        <Header />
-        <main className="flex-1">
+        <div className="flex min-h-screen flex-col">
+          <Header />
+          <main id="main-content" className="flex-1" tabIndex={-1}>
           {children}
-        </main>
-        <ConditionalFooter />
-        <ConditionalClicky />
+          </main>
+          <ConditionalFooter />
+          <ConditionalClicky />
+        </div>
       </body>
     </html>
   );

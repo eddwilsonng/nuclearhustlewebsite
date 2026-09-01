@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   description: 'All pages on Nuclear Hustle — the specialist job board for nuclear energy professionals.',
 };
 
-const labelClass = 'font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-4 block';
-const linkClass = 'font-mono text-xs text-stone-500 hover:text-stone-900 transition-colors';
+const labelClass = 'font-mono text-xs tracking-widest uppercase text-secondary mb-4 block';
+const linkClass = 'font-mono text-xs text-secondary hover:text-ink transition-colors';
 
 const STATIC_PAGES = [
   { href: '/', label: 'Home' },
@@ -35,14 +35,14 @@ export default function SitemapPage() {
   const companies = getCompanies();
 
   return (
-    <div className="min-h-screen bg-[#EDE8DF]">
+    <div className="min-h-screen bg-canvas">
       <div className="max-w-6xl mx-auto px-6 py-16">
 
         {/* Header */}
-        <div className="border-b border-[#CFC8BC] pb-8 mb-12">
+        <div className="border-b border-rule pb-8 mb-12">
           <p className={`${labelClass} mb-2`}>Site</p>
-          <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 leading-tight tracking-tight">Sitemap</h1>
-          <p className="font-mono text-xs text-stone-500 mt-2">
+          <h1 className="font-sans text-3xl md:text-4xl font-bold text-ink leading-tight tracking-tight">Sitemap</h1>
+          <p className="font-mono text-xs text-secondary mt-2">
             Every public page on Nuclear Hustle.
           </p>
         </div>
@@ -69,7 +69,7 @@ export default function SitemapPage() {
                 <li key={category}>
                   <Link href={`/jobs/role/${category}`} className={linkClass}>
                     {name} jobs
-                    <span className="text-stone-400 ml-1">({count})</span>
+                    <span className="text-secondary ml-1">({count})</span>
                   </Link>
                 </li>
               ))}
@@ -84,7 +84,7 @@ export default function SitemapPage() {
                 <li key={state.slug}>
                   <Link href={`/jobs/${state.slug}`} className={linkClass}>
                     Nuclear jobs in {state.name}
-                    <span className="text-stone-400 ml-1">({count})</span>
+                    <span className="text-secondary ml-1">({count})</span>
                   </Link>
                 </li>
               ))}

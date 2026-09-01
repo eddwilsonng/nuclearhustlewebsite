@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { getJobsForList, getActiveStates, getActiveCategories, getCompanies } from '@/lib/data/static';
@@ -10,11 +9,12 @@ import {
   BrowseTitle,
   BrowseMeta,
 } from '@/components/BrowsePageHeader';
+import { FilterChip } from '@/components/FilterChip';
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
 
 interface PageProps {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; company?: string; role?: string }>;
 }
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
@@ -37,9 +37,9 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 
 function JobListFallback() {
   return (
-    <div className="border border-[#CFC8BC] p-10 text-center">
-      <p className="font-mono text-xs tracking-widest uppercase text-stone-400">Loading jobs…</p>
-    </div>
+        <div className="border border-rule p-10 text-center">
+          <p className="font-sans text-sm text-secondary">Loading jobs…</p>
+        </div>
   );
 }
 
@@ -57,51 +57,42 @@ export default async function JobsPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#EDE8DF]">
+    <div className="min-h-screen bg-canvas">
       <BrowsePageHeader>
         <BrowseLabel>Jobs</BrowseLabel>
         <BrowseTitle>All Nuclear Jobs</BrowseTitle>
         <BrowseMeta>
           <strong>{jobs.length}</strong> open positions
-          <span className="text-stone-500 mx-2">//</span>
+          <span className="text-muted mx-2" aria-hidden="true">/</span>
           <strong>{companies.length}</strong> companies
           {totalPages > 1 && (
             <>
-              <span className="text-stone-500 mx-2">//</span>
+              <span className="text-muted mx-2" aria-hidden="true">/</span>
               <span>Page {page} of {totalPages}</span>
             </>
           )}
         </BrowseMeta>
       </BrowsePageHeader>
 
-      {/* Quick filters */}
-      <div className="border-b border-[#CFC8BC]">
+      <div className="border-b border-rule">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex flex-wrap gap-6">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-xs tracking-widest uppercase text-stone-400">State</span>
+              <span className="font-mono text-xs tracking-widest uppercase text-secondary">State</span>
               {activeStates.slice(0, 5).map(({ state, count }) => (
-                <Link
-                  key={state.slug}
-                  href={`/jobs/${state.slug}`}
-                  className="font-mono text-xs tracking-widest uppercase border border-[#CFC8BC] px-3 py-1 text-stone-500 hover:border-yellow-400 hover:text-stone-900 transition-colors"
-                >
-                  {state.name} <span className="text-stone-400">{count}</span>
-                </Link>
+                <FilterChip key={state.slug} href={`/jobs/${state.slug}`} count={count}>
+                  {state.name}
+                </FilterChip>
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-xs tracking-widest uppercase text-stone-400">Role</span>
+              <span className="font-mono text-xs tracking-widest uppercase text-secondary">Role</span>
               {activeCategories
                 .filter(({ category }) => category !== 'other')
                 .map(({ category, name, count }) => (
-                <Link
-                  key={category}
-                  href={`/jobs/role/${category}`}
-                  className="font-mono text-xs tracking-widest uppercase border border-[#CFC8BC] px-3 py-1 text-stone-500 hover:border-yellow-400 hover:text-stone-900 transition-colors"
-                >
-                  {name} <span className="text-stone-400">{count}</span>
-                </Link>
+                <FilterChip key={category} href={`/jobs/role/${category}`} count={count}>
+                  {name}
+                </FilterChip>
               ))}
             </div>
           </div>
@@ -109,11 +100,11 @@ export default async function JobsPage({ searchParams }: PageProps) {
       </div>
 
       {/* Job list */}
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-8">
         <Suspense fallback={<JobListFallback />}>
           <JobList jobs={jobs} companies={companies} initialPage={page} />
         </Suspense>
-      </main>
+      </div>
     </div>
   );
 }

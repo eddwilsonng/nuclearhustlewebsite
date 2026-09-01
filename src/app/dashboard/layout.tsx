@@ -50,9 +50,9 @@ export default async function DashboardLayout({
         isAdmin={adminUser}
         viewRole={viewRole}
       />
-      <main className="flex-1 min-w-0 p-4 md:p-8 bg-[#E5DFD5] min-h-[calc(100vh-3.5rem)]">
+      <div className="flex-1 min-w-0 p-4 md:p-8 bg-[#E5DFD5] min-h-[calc(100vh-3.5rem)]">
         {children}
-      </main>
+      </div>
     </div>
   );
 }

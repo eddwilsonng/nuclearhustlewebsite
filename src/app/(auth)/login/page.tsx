@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { AuthError } from "@/components/auth/AuthShared";
 
 export const metadata = {
   title: "Log In - Nuclear Hustle",
@@ -14,23 +15,30 @@ export default async function LoginPage({
   const params = await searchParams;
   const redirect = params.redirect;
   const error = params.error;
+  const signupHref = redirect
+    ? `/signup?redirect=${encodeURIComponent(redirect)}`
+    : "/signup";
 
   return (
     <div className="w-full max-w-md">
-      <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 leading-tight mb-2">Welcome back.</h1>
-      <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-8">Sign in to your account</p>
+      <h1 className="mb-2 font-sans text-3xl font-bold leading-tight text-ink md:text-4xl">
+        Welcome back.
+      </h1>
+      <p className="mb-8 font-mono text-xs uppercase tracking-widest text-secondary">
+        Sign in to your account
+      </p>
 
       {error && (
-        <div className="mb-6 p-3 font-mono text-xs text-red-600 border border-red-200 bg-red-50">
-          {error}
+        <div className="mb-6">
+          <AuthError>{error}</AuthError>
         </div>
       )}
 
       <LoginForm redirect={redirect} />
 
-      <p className="mt-8 font-mono text-xs tracking-widest uppercase text-stone-400">
+      <p className="mt-8 font-sans text-sm text-secondary">
         No account?{" "}
-        <Link href="/signup" className="text-stone-900 hover:text-yellow-500 transition-colors">
+        <Link href={signupHref} className="font-semibold text-ink underline underline-offset-2">
           Sign up →
         </Link>
       </p>

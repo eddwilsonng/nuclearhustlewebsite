@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { getCompanies, getCompanyById, getPlantsByCompany, getJobsByCompany, toJobListItem } from '@/lib/data/static';
 import { JobCard } from '@/components/JobCard';
 import { Sidebar, SidebarSection, SidebarNavList } from '@/components/sidebar/Sidebar';
@@ -59,44 +60,44 @@ export default async function CompanyPage({ params }: PageProps) {
   }, {} as Record<string, typeof plants>);
 
   return (
-    <div className="min-h-screen bg-[#EDE8DF]">
+    <div className="min-h-screen bg-canvas">
       <BrowsePageHeader>
         <BrowseBreadcrumb>
           <BrowseBreadcrumbLink href="/">Home</BrowseBreadcrumbLink>
-          <span className="text-stone-500">//</span>
+          <span aria-hidden="true">/</span>
           <BrowseBreadcrumbLink href="/companies">Companies</BrowseBreadcrumbLink>
-          <span className="text-stone-500">//</span>
+          <span aria-hidden="true">/</span>
           <BrowseBreadcrumbCurrent>{company.name}</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
         <BrowseLabel>Company</BrowseLabel>
         <BrowseTitle>{company.name}</BrowseTitle>
         <BrowseMeta>
           <strong>{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
-          <span className="text-stone-500 mx-2">//</span>
+          <span className="text-muted mx-2" aria-hidden="true">/</span>
           <strong>{plants.length}</strong> nuclear plant{plants.length !== 1 ? 's' : ''}
         </BrowseMeta>
       </BrowsePageHeader>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-3 gap-12">
 
           {/* Main: Jobs */}
           <div className="lg:col-span-2">
-            <p className="font-mono text-xs tracking-widest uppercase text-stone-400 mb-4">Open positions</p>
+            <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-4">Open positions</p>
             {jobs.length > 0 ? (
-              <div className="border border-[#CFC8BC]">
+              <div className="border border-rule">
                 {jobs.map((job) => (
                   <JobCard key={job.id} job={toJobListItem(job)} />
                 ))}
               </div>
             ) : (
-              <div className="border border-[#CFC8BC] p-8 text-center">
-                <p className="font-mono text-sm text-stone-400 mb-4">No open positions currently listed.</p>
+              <div className="border border-rule p-8 text-center">
+                <p className="font-mono text-sm text-secondary mb-4">No open positions currently listed.</p>
                 <a
                   href={company.careers_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-xs tracking-widest uppercase text-yellow-700 hover:text-yellow-500 transition-colors"
+                  className="font-mono text-xs tracking-widest uppercase text-ink hover:text-ink transition-colors"
                 >
                   Visit {company.name} careers page ↗
                 </a>
@@ -111,7 +112,7 @@ export default async function CompanyPage({ params }: PageProps) {
                 href={company.careers_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-mono text-xs tracking-widest uppercase text-stone-500 hover:text-stone-900 transition-colors"
+                className="font-mono text-xs tracking-widest uppercase text-secondary hover:text-ink transition-colors"
               >
                 Careers page ↗
               </a>
@@ -122,11 +123,16 @@ export default async function CompanyPage({ params }: PageProps) {
                 <div className="space-y-4">
                   {Object.entries(plantsByRegion).map(([region, regionPlants]) => (
                     <div key={region}>
-                      <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-2">{region}</p>
+                      <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-2">{region}</p>
                       <ul className="space-y-1">
                         {regionPlants.map((plant) => (
-                          <li key={plant.id} className="font-sans text-sm text-stone-500">
-                            — {plant.name}
+                          <li key={plant.id}>
+                            <Link
+                              href={`/plants/${plant.id}`}
+                              className="font-sans text-sm text-secondary hover:text-ink"
+                            >
+                              {plant.name}
+                            </Link>
                           </li>
                         ))}
                       </ul>
@@ -146,7 +152,7 @@ export default async function CompanyPage({ params }: PageProps) {
             </SidebarSection>
           </Sidebar>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
