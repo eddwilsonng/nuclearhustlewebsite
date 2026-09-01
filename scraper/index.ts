@@ -168,6 +168,10 @@ export async function runScrapers(): Promise<ScrapeRunResult> {
   console.log('Browser closed.');
 
   const finishedAt = new Date();
+  const { generateJobsIndex } = await import('./generate-jobs-index');
+  const index = generateJobsIndex();
+  console.log(`jobs-index.json: ${index.published} published jobs (${(index.bytes / 1024).toFixed(1)} KB)`);
+
   recordAgentRun({
     type: 'scrape',
     label: `Scrape — all sources (${successCount}/${results.length} ok)`,

@@ -244,6 +244,12 @@ export async function runAiReview(
 
   fs.writeFileSync(JOBS_PATH, JSON.stringify(data, null, 2) + "\n");
 
+  const { generateJobsIndex } = await import("./generate-jobs-index");
+  const index = generateJobsIndex();
+  console.log(
+    `jobs-index.json: ${index.published} published jobs (${(index.bytes / 1024).toFixed(1)} KB)`,
+  );
+
   if (autoPublish && published.length > 0) {
     await submitToIndexNow(
       published.filter((j) => j.slug).map((j) => jobUrl(j.slug!)),

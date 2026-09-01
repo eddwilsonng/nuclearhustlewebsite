@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { isAdmin } from '@/lib/admin';
-import { getJobs, getAllJobsForAdmin, getCompanies } from '@/lib/data/static';
+import { getAllJobsForAdmin } from '@/lib/data/jobs-full';
+import { getJobs, getCompanies } from '@/lib/data/static';
 import { readAgentRuns } from '@/lib/ops/runLog';
 import { JobChart } from '@/components/admin/JobChart';
 import { PipelinePanel, type PipelineStats } from '@/components/admin/PipelinePanel';

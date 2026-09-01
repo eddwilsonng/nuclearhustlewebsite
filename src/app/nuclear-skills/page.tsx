@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import jobsData from '@/data/jobs.json';
+import { getPublishedJobsForSkills } from '@/lib/data/static';
+import type { Job } from '@/lib/types';
 import { groupSkills } from '@/lib/skills/taxonomy';
 import {
   BrowsePageHeader,
@@ -15,15 +16,7 @@ import { LinkButton } from '@/components/ui/LinkButton';
 
 // ── Data computation (runs at build time) ────────────────────────────────────
 
-type Job = {
-  status?: string;
-  category?: string;
-  structured_description?: { skills?: string[] };
-};
-
-const jobs: Job[] = (jobsData as { jobs: Job[] }).jobs.filter(
-  (j) => !j.status || j.status === 'published'
-);
+const jobs = getPublishedJobsForSkills();
 
 type Ranked = { name: string; count: number };
 

@@ -29,7 +29,7 @@ export async function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
         <Link
           href="/"
-          className="font-sans text-sm font-semibold tracking-tight text-ink"
+          className="inline-flex min-h-11 items-center font-sans text-base font-bold tracking-tight text-ink"
         >
           Nuclear Hustle
         </Link>

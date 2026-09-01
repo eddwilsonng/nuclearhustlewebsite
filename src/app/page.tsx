@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getJobsWithCompany, getCompanies, getActiveStates, getActiveCategories } from "@/lib/data/static";
+import { getJobsForList, getCompanies, getActiveStates, getActiveCategories } from "@/lib/data/static";
 import { JobCard } from "@/components/JobCard";
 import { FeaturedJobsSection, FeaturedJobsSkeleton } from "@/components/FeaturedJobsSection";
 import { JobAlertForm } from "@/components/JobAlertForm";
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const jobs = getJobsWithCompany();
+  const jobs = getJobsForList();
   const companies = getCompanies();
   const activeStates = getActiveStates();
   const activeCategories = getActiveCategories();
@@ -75,13 +75,16 @@ export default async function Home() {
               </Button>
             </form>
 
-            <div className="mt-4 flex flex-wrap gap-3">
-              <LinkButton href="/jobs" variant="secondary">
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <LinkButton href="/jobs" variant="primary" size="large">
                 Browse {jobs.length} jobs
               </LinkButton>
-              <LinkButton href="/companies" variant="quiet">
-                View companies
-              </LinkButton>
+              <Link
+                href="/companies"
+                className="font-sans text-sm text-secondary underline-offset-2 hover:text-ink hover:underline"
+              >
+                View companies →
+              </Link>
             </div>
           </div>
         </div>

@@ -1,7 +1,10 @@
+import 'server-only';
+
 import { JobWithCompany, Region, EmployerJobWithProfile } from '../types';
 import { JobCategory } from '../categorize';
 import { createClient } from '@/lib/supabase/server';
-import { getJobsWithCompany, getJobBySlug, getJobsByState, getJobsByCategory } from './static';
+import { getJobsWithCompany, getJobsByState, getJobsByCategory } from './static';
+import { getJobBySlug } from './jobs-full';
 
 export async function getEmployerJobs(): Promise<JobWithCompany[]> {
   try {

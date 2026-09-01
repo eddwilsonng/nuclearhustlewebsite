@@ -1,5 +1,7 @@
+import 'server-only';
+
 import companiesData from '@/data/companies.json';
-import jobsData from '@/data/jobs.json';
+import jobsIndex from '@/data/jobs-index.json';
 import { Company, Plant, Job, JobWithCompany, JobListItem, Region } from '../types';
 import { JobCategory, getCategoryInfo, getEngineeringDisciplineInfo, ENGINEERING_DISCIPLINES } from '../categorize';
 import { getStateBySlug, StateInfo } from '../states';
@@ -23,15 +25,15 @@ export function getPlantsByCompany(companyId: string): Plant[] {
 // Public-facing base: only jobs that have cleared review. Every public accessor
 // derives from this so pending_review / rejected jobs never reach the live board.
 function publishedJobs(): Job[] {
-  return (jobsData.jobs as Job[]).filter((j) => !j.status || j.status === 'published');
+  return jobsIndex.jobs as Job[];
 }
 
 export function getJobs(): Job[] {
   return publishedJobs();
 }
 
-export function getAllJobsForAdmin(): Job[] {
-  return jobsData.jobs as Job[];
+export function getPublishedJobsForSkills(): Job[] {
+  return publishedJobs();
 }
 
 export function getJobsWithCompany(filters?: {
@@ -72,31 +74,9 @@ export function getJobsWithCompany(filters?: {
     }));
 }
 
-export function getJobById(id: string): JobWithCompany | undefined {
-  const job = jobsData.jobs.find((j) => j.id === id) as Job | undefined;
-  if (!job) return undefined;
-
-  const company = companiesData.companies.find(
-    (c) => c.id === job.company_id
-  ) as Company;
-
-  return { ...job, company };
-}
-
 export function getActiveRegions(): Region[] {
   const plants = companiesData.plants as Plant[];
   return [...new Set(plants.map((p) => p.region))] as Region[];
-}
-
-export function getJobBySlug(slug: string): JobWithCompany | undefined {
-  const job = publishedJobs().find((j) => j.slug === slug);
-  if (!job) return undefined;
-
-  const company = companiesData.companies.find(
-    (c) => c.id === job.company_id
-  ) as Company;
-
-  return { ...job, company };
 }
 
 export function getJobsByState(stateSlug: string): JobWithCompany[] {

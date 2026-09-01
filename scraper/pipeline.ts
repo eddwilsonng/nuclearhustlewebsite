@@ -158,6 +158,9 @@ async function ingest(): Promise<void> {
     );
   }
   console.log(`Hygiene: ${hygiene.expired} newly expired (${hygiene.candidates} probed)`);
+  const { generateJobsIndex } = await import('./generate-jobs-index');
+  const index = generateJobsIndex();
+  console.log(`jobs-index.json: ${index.published} published jobs (${(index.bytes / 1024).toFixed(1)} KB)`);
   console.log(`Report: ${LAST_RUN_PATH}`);
   if (review.flagged.length > 0) {
     console.log(`\n${review.flagged.length} job(s) need a look in this chat before they go live.`);

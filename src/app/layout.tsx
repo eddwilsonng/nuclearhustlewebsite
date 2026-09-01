@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { ConditionalFooter } from "@/components/ConditionalFooter";
 import { ConditionalClicky } from "@/components/ConditionalClicky";
+import { Clicky } from "@/components/Clicky";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/schema";
 
 const geistSans = Geist({
@@ -72,8 +74,12 @@ export default function RootLayout({
           <main id="main-content" className="flex-1" tabIndex={-1}>
           {children}
           </main>
-          <ConditionalFooter />
-          <ConditionalClicky />
+          <ConditionalFooter>
+            <Footer />
+          </ConditionalFooter>
+          <ConditionalClicky>
+            <Clicky />
+          </ConditionalClicky>
         </div>
       </body>
     </html>

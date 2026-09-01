@@ -10,7 +10,7 @@ export function Clicky() {
       id="clicky-analytics"
       src="/cf37ad9ead3cac1.js"
       data-id="101507375"
-      strategy="afterInteractive"
+      strategy="lazyOnload"
     />
   );
 }

@@ -10,7 +10,7 @@ export const buttonStyles = cva(
         primary:
           "border-signal bg-signal text-ink hover:border-signal-hover hover:bg-signal-hover",
         secondary:
-          "border-control bg-transparent text-ink hover:bg-surface",
+          "border-ink bg-raised text-ink hover:bg-surface",
         quiet:
           "border-transparent bg-transparent text-secondary hover:bg-surface hover:text-ink",
         danger:

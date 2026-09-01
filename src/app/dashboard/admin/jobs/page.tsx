@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { isAdmin } from '@/lib/admin';
-import { getJobs } from '@/lib/data/static';
+import { getAllScrapedJobs } from '@/lib/data/jobs-full';
 import { getCompanyById } from '@/lib/data/static';
 import { AdminJobTable } from '@/components/admin/AdminJobTable';
 
@@ -27,7 +27,7 @@ export default async function AdminJobsPage() {
     redirect('/dashboard');
   }
 
-  const scrapedJobs = getJobs();
+  const scrapedJobs = getAllScrapedJobs();
   const employerJobs = await getAllEmployerJobs();
 
   const tableJobs = [

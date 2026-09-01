@@ -39,6 +39,8 @@ const nextConfig: NextConfig = {
       "@supabase/supabase-js",
       "@supabase/ssr",
       "react-simple-maps",
+      "@base-ui/react",
+      "lucide-react",
     ],
   },
   images: {

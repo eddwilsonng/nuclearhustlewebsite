@@ -11,12 +11,12 @@ test("guest header has Log in and Post a job, not Sign up", async ({ page }) => 
   );
 });
 
-test("homepage has one main and a skip link", async ({ page }) => {
+test("homepage has one main and a hidden skip link", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("main#main-content")).toHaveCount(1);
-  await expect(
-    page.getByRole("link", { name: "Skip to main content" }),
-  ).toHaveCount(1);
+  const skip = page.getByRole("link", { name: "Skip to main content" });
+  await expect(skip).toHaveCount(1);
+  await expect(skip).not.toBeVisible();
 });
 
 test("homepage search submits to /jobs", async ({ page }) => {

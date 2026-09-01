@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { isAdmin } from '@/lib/admin';
-import { getCompanies, getJobs } from '@/lib/data/static';
+import { getCompanies } from '@/lib/data/static';
+import { getAllScrapedJobs } from '@/lib/data/jobs-full';
 import { ScrapePanel } from '@/components/admin/ScrapePanel';
 
 export default async function AdminScrapePage() {
@@ -15,7 +16,7 @@ export default async function AdminScrapePage() {
   }
 
   const companies = getCompanies();
-  const jobs = getJobs();
+  const jobs = getAllScrapedJobs();
 
   const companyCards = companies.map((c) => {
     const jobCount = jobs.filter((j) => j.company_id === c.id).length;

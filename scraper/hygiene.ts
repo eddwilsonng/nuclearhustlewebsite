@@ -147,6 +147,10 @@ export async function runHygiene(): Promise<HygieneRunResult> {
   // Persist jobs + regenerate the compact expired-slug index for middleware.
   fs.writeFileSync(JOBS_PATH, JSON.stringify({ jobs }, null, 2) + '\n');
 
+  const { generateJobsIndex } = await import('./generate-jobs-index');
+  const index = generateJobsIndex();
+  console.log(`jobs-index.json: ${index.published} published jobs (${(index.bytes / 1024).toFixed(1)} KB)`);
+
   const expiredIndex = jobs
     .filter((job) => job.status === 'expired')
     .map((job) => ({ slug: job.slug, state: job.state, category: job.category }));

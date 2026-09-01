@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { isAdmin } from '@/lib/admin';
-import { getJobs } from '@/lib/data/static';
+import { getJobById } from '@/lib/data/jobs-full';
 import { ScrapedJobForm } from '@/components/admin/ScrapedJobForm';
 
 export const metadata = {
@@ -24,8 +24,7 @@ export default async function AdminEditScrapedJobPage({
     redirect('/dashboard');
   }
 
-  const jobs = getJobs();
-  const job = jobs.find((j) => j.id === id);
+  const job = getJobById(id);
 
   if (!job) {
     notFound();

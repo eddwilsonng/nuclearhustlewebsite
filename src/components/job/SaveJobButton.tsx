@@ -1,10 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { Heart } from "lucide-react";
-import { SaveJobModal } from "./SaveJobModal";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+
+const SaveJobModal = dynamic(
+  () => import("./SaveJobModal").then((m) => m.SaveJobModal),
+  { ssr: false },
+);
 
 interface SaveJobButtonProps {
   jobSlug: string;
@@ -72,11 +77,13 @@ export function SaveJobButton({
         />
         {showLabel && (saved ? "Saved" : "Save")}
       </Button>
-      <SaveJobModal
-        open={open}
-        onOpenChange={setOpen}
-        redirectPath={`/job/${jobSlug}`}
-      />
+      {open ? (
+        <SaveJobModal
+          open={open}
+          onOpenChange={setOpen}
+          redirectPath={`/job/${jobSlug}`}
+        />
+      ) : null}
     </>
   );
 }

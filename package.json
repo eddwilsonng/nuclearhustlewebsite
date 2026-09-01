@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run generate-jobs-index && next build && npm run check:client-bundle",
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "playwright test",
@@ -13,6 +13,8 @@
     "scrape:review": "tsx scraper/index.ts && tsx scraper/process-pending.ts",
     "hygiene": "tsx scraper/hygiene.ts",
     "ingest": "tsx scraper/pipeline.ts",
+    "generate-jobs-index": "tsx scraper/generate-jobs-index.ts",
+    "check:client-bundle": "node scripts/check-client-bundle.mjs",
     "scrape:full": "npm run ingest",
     "indexnow:bootstrap": "tsx scraper/indexnow-bootstrap.ts"
   },

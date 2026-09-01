@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "@base-ui/react/menu";
-import { LinkButton } from "@/components/ui/LinkButton";
 
 const BROWSE_LINKS = [
   { href: "/jobs", label: "Jobs" },
@@ -29,6 +28,26 @@ function navLinkClass(active: boolean) {
   return `relative font-sans text-sm transition-colors duration-150 ${
     active ? "font-semibold text-ink" : "text-secondary hover:text-ink"
   }`;
+}
+
+function NavLink({
+  href,
+  label,
+  active,
+}: {
+  href: string;
+  label: string;
+  active: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`inline-flex min-h-11 items-center ${navLinkClass(active)}`}
+    >
+      {label}
+    </Link>
+  );
 }
 
 function ResourcesMenu({ active }: { active: boolean }) {
@@ -84,39 +103,29 @@ export function DesktopNav({
 
   return (
     <nav aria-label="Primary" className="hidden items-center gap-6 md:flex">
-      {BROWSE_LINKS.map(({ href, label }) => {
-        const active = isActive(href);
-        return (
-          <Link
-            key={href}
-            href={href}
-            aria-current={active ? "page" : undefined}
-            className={`inline-flex min-h-11 items-center ${navLinkClass(active)}`}
-          >
-            {label}
-          </Link>
-        );
-      })}
+      {BROWSE_LINKS.map(({ href, label }) => (
+        <NavLink
+          key={href}
+          href={href}
+          label={label}
+          active={isActive(href)}
+        />
+      ))}
       <ResourcesMenu active={resourcesActive} />
-
-      <span className="h-4 w-px bg-rule" aria-hidden="true" />
 
       {isAuthed ? (
         children
       ) : (
-        <div className="flex items-center gap-3">
-          <Link
+        <>
+          <NavLink
             href="/signup/employer"
-            className="inline-flex min-h-11 items-center font-sans text-sm text-secondary hover:text-ink"
-          >
-            Post a job
-          </Link>
+            label="Post a job"
+            active={isActive("/signup/employer")}
+          />
           {pathname !== "/login" && (
-            <LinkButton href="/login" variant="secondary" size="compact">
-              Log in
-            </LinkButton>
+            <NavLink href="/login" label="Log in" active={isActive("/login")} />
           )}
-        </div>
+        </>
       )}
     </nav>
   );
