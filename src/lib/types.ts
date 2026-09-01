@@ -1,10 +1,11 @@
-import type { JobCategory } from './categorize';
+import type { JobCategory } from "./categorize";
 
 export interface Company {
   id: string;
   name: string;
   careers_url: string;
-  scraper_type: 'workday' | 'custom' | 'taleo' | 'dayforce' | 'greenhouse' | 'lever';
+  scraper_type:
+    "workday" | "custom" | "taleo" | "dayforce" | "greenhouse" | "lever";
   last_scraped: string | null;
   description?: string | null;
   logo_url?: string | null;
@@ -14,15 +15,15 @@ export interface Plant {
   id: string;
   company_id: string;
   name: string;
-  region: 'Midwest' | 'Southeast' | 'Northeast' | 'Southwest' | 'West';
+  region: "Midwest" | "Southeast" | "Northeast" | "Southwest" | "West";
 }
 
 export interface Salary {
   min: number | null;
   max: number | null;
-  period: 'year' | 'hour';
+  period: "year" | "hour";
   /** Provenance — trust a structured ATS field over a regex-parsed description. */
-  source: 'structured' | 'parsed';
+  source: "structured" | "parsed";
 }
 
 export interface Job {
@@ -39,15 +40,16 @@ export interface Job {
   description?: string;
   structured_description?: StructuredDescription | null;
   skills?: string[];
-  status?: 'pending_review' | 'published' | 'rejected' | 'expired' | 'duplicate';
-  agent_confidence?: 'high' | 'low';
+  status?:
+    "pending_review" | "published" | "rejected" | "expired" | "duplicate";
+  agent_confidence?: "high" | "low";
   review_notes?: string;
   // Hygiene lifecycle (set by scraper merge + scraper/hygiene.ts).
   last_seen_at?: string;
   last_checked_at?: string;
   link_check_failures?: number;
   expired_at?: string;
-  pre_expiry_status?: 'published' | 'pending_review';
+  pre_expiry_status?: "published" | "pending_review";
 }
 
 export interface JobWithCompany extends Job {
@@ -55,12 +57,12 @@ export interface JobWithCompany extends Job {
   isEmployerJob?: boolean;
   is_featured?: boolean;
   featured_until?: string | null;
-  application_type?: 'link' | 'form';
+  application_type?: "link" | "form";
   employment_type?: string;
   structured_description?: StructuredDescription | null;
 }
 
-export type Region = Plant['region'];
+export type Region = Plant["region"];
 
 export interface JobListItem {
   id: string;
@@ -79,10 +81,16 @@ export interface JobListItem {
   company: { id: string; name: string };
 }
 
-export const REGIONS: Region[] = ['Midwest', 'Southeast', 'Northeast', 'Southwest', 'West'];
+export const REGIONS: Region[] = [
+  "Midwest",
+  "Southeast",
+  "Northeast",
+  "Southwest",
+  "West",
+];
 
 // Auth types
-export type UserRole = 'job_seeker' | 'employer';
+export type UserRole = "job_seeker" | "employer";
 
 export interface Profile {
   id: string;
@@ -116,6 +124,12 @@ export interface EmployerProfile {
   created_at: string;
 }
 
+export interface JobFit {
+  good: string[];
+  /** @deprecated no longer generated; stripped on regenerate */
+  skip?: string[];
+}
+
 export interface StructuredDescription {
   about?: string;
   responsibilities?: string;
@@ -124,6 +138,8 @@ export interface StructuredDescription {
   location_details?: string;
   what_we_offer?: string;
   skills?: string[];
+  /** Candidate-facing editorial overlay. Omit when we cannot ground 2+ bullets. */
+  fit?: JobFit;
 }
 
 export interface EmployerJob {
@@ -137,7 +153,7 @@ export interface EmployerJob {
   description: string;
   structured_description?: StructuredDescription | null;
   employment_type: string;
-  application_type: 'link' | 'form';
+  application_type: "link" | "form";
   application_url: string | null;
   application_email: string | null;
   is_active: boolean;
@@ -148,12 +164,11 @@ export interface EmployerJob {
   created_at: string;
 }
 
-
 export interface EmployerJobWithProfile extends EmployerJob {
   employer: EmployerProfile;
 }
 
-export type ApplicationStatus = 'new' | 'reviewed' | 'shortlisted' | 'rejected';
+export type ApplicationStatus = "new" | "reviewed" | "shortlisted" | "rejected";
 
 export interface JobApplication {
   id: string;

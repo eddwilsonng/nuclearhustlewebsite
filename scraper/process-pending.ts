@@ -8,23 +8,42 @@
  * Usage:
  *   npm run process-jobs                 # all unprocessed pending jobs
  *   npm run process-jobs -- --limit=10
- *   npm run process-jobs -- --force   # re-process even jobs already structured
+ *   npm run process-jobs -- --force      # re-process even jobs already structured
+ *   npm run process-jobs -- --fit-only   # local fit backfill, no API
  *
  * Requires ANTHROPIC_API_KEY in .env.local.
  */
-import * as dotenv from 'dotenv';
-import * as fs from 'fs';
-import * as path from 'path';
-import { recordAgentRun } from '../src/lib/ops/runLog';
-import { submitToIndexNow, jobUrl } from '../src/lib/indexnow';
-import { invokedAsScript } from './cli';
-import type { StructuredDescription } from '../src/lib/types';
+import * as dotenv from "dotenv";
+import * as fs from "fs";
+import * as path from "path";
+import { recordAgentRun } from "../src/lib/ops/runLog";
+import { submitToIndexNow, jobUrl } from "../src/lib/indexnow";
+import { invokedAsScript } from "./cli";
+import type { StructuredDescription } from "../src/lib/types";
 
-dotenv.config({ path: path.join(__dirname, '..', '.env.local') });
+dotenv.config({ path: path.join(__dirname, "..", ".env.local") });
 
-const JOBS_PATH = path.join(__dirname, '..', 'src', 'data', 'jobs.json');
+const JOBS_PATH = path.join(__dirname, "..", "src", "data", "jobs.json");
+const COMPANIES_PATH = path.join(
+  __dirname,
+  "..",
+  "src",
+  "data",
+  "companies.json",
+);
 const CONCURRENCY = 3;
 const SAVE_EVERY = 5;
+
+function loadCompanyNames(): Map<string, string> {
+  try {
+    const data = JSON.parse(fs.readFileSync(COMPANIES_PATH, "utf-8")) as {
+      companies: { id: string; name: string }[];
+    };
+    return new Map(data.companies.map((c) => [c.id, c.name]));
+  } catch {
+    return new Map();
+  }
+}
 
 interface Job {
   id: string;
@@ -48,7 +67,7 @@ export interface JobSummary {
   location?: string;
   slug?: string;
   reason: string;
-  confidence?: 'high' | 'low';
+  confidence?: "high" | "low";
 }
 
 export interface AiReviewResult {
@@ -62,18 +81,22 @@ export interface AiReviewResult {
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const limitArg = args.find((a) => a.startsWith('--limit='));
+  const limitArg = args.find((a) => a.startsWith("--limit="));
   return {
-    limit: limitArg ? parseInt(limitArg.split('=')[1], 10) : Infinity,
-    force: args.includes('--force'),
+    limit: limitArg ? parseInt(limitArg.split("=")[1], 10) : Infinity,
+    force: args.includes("--force"),
+    fitOnly: args.includes("--fit-only"),
   };
 }
 
-export async function runAiReview(opts: {
-  autoPublish?: boolean;
-  limit?: number;
-  force?: boolean;
-} = {}): Promise<AiReviewResult> {
+export async function runAiReview(
+  opts: {
+    autoPublish?: boolean;
+    limit?: number;
+    force?: boolean;
+    fitOnly?: boolean;
+  } = {},
+): Promise<AiReviewResult> {
   const empty: AiReviewResult = {
     processed: 0,
     published: [],
@@ -82,36 +105,52 @@ export async function runAiReview(opts: {
     failed: 0,
   };
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.log('ANTHROPIC_API_KEY not set — skipping AI review.');
-    return { ...empty, skipped: 'ANTHROPIC_API_KEY not set (.env.local)' };
+  const fitOnly = opts.fitOnly ?? false;
+  if (fitOnly) {
+    const { runFitLocal } = await import("./fit-local");
+    const { filled, stripped, skipped } = runFitLocal({
+      limit: opts.limit ?? Infinity,
+    });
+    console.log(
+      `Local fit backfill: filled ${filled}, stripped ${stripped}, skipped (too thin) ${skipped}.`,
+    );
+    return { ...empty, processed: filled };
   }
 
-  const { processJobDescription } = await import('../src/lib/processJobDescription');
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.log("ANTHROPIC_API_KEY not set — skipping AI review.");
+    return { ...empty, skipped: "ANTHROPIC_API_KEY not set (.env.local)" };
+  }
+
+  const { processJobDescription } =
+    await import("../src/lib/processJobDescription");
 
   const limit = opts.limit ?? Infinity;
   const force = opts.force ?? false;
   const autoPublish = opts.autoPublish ?? false;
+  const companyNames = loadCompanyNames();
 
-  const data = JSON.parse(fs.readFileSync(JOBS_PATH, 'utf-8')) as { jobs: Job[] };
+  const data = JSON.parse(fs.readFileSync(JOBS_PATH, "utf-8")) as {
+    jobs: Job[];
+  };
 
   const queue = data.jobs.filter(
     (j) =>
-      j.status === 'pending_review' &&
+      j.status === "pending_review" &&
       j.description &&
-      (force || !j.structured_description)
+      (force || !j.structured_description),
   );
   const targets = queue.slice(0, limit);
 
   if (targets.length === 0) {
-    console.log('Nothing to process — no pending jobs awaiting AI review.');
+    console.log("Nothing to process — no pending jobs awaiting AI review.");
     return empty;
   }
 
   console.log(
     `Processing ${targets.length} job(s) through AI review ` +
-      `(one-pass format + nuclear verdict, concurrency ${CONCURRENCY}` +
-      `${autoPublish ? ', auto-publish high-confidence' : ''})...\n`
+      `(one-pass format + nuclear verdict + fit, concurrency ${CONCURRENCY}` +
+      `${autoPublish ? ", auto-publish high-confidence" : ""})...\n`,
   );
 
   const startedAt = new Date();
@@ -125,13 +164,18 @@ export async function runAiReview(opts: {
 
   const indexById = new Map(data.jobs.map((j, i) => [j.id, i]));
 
+  function companyNameFor(job: Job): string {
+    return companyNames.get(job.company_id) ?? job.company_id;
+  }
+
   async function processOne(job: Job): Promise<void> {
     try {
       const result = await processJobDescription(
         job.description!,
         job.title,
-        job.company_id,
-        job.category
+        companyNameFor(job),
+        job.category,
+        job.location,
       );
 
       const idx = indexById.get(job.id)!;
@@ -145,12 +189,12 @@ export async function runAiReview(opts: {
         confidence: result.agent_confidence,
       };
 
-      let status: string = 'pending_review';
+      let status: string = "pending_review";
       if (!result.keep) {
-        status = 'rejected';
+        status = "rejected";
         rejected.push(summary);
-      } else if (autoPublish && result.agent_confidence === 'high') {
-        status = 'published';
+      } else if (autoPublish && result.agent_confidence === "high") {
+        status = "published";
         published.push(summary);
       } else {
         flagged.push(summary);
@@ -165,19 +209,26 @@ export async function runAiReview(opts: {
         status,
       };
 
-      const flag = status === 'published' ? '✓ ' : status === 'rejected' ? '✗ ' : '⚠ ';
-      console.log(`${flag}[${++done}/${targets.length}] ${job.title.slice(0, 55)} [${status}]`);
+      const flag =
+        status === "published" ? "✓ " : status === "rejected" ? "✗ " : "⚠ ";
+      console.log(
+        `${flag}[${++done}/${targets.length}] ${job.title.slice(0, 55)} [${status}]`,
+      );
     } catch (err) {
       failCount++;
       const message = err instanceof Error ? err.message : String(err);
-      console.log(`  ✗ [${++done}/${targets.length}] FAILED: ${job.title.slice(0, 50)} — ${message}`);
+      console.log(
+        `  ✗ [${++done}/${targets.length}] FAILED: ${job.title.slice(0, 50)} — ${message}`,
+      );
       if (/credit balance is too low|insufficient credits/i.test(message)) {
-        throw new Error('Anthropic API credits exhausted — aborting remaining reviews');
+        throw new Error(
+          "Anthropic API credits exhausted — aborting remaining reviews",
+        );
       }
     }
 
     if (++processedSinceSave >= SAVE_EVERY) {
-      fs.writeFileSync(JOBS_PATH, JSON.stringify(data, null, 2) + '\n');
+      fs.writeFileSync(JOBS_PATH, JSON.stringify(data, null, 2) + "\n");
       processedSinceSave = 0;
     }
   }
@@ -191,17 +242,19 @@ export async function runAiReview(opts: {
   }
   await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
 
-  fs.writeFileSync(JOBS_PATH, JSON.stringify(data, null, 2) + '\n');
+  fs.writeFileSync(JOBS_PATH, JSON.stringify(data, null, 2) + "\n");
 
   if (autoPublish && published.length > 0) {
-    await submitToIndexNow(published.filter((j) => j.slug).map((j) => jobUrl(j.slug!)));
+    await submitToIndexNow(
+      published.filter((j) => j.slug).map((j) => jobUrl(j.slug!)),
+    );
   }
 
   const finishedAt = new Date();
   recordAgentRun({
-    type: 'ai-review',
-    label: `Content review — ${done} job${done === 1 ? '' : 's'}${autoPublish ? ' (auto-publish)' : ''}`,
-    status: failCount === done && done > 0 ? 'error' : 'success',
+    type: "ai-review",
+    label: `Content review — ${done} job${done === 1 ? "" : "s"}${autoPublish ? " (auto-publish)" : ""}`,
+    status: failCount === done && done > 0 ? "error" : "success",
     startedAt: startedAt.toISOString(),
     finishedAt: finishedAt.toISOString(),
     durationMs: finishedAt.getTime() - startedAt.getTime(),
@@ -216,10 +269,12 @@ export async function runAiReview(opts: {
 
   console.log(
     `\nDone. Processed ${done}: ${published.length} published, ` +
-      `${flagged.length} flagged, ${rejected.length} rejected, ${failCount} failed.`
+      `${flagged.length} flagged, ${rejected.length} rejected, ${failCount} failed.`,
   );
   if (!autoPublish && flagged.length + published.length > 0) {
-    console.log('Review remaining pending jobs at /dashboard/admin/review or in this chat.');
+    console.log(
+      "Review remaining pending jobs at /dashboard/admin/review or in this chat.",
+    );
   }
 
   return {
@@ -231,13 +286,13 @@ export async function runAiReview(opts: {
   };
 }
 
-if (invokedAsScript('process-pending.ts')) {
-  const { limit, force } = parseArgs();
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error('ANTHROPIC_API_KEY not set (.env.local). Aborting.');
+if (invokedAsScript("process-pending.ts")) {
+  const { limit, force, fitOnly } = parseArgs();
+  if (!fitOnly && !process.env.ANTHROPIC_API_KEY) {
+    console.error("ANTHROPIC_API_KEY not set (.env.local). Aborting.");
     process.exit(1);
   }
-  runAiReview({ limit, force, autoPublish: false }).catch((err) => {
+  runAiReview({ limit, force, fitOnly, autoPublish: false }).catch((err) => {
     console.error(err);
     process.exit(1);
   });

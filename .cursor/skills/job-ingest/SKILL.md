@@ -13,7 +13,7 @@ npm run ingest
 
 That crawls enabled sources, keyword-filters, one-pass Haiku review (format + nuclear verdict + skills + **fit**), auto-publishes high-confidence nuclear jobs, expires dead listings, and writes `scraper/last-run.json`.
 
-To backfill the "Why this role" fit block on already-published jobs (local, no API):
+To regenerate the "Why this role" fit block on published jobs (local, no API, overwrites existing fit):
 
 ```bash
 npm run process-jobs -- --fit-only

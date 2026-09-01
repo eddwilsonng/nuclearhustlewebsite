@@ -1,5 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { StructuredDescription } from './types';
+import Anthropic from "@anthropic-ai/sdk";
+import { StructuredDescription } from "./types";
+import { applyGeneratedFit } from "./jobs/generateFit";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -54,50 +55,115 @@ export interface ProcessJobResult {
   keep: boolean;
   structured_description: StructuredDescription;
   review_notes: string;
-  agent_confidence: 'high' | 'low';
+  agent_confidence: "high" | "low";
 }
 
 function stripFence(text: string): string {
-  return text.replace(/^```json?\n?/, '').replace(/\n?```$/, '').trim();
+  return text
+    .replace(/^```json?\n?/, "")
+    .replace(/\n?```$/, "")
+    .trim();
+}
+
+function withLocalFit(
+  structured: StructuredDescription,
+  jobTitle: string,
+  companyName: string,
+  rawDescription: string,
+  extra?: { location?: string; category?: string },
+): StructuredDescription {
+  const rest = { ...structured };
+  delete rest.fit;
+  return applyGeneratedFit(rest, {
+    title: jobTitle,
+    companyName,
+    location: extra?.location,
+    category: extra?.category,
+    description: rawDescription,
+  });
 }
 
 export async function processJobDescription(
   rawDescription: string,
   jobTitle: string,
   companyName: string,
-  category: string
+  category: string,
+  location?: string,
 ): Promise<ProcessJobResult> {
   const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 2048,
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 2560,
     messages: [
       {
-        role: 'user',
-        content: `Job title: ${jobTitle}\nCompany: ${companyName}\nCategory: ${category}\n\nRaw description:\n${rawDescription.slice(0, 6000)}`,
+        role: "user",
+        content: `Job title: ${jobTitle}\nCompany: ${companyName}\nCategory: ${category}${location ? `\nLocation: ${location}` : ""}\n\nRaw description:\n${rawDescription.slice(0, 6000)}`,
       },
     ],
     system: PROCESS_PROMPT,
   });
 
-  const text = message.content[0].type === 'text' ? message.content[0].text.trim() : '';
+  const text =
+    message.content[0].type === "text" ? message.content[0].text.trim() : "";
   const cleaned = stripFence(text);
 
   try {
     const result = JSON.parse(cleaned);
     const keep = result.keep !== false;
-    const confidence: 'high' | 'low' = result.agent_confidence === 'low' || !keep ? 'low' : 'high';
+    const confidence: "high" | "low" =
+      result.agent_confidence === "low" || !keep ? "low" : "high";
+    const structured: StructuredDescription = result.structured_description ?? {
+      about: rawDescription.slice(0, 500),
+    };
     return {
       keep,
-      structured_description: result.structured_description ?? { about: rawDescription.slice(0, 500) },
-      review_notes: result.review_notes ?? 'No notes.',
+      structured_description: withLocalFit(
+        structured,
+        jobTitle,
+        companyName,
+        rawDescription,
+        {
+          location,
+          category,
+        },
+      ),
+      review_notes: result.review_notes ?? "No notes.",
       agent_confidence: confidence,
     };
   } catch {
     return {
       keep: true,
-      structured_description: { about: rawDescription.slice(0, 500) },
-      review_notes: 'Agent review failed to parse — manual review recommended.',
-      agent_confidence: 'low',
+      structured_description: withLocalFit(
+        { about: rawDescription.slice(0, 500) },
+        jobTitle,
+        companyName,
+        rawDescription,
+        { location, category },
+      ),
+      review_notes: "Agent review failed to parse — manual review recommended.",
+      agent_confidence: "low",
     };
   }
+}
+
+/** Fill `fit` from structured fields. Local, no API. */
+export function generateJobFit(input: {
+  rawDescription: string;
+  jobTitle: string;
+  companyName: string;
+  category: string;
+  location?: string;
+  structured: StructuredDescription;
+}): StructuredDescription {
+  const {
+    rawDescription,
+    jobTitle,
+    companyName,
+    category,
+    location,
+    structured,
+  } = input;
+  return withLocalFit(structured, jobTitle, companyName, rawDescription, {
+    location,
+    category,
+  });
 }

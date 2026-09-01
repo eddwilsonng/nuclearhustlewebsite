@@ -1,19 +1,12 @@
-import type { Page } from 'playwright';
-import { categorizeJob, JobCategory } from '../src/lib/categorize';
-import { extractState, generateJobSlug } from '../src/lib/states';
-import { scoreNuclearRelevance } from './relevance';
-import { ScrapedJob } from './types';
-import { parseSalary } from './parseSalary';
-import type { Salary } from '../src/lib/types';
+import type { Page } from "playwright";
+import { categorizeJob, JobCategory } from "../src/lib/categorize";
+import { extractState, generateJobSlug } from "../src/lib/states";
+import { scoreNuclearRelevance } from "./relevance";
+import { ScrapedJob } from "./types";
+import { parseSalary } from "./parseSalary";
+import type { Salary, StructuredDescription } from "../src/lib/types";
 
-export interface StructuredDescription {
-  about?: string;
-  responsibilities?: string;
-  qualifications?: string;
-  desired?: string;
-  location_details?: string;
-  skills?: string[];
-}
+export type { StructuredDescription };
 
 export interface EnrichedJob {
   id: string;
@@ -28,8 +21,8 @@ export interface EnrichedJob {
   description?: string;
   department?: string;
   // Review-pipeline fields (preserved across re-scrapes).
-  status?: 'pending_review' | 'published' | 'rejected' | 'expired';
-  agent_confidence?: 'high' | 'low';
+  status?: "pending_review" | "published" | "rejected" | "expired";
+  agent_confidence?: "high" | "low";
   review_notes?: string;
   structured_description?: StructuredDescription | null;
   skills?: string[];
@@ -41,7 +34,7 @@ export interface EnrichedJob {
   last_checked_at?: string;
   link_check_failures?: number;
   expired_at?: string;
-  pre_expiry_status?: 'published' | 'pending_review';
+  pre_expiry_status?: "published" | "pending_review";
 }
 
 // Resolve a job's salary: trust a structured ATS value, else parse the
@@ -60,11 +53,11 @@ export interface MergeStats {
 export function normalizeUrl(url: string): string {
   try {
     const u = new URL(url);
-    u.search = '';
-    u.hash = '';
-    return u.href.replace(/\/+$/, '');
+    u.search = "";
+    u.hash = "";
+    return u.href.replace(/\/+$/, "");
   } catch {
-    return url.replace(/\/+$/, '');
+    return url.replace(/\/+$/, "");
   }
 }
 
@@ -85,10 +78,14 @@ export function mergeCompanyJobs(
   existingAll: EnrichedJob[],
   companyId: string,
   scraped: ScrapedJob[],
-  now: string
+  now: string,
 ): { jobs: EnrichedJob[]; stats: MergeStats; added: EnrichedJob[] } {
-  const otherCompanyJobs = existingAll.filter((j) => j.company_id !== companyId);
-  const existingCompanyJobs = existingAll.filter((j) => j.company_id === companyId);
+  const otherCompanyJobs = existingAll.filter(
+    (j) => j.company_id !== companyId,
+  );
+  const existingCompanyJobs = existingAll.filter(
+    (j) => j.company_id === companyId,
+  );
 
   const existingByUrl = new Map<string, EnrichedJob>();
   for (const job of existingCompanyJobs) {
@@ -111,7 +108,7 @@ export function mergeCompanyJobs(
     if (existing) {
       // Seen at source this run: it's alive. Refresh volatile fields, preserve
       // identity + review state, and reset the hygiene counters.
-      const wasExpired = existing.status === 'expired';
+      const wasExpired = existing.status === "expired";
       merged.push({
         ...existing,
         title: job.title,
@@ -126,7 +123,11 @@ export function mergeCompanyJobs(
         salary: resolveSalary(job, existing),
         // Revive a previously-expired job that has re-appeared at its source.
         ...(wasExpired
-          ? { status: existing.pre_expiry_status ?? 'published', expired_at: undefined, pre_expiry_status: undefined }
+          ? {
+              status: existing.pre_expiry_status ?? "published",
+              expired_at: undefined,
+              pre_expiry_status: undefined,
+            }
           : {}),
       });
       existingByUrl.delete(key);
@@ -161,7 +162,7 @@ export function mergeCompanyJobs(
       description: job.description,
       department: job.department,
       salary: resolveSalary(job),
-      status: 'pending_review',
+      status: "pending_review",
       agent_confidence: verdict.confidence,
       review_notes: verdict.reason,
       last_seen_at: now,
@@ -184,19 +185,22 @@ export function mergeCompanyJobs(
 const DESCRIPTION_SELECTORS = [
   '[data-automation-id="jobPostingDescription"]',
   '[data-automation-id="jobDescription"]',
-  '.job-description',
-  '.jobDescription',
-  '#job-description',
+  ".job-description",
+  ".jobDescription",
+  "#job-description",
   '[class*="job-description"]',
   '[class*="JobDescription"]',
   '[class*="description"]',
-  'article',
+  "article",
 ];
 
 // Fetch a job description from a detail page (used for sources that don't include it inline).
-export async function fetchJobDescription(page: Page, url: string): Promise<string | null> {
+export async function fetchJobDescription(
+  page: Page,
+  url: string,
+): Promise<string | null> {
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 12000 });
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 12000 });
 
     for (const selector of DESCRIPTION_SELECTORS) {
       try {
@@ -204,10 +208,10 @@ export async function fetchJobDescription(page: Page, url: string): Promise<stri
         if (element) {
           const text = await element.textContent();
           if (text && text.length > 200 && text.length < 15000) {
-            const cleaned = text.trim().replace(/\s+/g, ' ');
+            const cleaned = text.trim().replace(/\s+/g, " ");
             if (
-              !cleaned.toLowerCase().includes('cookie policy') &&
-              !cleaned.toLowerCase().includes('privacy notice')
+              !cleaned.toLowerCase().includes("cookie policy") &&
+              !cleaned.toLowerCase().includes("privacy notice")
             ) {
               return cleaned.slice(0, 8000);
             }
