@@ -43,7 +43,7 @@ export default async function Home() {
     <div>
       <section className="relative overflow-hidden border-b border-rule motif-grid">
         <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 md:py-24">
-          <div className="max-w-[34rem]">
+          <div className="relative z-10 max-w-[34rem]">
             <p className="font-mono text-xs uppercase tracking-widest text-secondary">
               {jobs.length} open roles · updated today
             </p>
@@ -87,19 +87,19 @@ export default async function Home() {
               </Link>
             </div>
           </div>
-        </div>
 
-        <div className="pointer-events-none absolute top-1/2 right-0 hidden w-[54%] -translate-y-1/2 overflow-hidden md:block">
-          <Image
-            src="/hero-banner.webp"
-            alt=""
-            width={640}
-            height={357}
-            priority
-            quality={80}
-            sizes="54vw"
-            className="h-auto w-full -ml-[12%]"
-          />
+          <div className="pointer-events-none absolute top-1/2 right-6 z-0 hidden w-[min(54%,40rem)] -translate-y-1/2 overflow-hidden md:block">
+            <Image
+              src="/hero-banner.webp"
+              alt=""
+              width={1376}
+              height={768}
+              priority
+              quality={80}
+              sizes="40rem"
+              className="h-auto w-[216%] max-w-none -ml-[112%]"
+            />
+          </div>
         </div>
       </section>
 
