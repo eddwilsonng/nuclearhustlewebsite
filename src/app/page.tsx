@@ -42,8 +42,8 @@ export default async function Home() {
   return (
     <div>
       <section className="relative overflow-hidden border-b border-rule motif-grid">
-        <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 md:py-24">
-          <div className="relative z-10 max-w-[34rem]">
+        <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 md:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] md:py-24">
+          <div>
             <p className="font-mono text-xs uppercase tracking-widest text-secondary">
               {jobs.length} open roles · updated today
             </p>
@@ -88,16 +88,16 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="pointer-events-none absolute top-1/2 right-6 z-0 hidden w-[min(54%,40rem)] -translate-y-1/2 overflow-hidden md:block">
+          <div className="relative hidden md:block">
             <Image
-              src="/hero-banner.webp"
+              src="/hero-island.webp"
               alt=""
-              width={1376}
-              height={768}
+              width={648}
+              height={569}
               priority
               quality={80}
-              sizes="40rem"
-              className="h-auto w-[216%] max-w-none -ml-[112%]"
+              sizes="(min-width: 768px) 40vw, 0px"
+              className="h-auto w-full"
             />
           </div>
         </div>
