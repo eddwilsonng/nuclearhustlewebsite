@@ -149,7 +149,10 @@ function coerceBulletList(value: unknown): string[] {
 }
 
 function isUselessPlace(bullet: string): boolean {
-  return /^(you want )?this role at [^.]+\.?$/i.test(bullet.trim());
+  return (
+    /^(you want )?this role at [^.]+\.?$/i.test(bullet.trim()) ||
+    /see posting|location not specified|various .+ locations/i.test(bullet)
+  );
 }
 
 function tidyBullet(bullet: string): string {

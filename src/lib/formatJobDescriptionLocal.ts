@@ -13,7 +13,12 @@ const SECTION_MAP: { match: string; field: Field }[] = [
   { match: 'Principal Accountabilities', field: 'responsibilities' },
   { match: 'Responsibilities and Duties', field: 'responsibilities' },
   { match: 'General Summary', field: 'about' },
+  { match: 'Summary of Position Duties', field: 'about' },
+  { match: 'Summary of Job Duties', field: 'about' },
   { match: 'Summary', field: 'about' },
+  { match: 'Job Requirements', field: 'qualifications' },
+  { match: 'Educational Requirements', field: 'qualifications' },
+  { match: 'Knowledge, Skills and Abilities', field: 'qualifications' },
   { match: 'Bonus Qualifications', field: 'desired' },
   { match: 'Job Duties / Responsibilities', field: 'responsibilities' },
   { match: 'Primary Purpose of Position', field: 'about' },
@@ -55,6 +60,9 @@ SECTION_MAP.sort((a, b) => b.match.length - a.match.length);
 const MARKETING =
   /join (our|the) team|more than a career|make a difference|friendly work environment|who we are|total rewards|powered by passion|thanks for your interest|you'll find a friendly|build an exciting|we're creating healthier|cultivating a workplace|11:59|job posting expire|submit your application|important application/i;
 
+const ABOUT_SKIP =
+  /benefits offered for this position|\.pdf\b|total compensation and benefits|equal opportunity employer|nyse:\s*so\b|net-zero greenhouse|facebook\.com\/southernnuclear|in one or two sentences, provide a brief overview/i;
+
 const STRIP: RegExp[] = [
   /Important Application Submission Information[\s\S]*?(?=(?:Position Summary|Position Description|Job Summary|Primary Purpose|Job Title:|PMC ))/i,
   /please submit your application by[^.]*\./gi,
@@ -77,6 +85,12 @@ const STRIP: RegExp[] = [
   /Do [Nn]ot [Ss]ell[\s\S]*$/i,
   /Pay Transparency[\s\S]*$/i,
   /Click here[\s\S]*?benefits[\s\S]*$/i,
+  /A summary of the benefits offered[\s\S]*?(?=Job Identification|$)/i,
+  /Southern Company invests in the well-being[\s\S]*?hiring process\./gi,
+  /https?:\/\/seo\.nlx\.org\/\S+/gi,
+  /Twitter:\s*@SouthernNuclear[\s\S]*?www\.southernnuclear\.com/gi,
+  /Southern Company \(NYSE:\s*SO\s*\)[\s\S]*?visit www\.southerncompany\.com\s*\.?/gi,
+  /Southern Nuclear\s*, a subsidiary of Southern Company[\s\S]*?www\.southernnuclear\.com/gi,
 ];
 
 const UNIQUE_HEADERS = new Set(
@@ -88,7 +102,12 @@ const UNIQUE_HEADERS = new Set(
     'Responsibilities and Duties',
     'Required Education and Experience',
     'General Summary',
+    'Summary of Position Duties',
+    'Summary of Job Duties',
     'Summary',
+    'Job Requirements',
+    'Educational Requirements',
+    'Knowledge, Skills and Abilities',
     'Job Duties / Responsibilities',
     'Primary Purpose of Position',
     'Primary Purpose of the Role',
@@ -187,9 +206,14 @@ function insertSectionBreaks(text: string): string {
     const unique = UNIQUE_HEADERS.has(match.toLowerCase());
     const token = `<<HDR:${tokens.length}>>`;
     tokens.push(match);
+    // Do not treat "A summary of the benefits" as a section header — only
+    // "Summary:" / "Summary We have openings" / "Summary of Job Duties".
     const re = unique
-      ? new RegExp(`\\b${escapeRe(match)}(?=[A-Z\\s:]|$)\\s*:?`, 'gi')
-      : new RegExp(`(^|[.!?])\\s*${escapeRe(match)}(?=[A-Z\\s:]|$)\\s*:?`, 'gi');
+      ? new RegExp(`\\b${escapeRe(match)}(?=\\s*:|\\s+[A-Z]|$)\\s*:?`, 'gi')
+      : new RegExp(
+          `(^|[.!?])\\s*${escapeRe(match)}(?=\\s*:|\\s+[A-Z]|$)\\s*:?`,
+          'gi',
+        );
     t = t.replace(re, unique ? `\n\n${token}\n` : `$1\n\n${token}\n`);
   }
   for (let i = tokens.length - 1; i >= 0; i--) {
@@ -225,10 +249,11 @@ function splitIntoItems(text: string): string[] {
       .replace(/you.ll do more than contribute[\s\S]*?by:\s*/i, '')
       .trim();
     if (cleaned.length < 20) continue;
+    if (/^job requirements:/i.test(cleaned)) continue;
     if (/\(\s*i\.e\.?\s*$/i.test(cleaned)) continue;
     if (/\b(and|or|the|of|including|with)\s*$/i.test(cleaned)) continue;
     if (/privacy|cookie|do not sell|terms of use|equal opportunity|eeo|§§|@@/i.test(cleaned)) continue;
-    if (MARKETING.test(cleaned)) continue;
+    if (MARKETING.test(cleaned) || ABOUT_SKIP.test(cleaned)) continue;
     items.push(cleaned.replace(/\s+/g, ' '));
   }
 
@@ -247,7 +272,7 @@ function sentences(text: string, max: number, maxChars: number): string {
     .replace(/([.!?])\s+/g, '$1\n')
     .split('\n')
     .map((s) => s.trim().replace(/^["'\s]+/, ''))
-    .filter((s) => s.length > 25 && !MARKETING.test(s));
+    .filter((s) => s.length > 25 && !MARKETING.test(s) && !ABOUT_SKIP.test(s));
 
   let out = '';
   for (const s of parts.slice(0, max)) {
@@ -311,9 +336,14 @@ export function formatJobDescriptionLocal(
 
   const aboutSource = [...buckets.about, ...preamble].join(' ');
   let about = sentences(aboutSource, 3, 420);
+  about = about
+    .replace(/^(of\s+)?(position\s+)?duties:\s*/i, '')
+    .replace(/^of\s+position\s+duties\s+/i, '')
+    .trim();
 
-  if (!buckets.responsibilities.length && preamble.length) {
-    buckets.responsibilities.push(preamble.join(' '));
+  if (!buckets.responsibilities.length) {
+    if (preamble.length) buckets.responsibilities.push(preamble.join(' '));
+    else if (buckets.about.length) buckets.responsibilities.push(buckets.about.join(' '));
   }
 
   const respItems = splitIntoItems(buckets.responsibilities.join(' ')).filter(

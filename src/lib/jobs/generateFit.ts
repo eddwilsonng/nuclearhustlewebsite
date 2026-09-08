@@ -1,6 +1,7 @@
 import type { JobFit, StructuredDescription } from "../types";
 import plantsData from "../../data/plants.json";
 import { applyFit, fitSourceText, sanitizeFit } from "./fit";
+import { isPlaceholderLocation } from "./location";
 
 type Plant = { name: string; city: string; state: string };
 
@@ -141,14 +142,16 @@ function experienceBullet(
 }
 
 function plantWhere(plant: Plant, location?: string): string {
-  const cleanLocation = location?.trim();
-  if (
-    cleanLocation &&
-    !/^(remote|multiple locations|\d+\s+locations?|united states)$/i.test(
-      cleanLocation,
-    )
-  ) {
-    return `${plant.name} in ${cleanLocation}`;
+  const loc = location?.trim();
+  const locOk = loc && !isPlaceholderLocation(loc);
+  const locNamesPlantCity =
+    locOk &&
+    plant.city &&
+    loc.toLowerCase().includes(plant.city.toLowerCase());
+
+  if (locNamesPlantCity) return `${plant.name} in ${loc}`;
+  if (!locOk && plant.city && plant.state) {
+    return `${plant.name} in ${plant.city}, ${plant.state}`;
   }
   return plant.name;
 }
@@ -184,34 +187,33 @@ export function generateFitLocal(input: {
   const desired = textOf(sd?.desired);
   const skills = skillsOf(sd);
   const source = fitSourceText(input);
+  const plantCorpus = [input.title, input.location, about, quals].join("\n");
+  const plant = findPlant(plantCorpus, input.title);
   const focused = [
     input.title,
+    input.description,
     about,
     quals,
     desired,
     locDetails,
     skills.join(" "),
   ].join("\n");
-  const plant = findPlant(focused, input.title);
 
-  const onsite =
-    /\bon-?site\b|\bplant-site\b|\bin the plant\b|\boperating plant\b|\bfield walk/i.test(
-      focused,
-    );
   const hybrid = /\bhybrid\b/i.test(focused);
   const rotating = /rotating\s+shift|nights? and weekends|night\s+shift/i.test(
     focused,
   );
-  const onCall = /\bon-?call\b|\bero\b|emergency (callout|response)/i.test(
-    focused,
-  );
+  const onCall =
+    /\bon-call duty\b|\bon-call rotation\b|\bon-call engineer\b|\bero\b|emergency (callout|response organization)/i.test(
+      focused,
+    );
   const optionalOnCall =
     /may be required[\s\S]{0,240}(on-?call|emergency response)/i.test(focused);
   const unescorted = /unescorted/i.test(focused);
   const doeQ = /\bdoe\s*q\b|\bq clearance\b/i.test(focused);
   const pe =
     hasSkill(skills, "PE LICENSE") ||
-    /\bprofessional engineer\b|\bpe\b.{0,20}(license|registration)/i.test(
+    /(?<!\bor )(\bprofessional engineer\b|\bpe\b.{0,20}(license|registration))/i.test(
       quals + desired,
     );
   const sro =
@@ -242,9 +244,7 @@ export function generateFitLocal(input: {
   if (plant) {
     const where = plantWhere(plant, input.location);
     if (hybrid) add(`You can work a hybrid schedule based at ${where}`);
-    else if (onsite || rotating || unescorted)
-      add(`You can work on-site at ${where}`);
-    else add(`You can work from ${where}`);
+    else add(`You can work on-site at ${where}`);
   } else if (hybrid) {
     const split = focused.match(/(\d+)\s+in office and\s+(\d+)\s+remote/i);
     if (split)

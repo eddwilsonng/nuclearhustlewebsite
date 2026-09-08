@@ -11,8 +11,22 @@ import {
   formatJobDescriptionLocal,
   isMixedFleetFalsePositive,
 } from '../src/lib/formatJobDescriptionLocal';
+import { applyGeneratedFit } from '../src/lib/jobs/generateFit';
+import { resolveJobLocation } from '../src/lib/jobs/location';
 
 const JOBS_PATH = path.join(__dirname, '..', 'src', 'data', 'jobs.json');
+const COMPANIES_PATH = path.join(__dirname, '..', 'src', 'data', 'companies.json');
+
+function loadCompanyNames(): Map<string, string> {
+  try {
+    const data = JSON.parse(fs.readFileSync(COMPANIES_PATH, 'utf-8')) as {
+      companies: { id: string; name: string }[];
+    };
+    return new Map(data.companies.map((c) => [c.id, c.name]));
+  } catch {
+    return new Map();
+  }
+}
 
 const MIXED = new Set([
   'duke',
@@ -113,6 +127,8 @@ async function main() {
       description?: string;
       company_id: string;
       slug: string;
+      category?: string;
+      state?: string | null;
       status?: string;
       review_notes?: string;
       agent_confidence?: string;
@@ -120,6 +136,7 @@ async function main() {
     }>;
   };
 
+  const companyNames = loadCompanyNames();
   const published: { title: string; company_id: string; slug: string }[] = [];
   const rejected: { title: string; company_id: string; reason: string }[] = [];
   const flagged: { title: string; company_id: string; reason: string }[] = [];
@@ -134,10 +151,22 @@ async function main() {
         flagged.push({ title: job.title, company_id: job.company_id, reason: 'No description' });
         continue;
       }
+      const resolved = resolveJobLocation(job);
+      if (resolved) {
+        job.location = resolved.location;
+        if (resolved.state) job.state = resolved.state;
+      }
       job.status = 'published';
       job.review_notes = `Local review: ${reason}`;
       job.agent_confidence = 'high';
-      job.structured_description = formatJobDescriptionLocal(job.description, job.title);
+      const sd = formatJobDescriptionLocal(job.description, job.title);
+      job.structured_description = applyGeneratedFit(sd, {
+        title: job.title,
+        companyName: companyNames.get(job.company_id) ?? job.company_id,
+        location: job.location,
+        category: job.category,
+        description: job.description,
+      });
       published.push({ title: job.title, company_id: job.company_id, slug: job.slug });
     } else if (verdict === 'reject') {
       job.status = 'rejected';

@@ -11,6 +11,7 @@ import * as path from "path";
 import { invokedAsScript } from "./cli";
 import { hasUsableFit } from "../src/lib/jobs/fit";
 import { applyGeneratedFit } from "../src/lib/jobs/generateFit";
+import { resolveJobLocation } from "../src/lib/jobs/location";
 
 const JOBS_PATH = path.join(__dirname, "..", "src", "data", "jobs.json");
 const COMPANIES_PATH = path.join(
@@ -66,6 +67,14 @@ export function runFitLocal(opts: { dryRun?: boolean; limit?: number } = {}): {
     if (job.status !== "published" && job.status !== "pending_review") continue;
     if (!job.structured_description) continue;
     if (filled + stripped + skipped >= limit) break;
+
+    const resolved = resolveJobLocation(job);
+    if (resolved) {
+      job.location = resolved.location;
+      if (resolved.state) {
+        (job as Job & { state?: string | null }).state = resolved.state;
+      }
+    }
 
     const hadFit = Boolean(job.structured_description.fit);
     const next = applyGeneratedFit(job.structured_description, {
