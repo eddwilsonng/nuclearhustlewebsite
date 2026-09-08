@@ -118,14 +118,18 @@ export const COMPANIES: ScrapeSource[] = [
   {
     id: 'nextera',
     name: 'NextEra Energy',
-    careersUrl: 'https://www.nexteraenergy.com/careers/search-jobs.html',
-    scraperType: 'custom',
+    careersUrl: 'https://jobs.nexteraenergy.com/go/Nuclear-Jobs/2674300/',
+    scraperType: 'successfactors',
+    searchKeyword: 'nuclear',
+    csbPathPagination: true,
+    verified: true,
   },
   {
     id: 'tva',
     name: 'Tennessee Valley Authority',
-    careersUrl: 'https://www.tva.com/careers',
+    careersUrl: 'https://tvacareers.ttcportals.com/jobs/search',
     scraperType: 'custom',
+    searchKeyword: 'nuclear',
   },
 
   // ---- Additional operators ----
@@ -182,13 +186,16 @@ export const COMPANIES: ScrapeSource[] = [
   {
     id: 'vistra',
     name: 'Luminant (Vistra)',
-    careersUrl: 'https://vistracorp.com/careers/',
-    scraperType: 'custom',
+    careersUrl: 'https://vst.wd5.myworkdayjobs.com/vistra_careers',
+    scraperType: 'workday',
+    workdayHost: 'vst.wd5.myworkdayjobs.com',
+    searchKeyword: 'nuclear',
+    verified: true,
   },
   {
     id: 'stp',
     name: 'STP Nuclear Operating Company',
-    careersUrl: 'https://stp.dayforcehcm.com/CandidatePortal/en-US/stp',
+    careersUrl: 'https://jobs.dayforcehcm.com/en-US/stp/CANDIDATEPORTAL',
     scraperType: 'custom',
   },
   {
@@ -197,12 +204,15 @@ export const COMPANIES: ScrapeSource[] = [
     careersUrl:
       'https://evergy.taleo.net/careersection/evergy_external_career_section/jobsearch.ftl',
     scraperType: 'custom',
+    searchKeyword: 'nuclear',
   },
   {
     id: 'nppd',
     name: 'Nebraska Public Power District',
-    careersUrl: 'https://www.nppd.com/careers',
-    scraperType: 'custom',
+    careersUrl: 'https://jobs.nppd.com/',
+    scraperType: 'successfactors',
+    searchKeyword: 'nuclear',
+    verified: true,
   },
 
   // ---- Uranium enrichment operator ----

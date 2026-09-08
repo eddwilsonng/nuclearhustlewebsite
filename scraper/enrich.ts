@@ -1,4 +1,6 @@
 import type { Page } from "playwright";
+import axios from "axios";
+import * as cheerio from "cheerio";
 import { categorizeJob, JobCategory } from "../src/lib/categorize";
 import { extractState, generateJobSlug } from "../src/lib/states";
 import { scoreNuclearRelevance } from "./relevance";
@@ -194,32 +196,160 @@ const DESCRIPTION_SELECTORS = [
   "article",
 ];
 
+function cleanDescription(raw: string): string | null {
+  const cleaned = raw
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (cleaned.length < 80 || cleaned.length > 20000) return null;
+  const lower = cleaned.toLowerCase();
+  // Real JDs often include an EEO "privacy notice" footer. Only drop short
+  // cookie-wall / expired stubs.
+  if (cleaned.length < 400 && (lower.includes("cookie policy") || lower.includes("privacy notice"))) {
+    return null;
+  }
+  if (/job posting has expired|no longer posted/i.test(cleaned)) return null;
+  return cleaned.slice(0, 8000);
+}
+
+const HTTP_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Accept-Language": "en-US,en;q=0.9",
+};
+
+/** Workday public job URL → CXS detail JSON. */
+export function workdayCxsUrl(jobUrl: string): string | null {
+  try {
+    const u = new URL(jobUrl);
+    if (!u.hostname.includes("myworkdayjobs.com")) return null;
+    const parts = u.pathname.split("/").filter(Boolean);
+    if (parts.length < 2) return null;
+    const tenant = u.hostname.split(".")[0];
+    const site = parts[0];
+    const rest = parts.slice(1).join("/");
+    return `${u.origin}/wday/cxs/${tenant}/${site}/${rest}`;
+  } catch {
+    return null;
+  }
+}
+
+function descriptionFromHtml(html: string): string | null {
+  const $ = cheerio.load(html);
+  const jsonld: string[] = [];
+  $('script[type="application/ld+json"]').each((_, el) => {
+    jsonld.push($(el).contents().text());
+  });
+  for (const raw of jsonld) {
+    const fromLd = jsonLdJobDescription(raw);
+    if (fromLd) return fromLd;
+  }
+
+  const sf = $('[itemprop="description"], .jobdescription, .job-description').first();
+  if (sf.length) {
+    const inner = sf.html() || sf.text();
+    const cleaned = cleanDescription(inner);
+    if (cleaned && !/^tbd$/i.test(cleaned)) return cleaned;
+  }
+  return null;
+}
+
+/**
+ * Pull a job body without Playwright. Workday CXS JSON, then SuccessFactors /
+ * JSON-LD HTML. Returns null for JS-only boards (Southern NLX, TVA TTC, Taleo).
+ */
+export async function fetchJobDescriptionHttp(url: string): Promise<string | null> {
+  const cxs = workdayCxsUrl(url);
+  if (cxs) {
+    try {
+      const res = await axios.get<{
+        jobPostingInfo?: { jobDescription?: string };
+      }>(cxs, {
+        headers: { ...HTTP_HEADERS, Accept: "application/json" },
+        timeout: 20000,
+      });
+      const html = res.data?.jobPostingInfo?.jobDescription || "";
+      return cleanDescription(html);
+    } catch {
+      return null;
+    }
+  }
+
+  try {
+    const res = await axios.get<string>(url, {
+      headers: { ...HTTP_HEADERS, Accept: "text/html,application/xhtml+xml" },
+      timeout: 20000,
+      maxRedirects: 5,
+    });
+    return descriptionFromHtml(typeof res.data === "string" ? res.data : "");
+  } catch {
+    return null;
+  }
+}
+
+function jsonLdJobDescription(raw: string): string | null {
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    const nodes = Array.isArray(parsed) ? parsed : [parsed];
+    for (const node of nodes) {
+      if (!node || typeof node !== "object") continue;
+      const obj = node as { "@type"?: string; description?: string };
+      const type = obj["@type"];
+      const isPosting =
+        type === "JobPosting" ||
+        (Array.isArray(type) && type.includes("JobPosting"));
+      if (isPosting && typeof obj.description === "string") {
+        return cleanDescription(obj.description);
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 // Fetch a job description from a detail page (used for sources that don't include it inline).
 export async function fetchJobDescription(
   page: Page,
   url: string,
 ): Promise<string | null> {
   try {
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 12000 });
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20000 });
+    await page.waitForLoadState("networkidle", { timeout: 4000 }).catch(() => {});
+    await page.waitForTimeout(1500);
+
+    const jsonld = await page.$$eval(
+      'script[type="application/ld+json"]',
+      (els) => els.map((el) => el.textContent || ""),
+    );
+    for (const raw of jsonld) {
+      const fromLd = jsonLdJobDescription(raw);
+      if (fromLd) return fromLd;
+    }
 
     for (const selector of DESCRIPTION_SELECTORS) {
       try {
         const element = await page.$(selector);
         if (element) {
           const text = await element.textContent();
-          if (text && text.length > 200 && text.length < 15000) {
-            const cleaned = text.trim().replace(/\s+/g, " ");
-            if (
-              !cleaned.toLowerCase().includes("cookie policy") &&
-              !cleaned.toLowerCase().includes("privacy notice")
-            ) {
-              return cleaned.slice(0, 8000);
-            }
+          if (text) {
+            const cleaned = cleanDescription(text);
+            if (cleaned && cleaned.length > 200) return cleaned;
           }
         }
       } catch {
         continue;
       }
+    }
+
+    const main = await page.locator("main").first().textContent().catch(() => null);
+    if (main) {
+      const cleaned = cleanDescription(main);
+      if (cleaned && cleaned.length > 200) return cleaned;
     }
     return null;
   } catch {

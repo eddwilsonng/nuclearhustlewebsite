@@ -8,6 +8,8 @@ import { LeverScraper } from './lever';
 import { PhenomScraper } from './phenom';
 import { SuccessFactorsScraper } from './successfactors';
 import { UrencoScraper } from './urenco';
+import { DayforceScraper } from './dayforce';
+import { TaleoScraper } from './taleo';
 import { CompanyConfig } from '../types';
 
 export function createScraper(config: CompanyConfig): BaseScraper {
@@ -33,6 +35,10 @@ export function createScraper(config: CompanyConfig): BaseScraper {
       return new ConstellationScraper(config);
     case 'tva':
       return new TVAScraper(config);
+    case 'stp':
+      return new DayforceScraper(config);
+    case 'wolf-creek':
+      return new TaleoScraper(config);
     default:
       return new GenericBrowserScraper(config);
   }
@@ -46,6 +52,8 @@ export {
   GenericBrowserScraper,
   ConstellationScraper,
   TVAScraper,
+  DayforceScraper,
+  TaleoScraper,
   GreenhouseScraper,
   LeverScraper,
   PhenomScraper,

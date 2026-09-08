@@ -1,15 +1,15 @@
 /**
- * Fetch missing descriptions for published jobs, then format them.
- * Jobs that still have no body after fetch are held (pending_review) so
- * they don't go live as generic stubs.
+ * Fetch missing descriptions for published + pending_review stubs.
+ *
+ * HTTP first (Workday CXS / SuccessFactors HTML), Playwright for JS-only
+ * leftovers (Southern NLX, TVA TTC). Jobs that still have no body stay pending.
  *
  *   npx tsx scraper/backfill-descriptions.ts
  */
 import * as fs from 'fs';
 import * as path from 'path';
 import { createContext, createPage, closeBrowser } from './browser';
-import { fetchJobDescription } from './enrich';
-import { formatJobDescriptionLocal } from '../src/lib/formatJobDescriptionLocal';
+import { fetchJobDescription, fetchJobDescriptionHttp } from './enrich';
 
 const JOBS_PATH = path.join(__dirname, '..', 'src', 'data', 'jobs.json');
 
@@ -21,52 +21,67 @@ interface Job {
   company_id: string;
   slug: string;
   status?: string;
-  structured_description?: unknown;
-  review_notes?: string;
-  agent_confidence?: string;
 }
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+function isStub(job: Job): boolean {
+  return (
+    (job.status === 'published' || job.status === 'pending_review') &&
+    (!job.description || job.description.length < 80)
+  );
+}
+
 async function main() {
   const data = JSON.parse(fs.readFileSync(JOBS_PATH, 'utf-8')) as { jobs: Job[] };
-  const missing = data.jobs.filter(
-    (j) => j.status === 'published' && (!j.description || j.description.length < 80),
-  );
+  const missing = data.jobs.filter(isStub);
 
-  console.log(`Fetching descriptions for ${missing.length} published stubs...`);
-
-  const context = await createContext();
-  const page = await createPage(context);
+  console.log(`Fetching descriptions for ${missing.length} stubs...`);
 
   let got = 0;
   let failed = 0;
 
+  console.log('=== HTTP ===');
   for (const job of missing) {
-    const description = await fetchJobDescription(page, job.url);
+    const description = await fetchJobDescriptionHttp(job.url);
     if (description) {
       job.description = description;
-      job.structured_description = formatJobDescriptionLocal(description, job.title);
       got++;
-      console.log(`  ok   ${job.company_id.padEnd(18)} ${job.title.slice(0, 60)}`);
-    } else {
-      job.status = 'pending_review';
-      job.agent_confidence = 'low';
-      job.review_notes = 'Local review: held — description fetch failed';
-      failed++;
-      console.log(`  fail ${job.company_id.padEnd(18)} ${job.title.slice(0, 60)}`);
+      console.log(`  http  ${job.company_id.padEnd(18)} ${job.title.slice(0, 60)}`);
     }
-    await sleep(400);
-    fs.writeFileSync(JOBS_PATH, JSON.stringify(data, null, 2) + '\n');
+    await sleep(120);
+    if ((got + failed) % 25 === 0) {
+      fs.writeFileSync(JOBS_PATH, JSON.stringify(data, null, 2) + '\n');
+    }
+  }
+  fs.writeFileSync(JOBS_PATH, JSON.stringify(data, null, 2) + '\n');
+
+  const still = missing.filter((j) => !j.description || j.description.length < 80);
+  if (still.length > 0) {
+    console.log(`\n=== Playwright (${still.length}) ===`);
+    const context = await createContext();
+    const page = await createPage(context);
+    for (const job of still) {
+      const description = await fetchJobDescription(page, job.url);
+      if (description) {
+        job.description = description;
+        got++;
+        console.log(`  pw    ${job.company_id.padEnd(18)} ${job.title.slice(0, 60)}`);
+      } else {
+        failed++;
+        console.log(`  fail  ${job.company_id.padEnd(18)} ${job.title.slice(0, 60)}`);
+      }
+      await sleep(400);
+      fs.writeFileSync(JOBS_PATH, JSON.stringify(data, null, 2) + '\n');
+    }
+    await page.close();
+    await context.close();
+    await closeBrowser();
   }
 
-  await page.close();
-  await context.close();
-  await closeBrowser();
-
-  console.log(`\nFetched ${got}, held ${failed}`);
+  console.log(`\nFetched ${got}, still empty ${failed}`);
 }
 
 main().catch(async (err) => {

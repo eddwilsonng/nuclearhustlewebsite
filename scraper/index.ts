@@ -7,6 +7,7 @@ import {
   EnrichedJob,
   mergeCompanyJobs,
   fetchJobDescription,
+  fetchJobDescriptionHttp,
   MergeStats,
 } from './enrich';
 import { closeBrowser, createContext, createPage } from './browser';
@@ -76,35 +77,42 @@ export async function runScrapers(): Promise<ScrapeRunResult> {
       totals.kept += merged.stats.kept;
       totals.dropped += merged.stats.dropped;
 
-      // Descriptions only for newly added jobs (keyword-filtered). Never walk
-      // the full ATS dump — Westinghouse can return 500 tiles with no body.
-      const MAX_DESC = 30;
-      const needDesc = merged.added.filter((j) => !j.description).slice(0, MAX_DESC);
+      // Bodies for newly added jobs only (already keyword-filtered). HTTP first
+      // (Workday CXS / SuccessFactors HTML); Playwright for JS-only leftovers.
+      const needDesc = merged.added.filter((j) => !j.description);
       if (needDesc.length > 0) {
-        const totalNew = merged.added.filter((j) => !j.description).length;
-        console.log(
-          `  Fetching descriptions for ${needDesc.length} new jobs` +
-            (totalNew > MAX_DESC ? ` (capped from ${totalNew})` : '') +
-            '...'
-        );
-        try {
-          const context = await createContext();
-          const page = await createPage(context);
-          for (const job of needDesc) {
-            const description = await fetchJobDescription(page, job.url);
-            if (description) {
-              job.description = description;
-              const live = allJobs.find((j) => j.id === job.id);
-              if (live) live.description = description;
-            }
-            await sleep(400);
+        console.log(`  Fetching descriptions for ${needDesc.length} new jobs...`);
+        for (const job of needDesc) {
+          const description = await fetchJobDescriptionHttp(job.url);
+          if (description) {
+            job.description = description;
+            const live = allJobs.find((j) => j.id === job.id);
+            if (live) live.description = description;
           }
-          await page.close();
-          await context.close();
-        } catch (err) {
-          console.log(
-            `  Description fetch skipped (${needDesc.length} jobs): ${err instanceof Error ? err.message : err}`
-          );
+          await sleep(150);
+        }
+        const still = needDesc.filter((j) => !j.description);
+        if (still.length > 0) {
+          console.log(`  Playwright fallback for ${still.length} jobs...`);
+          try {
+            const context = await createContext();
+            const page = await createPage(context);
+            for (const job of still) {
+              const description = await fetchJobDescription(page, job.url);
+              if (description) {
+                job.description = description;
+                const live = allJobs.find((j) => j.id === job.id);
+                if (live) live.description = description;
+              }
+              await sleep(400);
+            }
+            await page.close();
+            await context.close();
+          } catch (err) {
+            console.log(
+              `  Description fetch skipped (${still.length} jobs): ${err instanceof Error ? err.message : err}`
+            );
+          }
         }
       }
 

@@ -22,8 +22,8 @@ interface WorkdayResponse {
  *
  * `tenant` is the first label of the Workday host; `site` is the last path
  * segment of careersUrl (e.g. dukeenergy.wd1.myworkdayjobs.com/search → "search").
- * Public job URL is {origin}/{site}{externalPath}. Descriptions are fetched later
- * by the central enrichment step (Workday list responses omit them).
+ * Public job URL is {origin}/{site}{externalPath}. Each posting then hits the
+ * CXS detail endpoint so we keep the jobDescription instead of a title stub.
  *
  * Used by: Duke Energy, Ameren, Energy Northwest, Talen Energy.
  */
@@ -55,10 +55,29 @@ export class WorkdayScraper extends BaseScraper {
         if (batch.length === 0) break;
 
         for (const posting of batch) {
+          const path = posting.externalPath;
+          let description: string | undefined;
+          try {
+            const detail = await this.fetchJson<{
+              jobPostingInfo?: { jobDescription?: string; location?: string };
+            }>(`https://${host}/wday/cxs/${tenant}/${site}${path}`);
+            const html = detail.jobPostingInfo?.jobDescription || '';
+            const text = html
+              .replace(/<[^>]+>/g, ' ')
+              .replace(/&nbsp;/g, ' ')
+              .replace(/&amp;/g, '&')
+              .replace(/\s+/g, ' ')
+              .trim();
+            if (text.length >= 80) description = text.slice(0, 8000);
+          } catch {
+            // listing still useful without body
+          }
+
           jobs.push({
             title: (posting.title || 'Untitled').trim(),
             location: posting.locationsText?.trim() || 'Location not specified',
-            url: `${origin}/${site}${posting.externalPath}`,
+            url: `${origin}/${site}${path}`,
+            description,
           });
         }
 
