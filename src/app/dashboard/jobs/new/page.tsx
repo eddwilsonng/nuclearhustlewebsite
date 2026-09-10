@@ -1,19 +1,20 @@
 import { JobPostingForm } from "@/components/dashboard/JobPostingForm";
-import { DashboardPageHeader } from "@/components/dashboard/DashboardChrome";
+import { DashboardBody, DashboardPageHeader } from "@/components/dashboard/DashboardChrome";
 
 export const metadata = {
-  title: "Post a Job - Nuclear Hustle",
+  title: "New job - Nuclear Hustle",
 };
 
 export default function NewJobPage() {
   return (
-    <div className="max-w-3xl">
+    <>
       <DashboardPageHeader
-        eyebrow="Employer"
-        title="Post a job"
-        description="Live on the board as soon as you publish. Feature it if you want it pinned."
+        title="New job"
+        description="Live on the board as soon as you publish."
       />
-      <JobPostingForm mode="create" />
-    </div>
+      <DashboardBody width="form">
+        <JobPostingForm mode="create" />
+      </DashboardBody>
+    </>
   );
 }

@@ -2,32 +2,45 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 export function DashboardPageHeader({
-  eyebrow,
   title,
   description,
   action,
 }: {
-  eyebrow?: string;
   title: string;
   description?: ReactNode;
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        {eyebrow ? (
-          <p className="mb-2 font-mono text-xs uppercase tracking-widest text-secondary">
-            {eyebrow}
-          </p>
-        ) : null}
-        <h1 className="font-sans text-3xl font-bold leading-tight text-ink md:text-4xl">
-          {title}
-        </h1>
+    <header className="sticky top-0 z-10 flex min-h-12 items-center justify-between gap-4 border-b border-rule bg-canvas/95 px-5 backdrop-blur-sm">
+      <div className="min-w-0">
+        <h1 className="truncate font-sans text-sm font-semibold text-ink">{title}</h1>
         {description ? (
-          <div className="mt-2 font-sans text-sm text-secondary">{description}</div>
+          <p className="truncate font-sans text-sm text-secondary">{description}</p>
         ) : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
+    </header>
+  );
+}
+
+export function DashboardBody({
+  children,
+  width = "full",
+  className,
+}: {
+  children: ReactNode;
+  width?: "full" | "form";
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "px-5 py-5",
+        width === "form" && "max-w-3xl",
+        className,
+      )}
+    >
+      {children}
     </div>
   );
 }
@@ -40,7 +53,7 @@ export function DashboardCard({
   className?: string;
 }) {
   return (
-    <div className={cn("border border-rule bg-raised p-6", className)}>{children}</div>
+    <div className={cn("border border-rule bg-raised p-5", className)}>{children}</div>
   );
 }
 
@@ -54,12 +67,14 @@ export function DashboardEmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="border border-rule bg-raised px-6 py-12 text-center">
-      <p className="font-sans text-base font-semibold text-ink">{title}</p>
+    <div className="px-5 py-16 text-center">
+      <p className="font-sans text-sm font-semibold text-ink">{title}</p>
       {description ? (
-        <p className="mt-2 font-sans text-sm text-secondary">{description}</p>
+        <p className="mx-auto mt-2 max-w-md font-sans text-sm text-secondary">
+          {description}
+        </p>
       ) : null}
-      {action ? <div className="mt-6">{action}</div> : null}
+      {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );
 }

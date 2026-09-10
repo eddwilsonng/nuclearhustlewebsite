@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/Field";
 import {
   DashboardAlert,
-  DashboardCard,
+  DashboardBody,
   DashboardPageHeader,
   DashboardSectionLabel,
 } from "@/components/dashboard/DashboardChrome";
@@ -31,14 +31,9 @@ export function EmployerProfileForm({
   );
 
   return (
-    <div className="max-w-2xl">
-      <DashboardPageHeader
-        eyebrow="Employer"
-        title="Company profile"
-        description="Shown on your job listings."
-      />
-
-      <DashboardCard>
+    <>
+      <DashboardPageHeader title="Company" description="Shown on your job listings." />
+      <DashboardBody width="form">
         <form action={formAction} className="space-y-5">
           {state.error && <DashboardAlert tone="error">{state.error}</DashboardAlert>}
           {state.success && (
@@ -130,11 +125,11 @@ export function EmployerProfileForm({
             <FieldDescription>PNG, JPG, WEBP, or SVG. Max 2MB.</FieldDescription>
           </FieldGroup>
 
-          <Button type="submit" variant="primary" disabled={isPending}>
-            {isPending ? "Saving…" : "Save changes"}
+          <Button type="submit" variant="primary" size="compact" disabled={isPending}>
+            {isPending ? "Saving…" : "Save"}
           </Button>
         </form>
-      </DashboardCard>
-    </div>
+      </DashboardBody>
+    </>
   );
 }

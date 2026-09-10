@@ -1,20 +1,18 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
-import {
-  JobStatusToggle,
-  DeleteJobButton,
-  FeatureJobButton,
-  RenewJobButton,
-} from "./JobActions";
+import { JobRowMenu } from "./JobActions";
 import { FeaturedSuccessBanner } from "./FeaturedSuccessBanner";
 import { getApplicationCountsByJob } from "@/lib/data/applications";
 import { Badge } from "@/components/ui/Badge";
 import { LinkButton } from "@/components/ui/LinkButton";
 import {
+  DashboardBody,
   DashboardEmptyState,
   DashboardPageHeader,
 } from "@/components/dashboard/DashboardChrome";
+import { cn } from "@/lib/cn";
 import type { EmployerProfile, EmployerJob } from "@/lib/types";
 
 const EXPIRY_SOON_DAYS = 7;
@@ -29,16 +27,23 @@ function getExpiryState(expiresAt: string | null): {
   const days = Math.ceil(diffMs / (24 * 60 * 60 * 1000));
   if (days <= 0) return { label: "Expired", expired: true, soon: false };
   if (days <= EXPIRY_SOON_DAYS)
-    return { label: `Expires in ${days}d`, expired: false, soon: true };
+    return { label: `${days}d left`, expired: false, soon: true };
   return {
-    label: `Expires ${new Date(expiresAt).toLocaleDateString()}`,
+    label: new Date(expiresAt).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    }),
     expired: false,
     soon: false,
   };
 }
 
+const thClass =
+  "px-3 py-2 text-left font-mono text-xs font-medium uppercase tracking-widest text-secondary first:pl-5 last:pr-5";
+const tdClass = "px-3 py-2.5 align-middle first:pl-5 last:pr-5";
+
 export const metadata = {
-  title: "Manage Jobs - Nuclear Hustle",
+  title: "Jobs - Nuclear Hustle",
 };
 
 export default async function ManageJobsPage({
@@ -73,18 +78,18 @@ export default async function ManageJobsPage({
 
   if (!employerProfile) {
     return (
-      <div className="max-w-4xl">
-        <DashboardPageHeader eyebrow="Employer" title="Job postings" />
+      <>
+        <DashboardPageHeader title="Jobs" />
         <DashboardEmptyState
           title="No company profile yet"
           description="Finish company setup before posting jobs."
           action={
-            <LinkButton href="/dashboard/profile" variant="primary">
+            <LinkButton href="/dashboard/profile" variant="primary" size="compact">
               Company profile
             </LinkButton>
           }
         />
-      </div>
+      </>
     );
   }
 
@@ -100,115 +105,135 @@ export default async function ManageJobsPage({
   const applicationCounts = await getApplicationCountsByJob();
 
   return (
-    <div className="max-w-4xl">
-      {showFeaturedSuccess && <FeaturedSuccessBanner />}
+    <>
       <DashboardPageHeader
-        eyebrow="Employer"
-        title="Job postings"
+        title="Jobs"
+        description={
+          typedJobs.length > 0
+            ? `${typedJobs.length} posting${typedJobs.length === 1 ? "" : "s"}`
+            : undefined
+        }
         action={
-          <LinkButton href="/dashboard/jobs/new" variant="primary">
-            Post a job
+          <LinkButton href="/dashboard/jobs/new" variant="primary" size="compact">
+            New job
           </LinkButton>
         }
       />
 
+      {showFeaturedSuccess && (
+        <DashboardBody className="pb-0">
+          <FeaturedSuccessBanner />
+        </DashboardBody>
+      )}
+
       {typedJobs.length === 0 ? (
         <DashboardEmptyState
-          title="No jobs posted yet"
+          title="No jobs yet"
           description="Publish a listing to reach operators, engineers, and plant crews."
           action={
-            <LinkButton href="/dashboard/jobs/new" variant="primary">
-              Post your first job
+            <LinkButton href="/dashboard/jobs/new" variant="primary" size="compact">
+              New job
             </LinkButton>
           }
         />
       ) : (
-        <div className="border border-rule bg-raised divide-y divide-rule">
-          {typedJobs.map((job) => {
-            const appCount = applicationCounts[job.id];
-            const expiry = getExpiryState(job.expires_at);
-            return (
-              <div key={job.id} className="p-4 md:p-5">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-sans text-base font-semibold text-ink truncate">
-                        {job.title}
-                      </h2>
-                      <Badge tone={job.is_active ? "success" : "neutral"}>
-                        {job.is_active ? "Active" : "Inactive"}
-                      </Badge>
-                      {expiry && (
-                        <Badge
-                          tone={
-                            expiry.expired
-                              ? "danger"
-                              : expiry.soon
-                                ? "featured"
-                                : "neutral"
-                          }
-                        >
-                          {expiry.label}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="mt-1 font-sans text-sm text-secondary">{job.location}</p>
-                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs text-secondary">
-                      <span>Posted {new Date(job.created_at).toLocaleDateString()}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>{job.view_count} views</span>
-                      <span aria-hidden="true">·</span>
-                      <LinkButton
-                        href={`/dashboard/jobs/${job.id}/applications`}
-                        variant="quiet"
-                        size="compact"
-                        className="min-h-0 px-0"
-                      >
-                        {appCount?.total ?? 0} application
-                        {(appCount?.total ?? 0) === 1 ? "" : "s"}
-                        {appCount?.new ? ` · ${appCount.new} new` : ""}
-                      </LinkButton>
-                    </div>
-                  </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[40rem] border-b border-rule text-sm">
+            <thead className="border-b border-rule">
+              <tr>
+                <th className={thClass}>Role</th>
+                <th className={cn(thClass, "hidden sm:table-cell")}>Location</th>
+                <th className={thClass}>Status</th>
+                <th className={cn(thClass, "hidden md:table-cell")}>Expires</th>
+                <th className={cn(thClass, "hidden lg:table-cell text-right")}>Views</th>
+                <th className={cn(thClass, "text-right")}>Apps</th>
+                <th className={thClass}>
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {typedJobs.map((job) => {
+                const appCount = applicationCounts[job.id];
+                const expiry = getExpiryState(job.expires_at);
+                const featuredLive =
+                  job.is_featured &&
+                  job.featured_until &&
+                  new Date(job.featured_until) > new Date();
 
-                  <div className="flex flex-wrap items-center gap-1">
-                    {expiry?.expired && <RenewJobButton jobId={job.id} />}
-                    <FeatureJobButton
-                      jobId={job.id}
-                      isFeatured={job.is_featured}
-                      featuredUntil={job.featured_until}
-                    />
-                    <JobStatusToggle jobId={job.id} isActive={job.is_active} />
-                    <LinkButton
-                      href={`/dashboard/jobs/${job.id}/applications`}
-                      variant="quiet"
-                      size="compact"
+                return (
+                  <tr key={job.id} className="border-b border-rule last:border-0 hover:bg-surface">
+                    <td className={tdClass}>
+                      <Link
+                        href={`/dashboard/jobs/${job.id}/edit`}
+                        className="font-medium text-ink hover:underline"
+                      >
+                        {job.title}
+                      </Link>
+                    </td>
+                    <td className={cn(tdClass, "hidden text-secondary sm:table-cell")}>
+                      {job.location}
+                    </td>
+                    <td className={tdClass}>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Badge tone={job.is_active ? "success" : "neutral"}>
+                          {job.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                        {featuredLive ? <Badge tone="featured">Featured</Badge> : null}
+                      </div>
+                    </td>
+                    <td
+                      className={cn(
+                        tdClass,
+                        "hidden font-mono text-xs md:table-cell",
+                        expiry?.expired
+                          ? "text-danger"
+                          : expiry?.soon
+                            ? "text-ink"
+                            : "text-secondary",
+                      )}
                     >
-                      Applicants
-                    </LinkButton>
-                    <LinkButton
-                      href={`/dashboard/jobs/${job.id}/edit`}
-                      variant="quiet"
-                      size="compact"
-                    >
-                      Edit
-                    </LinkButton>
-                    <LinkButton
-                      href={`/job/${job.slug}`}
-                      target="_blank"
-                      variant="quiet"
-                      size="compact"
-                    >
-                      View
-                    </LinkButton>
-                    <DeleteJobButton jobId={job.id} />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                      {expiry?.label ?? "—"}
+                    </td>
+                    <td className={cn(tdClass, "hidden text-right font-mono text-xs text-secondary lg:table-cell")}>
+                      {job.view_count}
+                    </td>
+                    <td className={cn(tdClass, "text-right font-mono text-xs")}>
+                      <Link
+                        href={`/dashboard/jobs/${job.id}/applications`}
+                        className="text-secondary hover:text-ink hover:underline"
+                      >
+                        {appCount?.total ?? 0}
+                        {appCount?.new ? (
+                          <span className="text-ink"> · {appCount.new}</span>
+                        ) : null}
+                      </Link>
+                    </td>
+                    <td className={tdClass}>
+                      <div className="flex items-center justify-end gap-1">
+                        <Link
+                          href={`/dashboard/jobs/${job.id}/edit`}
+                          className="inline-flex min-h-9 items-center px-2 text-sm text-secondary hover:text-ink"
+                        >
+                          Edit
+                        </Link>
+                        <JobRowMenu
+                          jobId={job.id}
+                          slug={job.slug}
+                          isActive={job.is_active}
+                          isFeatured={job.is_featured}
+                          featuredUntil={job.featured_until}
+                          expired={!!expiry?.expired}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
-    </div>
+    </>
   );
 }

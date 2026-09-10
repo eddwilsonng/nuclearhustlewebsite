@@ -2,11 +2,11 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { JobPostingForm } from "@/components/dashboard/JobPostingForm";
 import { LinkButton } from "@/components/ui/LinkButton";
-import { DashboardPageHeader } from "@/components/dashboard/DashboardChrome";
+import { DashboardBody, DashboardPageHeader } from "@/components/dashboard/DashboardChrome";
 import type { EmployerJob } from "@/lib/types";
 
 export const metadata = {
-  title: "Edit Job - Nuclear Hustle",
+  title: "Edit job - Nuclear Hustle",
 };
 
 export default async function EditJobPage({
@@ -48,17 +48,19 @@ export default async function EditJobPage({
   const typedJob = job as EmployerJob;
 
   return (
-    <div className="max-w-3xl">
+    <>
       <DashboardPageHeader
-        eyebrow="Employer"
-        title="Edit job"
+        title={typedJob.title}
+        description="Edit posting"
         action={
           <LinkButton href="/dashboard/jobs" variant="quiet" size="compact">
-            Back to jobs
+            Back
           </LinkButton>
         }
       />
-      <JobPostingForm job={typedJob} mode="edit" />
-    </div>
+      <DashboardBody width="form">
+        <JobPostingForm job={typedJob} mode="edit" />
+      </DashboardBody>
+    </>
   );
 }

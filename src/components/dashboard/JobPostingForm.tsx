@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/Field";
 import {
   DashboardAlert,
-  DashboardCard,
   DashboardSectionLabel,
 } from "@/components/dashboard/DashboardChrome";
 import { cn } from "@/lib/cn";
@@ -75,7 +74,7 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
   }, [state.error]);
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={formAction} className="space-y-8">
       {job && <input type="hidden" name="jobId" value={job.id} />}
       <input type="hidden" name="applicationType" value={applicationType} />
 
@@ -89,7 +88,7 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
         <DashboardAlert tone="success">Job posting updated.</DashboardAlert>
       )}
 
-      <DashboardCard className="space-y-5">
+      <section className="space-y-5">
         <DashboardSectionLabel>Role</DashboardSectionLabel>
 
         <FieldGroup>
@@ -152,9 +151,9 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             ))}
           </Select>
         </FieldGroup>
-      </DashboardCard>
+      </section>
 
-      <DashboardCard className="space-y-5">
+      <section className="space-y-5">
         <div>
           <DashboardSectionLabel>Description</DashboardSectionLabel>
           <FieldDescription className="mt-2">
@@ -220,9 +219,9 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             />
           </FieldGroup>
         ))}
-      </DashboardCard>
+      </section>
 
-      <DashboardCard className="space-y-5">
+      <section className="space-y-5">
         <DashboardSectionLabel>How to apply</DashboardSectionLabel>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -292,10 +291,10 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             </FieldDescription>
           </FieldGroup>
         )}
-      </DashboardCard>
+      </section>
 
       {mode === "create" && (
-        <DashboardCard>
+        <section className="border-t border-rule pt-8">
           <input type="hidden" name="feature" value={feature ? "on" : ""} />
           <button
             type="button"
@@ -326,11 +325,11 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
               </span>
             </span>
           </button>
-        </DashboardCard>
+        </section>
       )}
 
       <div className="flex justify-end">
-        <Button type="submit" variant="primary" disabled={isPending}>
+        <Button type="submit" variant="primary" size="compact" disabled={isPending}>
           {isPending
             ? mode === "create"
               ? feature

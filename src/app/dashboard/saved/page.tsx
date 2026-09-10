@@ -6,12 +6,13 @@ import { toJobListItem } from "@/lib/data/static";
 import { JobCard } from "@/components/JobCard";
 import { LinkButton } from "@/components/ui/LinkButton";
 import {
+  DashboardBody,
   DashboardEmptyState,
   DashboardPageHeader,
 } from "@/components/dashboard/DashboardChrome";
 
 export const metadata = {
-  title: "Saved Jobs - Nuclear Hustle",
+  title: "Saved jobs - Nuclear Hustle",
 };
 
 export default async function SavedJobsPage() {
@@ -48,11 +49,10 @@ export default async function SavedJobsPage() {
   ).filter((job) => job !== null);
 
   return (
-    <div className="max-w-4xl">
+    <>
       <DashboardPageHeader
-        eyebrow="Job seeker"
-        title="Saved jobs"
-        description={jobs.length > 0 ? `${jobs.length} saved` : undefined}
+        title="Saved"
+        description={jobs.length > 0 ? `${jobs.length}` : undefined}
       />
 
       {jobs.length === 0 ? (
@@ -60,18 +60,20 @@ export default async function SavedJobsPage() {
           title="Nothing saved yet"
           description="Bookmark a listing from the board and it will show up here."
           action={
-            <LinkButton href="/jobs" variant="primary">
+            <LinkButton href="/jobs" variant="primary" size="compact">
               Browse jobs
             </LinkButton>
           }
         />
       ) : (
-        <div className="overflow-hidden border border-rule">
-          {jobs.map((job) => (
-            <JobCard key={job.id} job={job} isAuthenticated initialSaved />
-          ))}
-        </div>
+        <DashboardBody className="px-0 py-0">
+          <div className="border-b border-rule">
+            {jobs.map((job) => (
+              <JobCard key={job.id} job={job} isAuthenticated initialSaved />
+            ))}
+          </div>
+        </DashboardBody>
       )}
-    </div>
+    </>
   );
 }

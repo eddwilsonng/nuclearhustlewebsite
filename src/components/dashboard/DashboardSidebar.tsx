@@ -11,6 +11,7 @@ import type { AdminViewRole } from "@/lib/admin";
 
 interface DashboardSidebarProps {
   profile: Profile;
+  workspaceName?: string;
   isAdmin?: boolean;
   viewRole?: AdminViewRole;
 }
@@ -20,6 +21,14 @@ type NavLink = { href: string; label: string; exact?: boolean };
 function isActivePath(pathname: string, path: string, exact?: boolean) {
   return exact ? pathname === path : pathname === path || pathname.startsWith(`${path}/`);
 }
+
+const navItemClass = (active: boolean) =>
+  cn(
+    "flex min-h-9 items-center px-2 font-sans text-sm transition-colors duration-150",
+    active
+      ? "bg-canvas font-medium text-ink"
+      : "text-secondary hover:bg-canvas/70 hover:text-ink",
+  );
 
 function NavLinks({
   links,
@@ -40,12 +49,7 @@ function NavLinks({
             href={link.href}
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
-            className={cn(
-              "flex min-h-11 items-center border-l-2 pl-3 font-sans text-sm transition-colors duration-150",
-              active
-                ? "border-signal bg-surface font-semibold text-ink"
-                : "border-transparent text-secondary hover:bg-surface hover:text-ink",
-            )}
+            className={navItemClass(active)}
           >
             {link.label}
           </Link>
@@ -57,6 +61,7 @@ function NavLinks({
 
 function SidebarBody({
   profile,
+  workspaceName,
   isAdmin,
   viewRole,
   pathname,
@@ -64,51 +69,52 @@ function SidebarBody({
 }: DashboardSidebarProps & { pathname: string; onNavigate?: () => void }) {
   const jobSeekerLinks: NavLink[] = [
     { href: "/dashboard", label: "Overview", exact: true },
-    { href: "/dashboard/profile", label: "My Profile" },
-    { href: "/dashboard/saved", label: "Saved Jobs" },
+    { href: "/dashboard/profile", label: "Profile" },
+    { href: "/dashboard/saved", label: "Saved" },
   ];
 
   const employerLinks: NavLink[] = [
     { href: "/dashboard", label: "Overview", exact: true },
-    { href: "/dashboard/profile", label: "Company Profile" },
-    { href: "/dashboard/jobs", label: "Job Postings" },
-    { href: "/dashboard/jobs/new", label: "Post a Job" },
+    { href: "/dashboard/profile", label: "Company" },
+    { href: "/dashboard/jobs", label: "Jobs" },
+    { href: "/dashboard/jobs/new", label: "New job" },
   ];
 
   const adminLinks: NavLink[] = [
     { href: "/dashboard/admin", label: "Operations", exact: true },
-    { href: "/dashboard/admin/review", label: "Content Review" },
+    { href: "/dashboard/admin/review", label: "Review" },
     { href: "/dashboard/admin/scrape", label: "Scraper" },
-    { href: "/dashboard/admin/jobs", label: "Manage Jobs" },
-    { href: "/dashboard/admin/email", label: "Email Health" },
-    { href: "/dashboard/admin/linkedin", label: "Weekly Picks" },
+    { href: "/dashboard/admin/jobs", label: "All jobs" },
+    { href: "/dashboard/admin/email", label: "Email" },
+    { href: "/dashboard/admin/linkedin", label: "Weekly picks" },
   ];
 
   const effectiveRole = isAdmin ? (viewRole ?? profile.role) : profile.role;
   const links = effectiveRole === "employer" ? employerLinks : jobSeekerLinks;
+  const workspace =
+    workspaceName ||
+    (effectiveRole === "employer" ? "Employer" : profile.full_name.split(" ")[0]);
 
   return (
-    <div className="flex h-full w-full flex-col p-6">
+    <div className="flex h-full w-full flex-col px-3 py-4">
       <Link
         href="/"
         onClick={onNavigate}
-        className="inline-flex min-h-11 items-center font-sans text-base font-bold tracking-tight text-ink"
+        className="px-2 font-sans text-sm font-semibold tracking-tight text-ink"
       >
         Nuclear Hustle
       </Link>
-      <p className="mt-1 font-mono text-xs uppercase tracking-widest text-secondary">
-        {effectiveRole === "employer" ? "Employer" : "Job seeker"}
-      </p>
+      <p className="mt-0.5 truncate px-2 font-sans text-sm text-secondary">{workspace}</p>
 
       {isAdmin && (
-        <div className="mt-6 flex gap-1 border border-control p-1">
+        <div className="mt-4 flex border border-rule">
           <button
             type="button"
             onClick={() => setAdminViewRole("employer", pathname)}
             className={cn(
-              "min-h-11 flex-1 font-sans text-sm transition-colors duration-150",
+              "min-h-9 flex-1 font-sans text-sm",
               effectiveRole === "employer"
-                ? "bg-signal font-semibold text-ink"
+                ? "bg-canvas font-medium text-ink"
                 : "text-secondary hover:text-ink",
             )}
           >
@@ -118,46 +124,39 @@ function SidebarBody({
             type="button"
             onClick={() => setAdminViewRole("job_seeker", pathname)}
             className={cn(
-              "min-h-11 flex-1 font-sans text-sm transition-colors duration-150",
+              "min-h-9 flex-1 font-sans text-sm",
               effectiveRole === "job_seeker"
-                ? "bg-signal font-semibold text-ink"
+                ? "bg-canvas font-medium text-ink"
                 : "text-secondary hover:text-ink",
             )}
           >
-            Job seeker
+            Seeker
           </button>
         </div>
       )}
 
-      <nav className="mt-6 space-y-1" aria-label="Account">
+      <nav className="mt-5 flex flex-col gap-0.5" aria-label="Account">
         <NavLinks links={links} pathname={pathname} onNavigate={onNavigate} />
       </nav>
 
       {isAdmin && (
         <>
-          <div className="my-6 border-t border-rule" />
-          <p className="mb-3 font-mono text-xs uppercase tracking-widest text-secondary">
-            Operations
+          <div className="my-4 border-t border-rule" />
+          <p className="mb-1 px-2 font-mono text-xs uppercase tracking-widest text-secondary">
+            Ops
           </p>
-          <nav className="space-y-1" aria-label="Operations">
+          <nav className="flex flex-col gap-0.5" aria-label="Operations">
             <NavLinks links={adminLinks} pathname={pathname} onNavigate={onNavigate} />
           </nav>
         </>
       )}
 
-      <div className="mt-auto space-y-1 border-t border-rule pt-6">
-        <Link
-          href="/jobs"
-          onClick={onNavigate}
-          className="flex min-h-11 items-center border-l-2 border-transparent pl-3 font-sans text-sm text-secondary hover:bg-surface hover:text-ink"
-        >
-          Browse jobs
+      <div className="mt-auto flex flex-col gap-0.5 border-t border-rule pt-3">
+        <Link href="/jobs" onClick={onNavigate} className={navItemClass(false)}>
+          Browse board
         </Link>
         <form action={signOut}>
-          <button
-            type="submit"
-            className="flex min-h-11 w-full items-center border-l-2 border-transparent pl-3 text-left font-sans text-sm text-danger hover:bg-surface"
-          >
+          <button type="submit" className={cn(navItemClass(false), "w-full text-left")}>
             Sign out
           </button>
         </form>
@@ -166,17 +165,22 @@ function SidebarBody({
   );
 }
 
-export function DashboardSidebar({ profile, isAdmin, viewRole }: DashboardSidebarProps) {
+export function DashboardSidebar({
+  profile,
+  workspaceName,
+  isAdmin,
+  viewRole,
+}: DashboardSidebarProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
 
   return (
     <>
-      <div className="flex items-center justify-between border-b border-rule bg-raised px-4 py-3 md:hidden">
+      <div className="flex items-center justify-between border-b border-rule bg-surface px-4 md:hidden">
         <Link
           href="/"
-          className="inline-flex min-h-11 items-center font-sans text-sm font-bold tracking-tight text-ink"
+          className="inline-flex min-h-11 items-center font-sans text-sm font-semibold tracking-tight text-ink"
         >
           Nuclear Hustle
         </Link>
@@ -189,11 +193,9 @@ export function DashboardSidebar({ profile, isAdmin, viewRole }: DashboardSideba
           </Dialog.Trigger>
           <Dialog.Portal>
             <Dialog.Backdrop className="fixed inset-0 z-50 bg-ink/45 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0 md:hidden" />
-            <Dialog.Popup className="fixed inset-y-0 left-0 z-50 flex w-[min(20rem,100%)] flex-col border-r border-rule bg-raised text-ink outline-none transition-[transform] duration-180 data-ending-style:-translate-x-4 data-ending-style:opacity-0 data-starting-style:-translate-x-4 data-starting-style:opacity-0 md:hidden">
-              <div className="flex items-center justify-between border-b border-rule px-6 py-3">
-                <Dialog.Title className="font-sans text-sm font-semibold">
-                  Account
-                </Dialog.Title>
+            <Dialog.Popup className="fixed inset-y-0 left-0 z-50 flex w-[min(18rem,100%)] flex-col border-r border-rule bg-surface text-ink outline-none transition-[transform] duration-180 data-ending-style:-translate-x-4 data-ending-style:opacity-0 data-starting-style:-translate-x-4 data-starting-style:opacity-0 md:hidden">
+              <div className="flex items-center justify-between border-b border-rule px-3 py-2">
+                <Dialog.Title className="font-sans text-sm font-semibold">Menu</Dialog.Title>
                 <Dialog.Close
                   aria-label="Close account menu"
                   className="inline-flex min-h-11 items-center px-2 font-sans text-sm text-secondary hover:text-ink"
@@ -204,6 +206,7 @@ export function DashboardSidebar({ profile, isAdmin, viewRole }: DashboardSideba
               <div className="flex-1 overflow-y-auto">
                 <SidebarBody
                   profile={profile}
+                  workspaceName={workspaceName}
                   isAdmin={isAdmin}
                   viewRole={viewRole}
                   pathname={pathname}
@@ -215,9 +218,10 @@ export function DashboardSidebar({ profile, isAdmin, viewRole }: DashboardSideba
         </Dialog.Root>
       </div>
 
-      <aside className="hidden w-60 shrink-0 border-r border-rule bg-raised md:flex md:min-h-screen md:flex-col">
+      <aside className="hidden w-52 shrink-0 border-r border-rule bg-surface md:flex md:h-dvh md:flex-col">
         <SidebarBody
           profile={profile}
+          workspaceName={workspaceName}
           isAdmin={isAdmin}
           viewRole={viewRole}
           pathname={pathname}

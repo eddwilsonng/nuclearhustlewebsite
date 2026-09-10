@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/Field";
 import {
   DashboardAlert,
-  DashboardCard,
+  DashboardBody,
   DashboardPageHeader,
   DashboardSectionLabel,
 } from "@/components/dashboard/DashboardChrome";
@@ -37,14 +37,9 @@ export function JobSeekerProfileForm({
   );
 
   return (
-    <div className="max-w-2xl">
-      <DashboardPageHeader
-        eyebrow="Job seeker"
-        title="My profile"
-        description="Keep this current so employers and alerts stay useful."
-      />
-
-      <DashboardCard className="mb-6">
+    <>
+      <DashboardPageHeader title="Profile" />
+      <DashboardBody width="form">
         <form action={formAction} className="space-y-5">
           <DashboardSectionLabel>Personal</DashboardSectionLabel>
 
@@ -116,14 +111,14 @@ export function JobSeekerProfileForm({
               Looking status
             </span>
             <input type="hidden" name="isActivelyLooking" value={String(isActivelyLooking)} />
-            <div className="flex gap-1 border border-control p-1">
+            <div className="flex border border-control">
               <button
                 type="button"
                 onClick={() => setIsActivelyLooking(true)}
                 className={cn(
                   "min-h-11 flex-1 font-sans text-sm transition-colors duration-150",
                   isActivelyLooking
-                    ? "bg-signal font-semibold text-ink"
+                    ? "bg-canvas font-medium text-ink"
                     : "text-secondary hover:text-ink",
                 )}
               >
@@ -135,7 +130,7 @@ export function JobSeekerProfileForm({
                 className={cn(
                   "min-h-11 flex-1 font-sans text-sm transition-colors duration-150",
                   !isActivelyLooking
-                    ? "bg-signal font-semibold text-ink"
+                    ? "bg-canvas font-medium text-ink"
                     : "text-secondary hover:text-ink",
                 )}
               >
@@ -144,21 +139,21 @@ export function JobSeekerProfileForm({
             </div>
           </FieldGroup>
 
-          <Button type="submit" variant="primary" disabled={isPending}>
-            {isPending ? "Saving…" : "Save changes"}
+          <Button type="submit" variant="primary" size="compact" disabled={isPending}>
+            {isPending ? "Saving…" : "Save"}
           </Button>
         </form>
-      </DashboardCard>
 
-      <DashboardCard>
-        <DashboardSectionLabel>Resume</DashboardSectionLabel>
-        <div className="mt-4">
-          <ResumeUpload
-            hasResume={!!jobSeekerProfile?.resume_url}
-            currentFilename={jobSeekerProfile?.resume_filename || null}
-          />
+        <div className="mt-10 border-t border-rule pt-8">
+          <DashboardSectionLabel>Resume</DashboardSectionLabel>
+          <div className="mt-4">
+            <ResumeUpload
+              hasResume={!!jobSeekerProfile?.resume_url}
+              currentFilename={jobSeekerProfile?.resume_filename || null}
+            />
+          </div>
         </div>
-      </DashboardCard>
-    </div>
+      </DashboardBody>
+    </>
   );
 }
