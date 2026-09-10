@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { FEATURED_DURATION_DAYS } from '@/lib/stripe/featured';
 
 function getStripe() {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing metadata' }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const featuredUntil = new Date();
     featuredUntil.setDate(featuredUntil.getDate() + FEATURED_DURATION_DAYS);

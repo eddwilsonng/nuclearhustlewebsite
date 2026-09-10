@@ -6,7 +6,16 @@ export const metadata = {
   description: "Create your employer account on Nuclear Hustle",
 };
 
-export default function EmployerSignupPage() {
+export default async function EmployerSignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ redirect?: string }>;
+}) {
+  const { redirect } = await searchParams;
+  const loginHref = redirect
+    ? `/login?redirect=${encodeURIComponent(redirect)}`
+    : "/login";
+
   return (
     <div className="w-full max-w-lg">
       <p className="mb-2 font-mono text-xs uppercase tracking-widest text-secondary">
@@ -19,7 +28,7 @@ export default function EmployerSignupPage() {
         Reach qualified nuclear industry professionals
       </p>
 
-      <EmployerSignupForm />
+      <EmployerSignupForm redirect={redirect} />
 
       <div className="mt-8 space-y-2 border-t border-rule pt-6">
         <p className="font-sans text-sm text-secondary">
@@ -30,7 +39,7 @@ export default function EmployerSignupPage() {
         </p>
         <p className="font-sans text-sm text-secondary">
           Have an account?{" "}
-          <Link href="/login" className="font-semibold text-ink underline underline-offset-2">
+          <Link href={loginHref} className="font-semibold text-ink underline underline-offset-2">
             Log in →
           </Link>
         </p>

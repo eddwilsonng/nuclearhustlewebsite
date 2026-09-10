@@ -1,8 +1,22 @@
-'use client';
+"use client";
 
-import { useActionState } from 'react';
-import { updateEmployerProfile, type ActionState } from '@/lib/auth/actions';
-import type { Profile, EmployerProfile } from '@/lib/types';
+import { useActionState } from "react";
+import { updateEmployerProfile, type ActionState } from "@/lib/auth/actions";
+import { Button } from "@/components/ui/Button";
+import {
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  Input,
+  Textarea,
+} from "@/components/ui/Field";
+import {
+  DashboardAlert,
+  DashboardCard,
+  DashboardPageHeader,
+  DashboardSectionLabel,
+} from "@/components/dashboard/DashboardChrome";
+import type { Profile, EmployerProfile } from "@/lib/types";
 
 export function EmployerProfileForm({
   profile,
@@ -13,133 +27,114 @@ export function EmployerProfileForm({
 }) {
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     updateEmployerProfile,
-    {}
+    {},
   );
 
   return (
     <div className="max-w-2xl">
-      <h1 className="font-mono text-3xl md:text-4xl font-bold text-stone-900 leading-tight mb-6">Company Profile</h1>
+      <DashboardPageHeader
+        eyebrow="Employer"
+        title="Company profile"
+        description="Shown on your job listings."
+      />
 
-      <div className="bg-[#EDE8DF] rounded-lg border border-[#CFC8BC] p-6">
-        {state.error && (
-          <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-            {state.error}
-          </div>
-        )}
+      <DashboardCard>
+        <form action={formAction} className="space-y-5">
+          {state.error && <DashboardAlert tone="error">{state.error}</DashboardAlert>}
+          {state.success && (
+            <DashboardAlert tone="success">Profile updated.</DashboardAlert>
+          )}
 
-        {state.success && (
-          <div className="mb-4 p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
-            Profile updated successfully!
-          </div>
-        )}
-
-        <form action={formAction} className="space-y-4">
-          <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-stone-900 mb-1">
-              Your Name
-            </label>
-            <input
+          <FieldGroup>
+            <FieldLabel htmlFor="fullName">Your name</FieldLabel>
+            <Input
               id="fullName"
               name="fullName"
               type="text"
               required
               defaultValue={profile.full_name}
-              className="w-full px-3 py-2 border border-[#CFC8BC] rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
             />
-          </div>
+          </FieldGroup>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-stone-900 mb-1">
-              Email
-            </label>
-            <input
+          <FieldGroup>
+            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <Input
               id="email"
               name="email"
               type="email"
               disabled
               value={profile.email}
-              className="w-full px-3 py-2 border border-[#CFC8BC] rounded-md bg-[#E5DFD5] text-stone-500"
             />
-            <p className="mt-1 text-xs text-stone-500">Email cannot be changed</p>
+            <FieldDescription>Email cannot be changed.</FieldDescription>
+          </FieldGroup>
+
+          <div className="border-t border-rule pt-5">
+            <DashboardSectionLabel>Company</DashboardSectionLabel>
           </div>
 
-          <hr className="my-6" />
-
-          <div>
-            <label htmlFor="companyName" className="block text-sm font-medium text-stone-900 mb-1">
-              Company Name
-            </label>
-            <input
+          <FieldGroup>
+            <FieldLabel htmlFor="companyName">Company name</FieldLabel>
+            <Input
               id="companyName"
               name="companyName"
               type="text"
               required
-              defaultValue={employerProfile?.company_name || ''}
-              className="w-full px-3 py-2 border border-[#CFC8BC] rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+              defaultValue={employerProfile?.company_name || ""}
             />
-          </div>
+          </FieldGroup>
 
-          <div>
-            <label htmlFor="companyWebsite" className="block text-sm font-medium text-stone-900 mb-1">
-              Company Website
-            </label>
-            <input
+          <FieldGroup>
+            <FieldLabel htmlFor="companyWebsite">
+              Website <span className="font-normal text-secondary">(optional)</span>
+            </FieldLabel>
+            <Input
               id="companyWebsite"
               name="companyWebsite"
               type="url"
-              defaultValue={employerProfile?.company_website || ''}
-              className="w-full px-3 py-2 border border-[#CFC8BC] rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+              defaultValue={employerProfile?.company_website || ""}
               placeholder="https://company.com"
             />
-          </div>
+          </FieldGroup>
 
-          <div>
-            <label htmlFor="companyDescription" className="block text-sm font-medium text-stone-900 mb-1">
-              Company Description
-            </label>
-            <textarea
+          <FieldGroup>
+            <FieldLabel htmlFor="companyDescription">
+              Description <span className="font-normal text-secondary">(optional)</span>
+            </FieldLabel>
+            <Textarea
               id="companyDescription"
               name="companyDescription"
               rows={4}
-              defaultValue={employerProfile?.company_description || ''}
-              className="w-full px-3 py-2 border border-[#CFC8BC] rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-              placeholder="Tell job seekers about your company..."
+              defaultValue={employerProfile?.company_description || ""}
+              placeholder="Tell job seekers about the plant, fleet, or contractor work."
             />
-          </div>
+          </FieldGroup>
 
-          <div>
-            <label htmlFor="companyLogo" className="block text-sm font-medium text-stone-900 mb-1">
-              Company Logo
-            </label>
+          <FieldGroup>
+            <FieldLabel htmlFor="companyLogo">
+              Logo <span className="font-normal text-secondary">(optional)</span>
+            </FieldLabel>
             {employerProfile?.company_logo_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={employerProfile.company_logo_url}
                 alt="Current company logo"
-                className="h-14 w-14 object-contain border border-[#CFC8BC] bg-white mb-2"
+                className="mb-2 h-14 w-14 border border-rule bg-raised object-contain"
               />
             )}
-            <input
+            <Input
               id="companyLogo"
               name="companyLogo"
               type="file"
               accept="image/png,image/jpeg,image/webp,image/svg+xml"
-              className="w-full text-sm text-stone-900 file:mr-3 file:py-2 file:px-3 file:border file:border-[#CFC8BC] file:bg-[#E5DFD5] file:text-stone-900 file:font-medium hover:file:bg-[#CFC8BC]"
             />
-            <p className="mt-1 text-xs text-stone-500">
-              PNG, JPG, WEBP, or SVG. Max 2MB. Shown on your job listings.
-            </p>
-          </div>
+            <FieldDescription>PNG, JPG, WEBP, or SVG. Max 2MB.</FieldDescription>
+          </FieldGroup>
 
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full py-2 px-4 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-stone-900 font-semibold rounded-md transition-colors"
-          >
-            {isPending ? 'Saving...' : 'Save Changes'}
-          </button>
+          <Button type="submit" variant="primary" disabled={isPending}>
+            {isPending ? "Saving…" : "Save changes"}
+          </Button>
         </form>
-      </div>
+      </DashboardCard>
     </div>
   );
 }

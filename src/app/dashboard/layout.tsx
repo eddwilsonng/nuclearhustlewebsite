@@ -44,13 +44,13 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex flex-col md:flex-row min-w-0">
+    <div className="flex min-h-screen flex-col md:flex-row min-w-0">
       <DashboardSidebar
         profile={profile as Profile}
         isAdmin={adminUser}
         viewRole={viewRole}
       />
-      <div className="flex-1 min-w-0 p-4 md:p-8 bg-[#E5DFD5] min-h-[calc(100vh-3.5rem)]">
+      <div className="min-w-0 flex-1 bg-canvas p-4 md:p-8">
         {children}
       </div>
     </div>

@@ -1,28 +1,30 @@
-'use client';
+"use client";
 
-import { useTransition, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toggleJobStatus, deleteJobPosting, renewJob } from '@/lib/auth/actions';
+import { useTransition, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toggleJobStatus, deleteJobPosting, renewJob } from "@/lib/auth/actions";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Modal } from "@/components/ui/Dialog";
 
 export function RenewJobButton({ jobId }: { jobId: string }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  const handleRenew = () => {
-    startTransition(async () => {
-      await renewJob(jobId);
-      router.refresh();
-    });
-  };
-
   return (
-    <button
-      onClick={handleRenew}
+    <Button
+      variant="primary"
+      size="compact"
       disabled={isPending}
-      className="px-3 py-1.5 text-xs font-mono tracking-widest uppercase text-stone-900 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 border border-yellow-400 transition-colors font-bold"
+      onClick={() => {
+        startTransition(async () => {
+          await renewJob(jobId);
+          router.refresh();
+        });
+      }}
     >
-      {isPending ? '…' : 'Renew 60d'}
-    </button>
+      {isPending ? "Renewing…" : "Renew 60 days"}
+    </Button>
   );
 }
 
@@ -30,47 +32,49 @@ export function JobStatusToggle({ jobId, isActive }: { jobId: string; isActive: 
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  const handleToggle = () => {
-    startTransition(async () => {
-      await toggleJobStatus(jobId, !isActive);
-      router.refresh();
-    });
-  };
-
   return (
-    <button
-      onClick={handleToggle}
+    <Button
+      variant="quiet"
+      size="compact"
       disabled={isPending}
-      className={`px-3 py-1.5 text-sm transition-colors ${
-        isActive
-          ? 'text-orange-700 hover:bg-orange-50'
-          : 'text-green-700 hover:bg-green-50'
-      }`}
+      onClick={() => {
+        startTransition(async () => {
+          await toggleJobStatus(jobId, !isActive);
+          router.refresh();
+        });
+      }}
     >
-      {isPending ? '...' : isActive ? 'Deactivate' : 'Activate'}
-    </button>
+      {isPending ? "…" : isActive ? "Deactivate" : "Activate"}
+    </Button>
   );
 }
 
-export function FeatureJobButton({ jobId, isFeatured, featuredUntil }: {
+export function FeatureJobButton({
+  jobId,
+  isFeatured,
+  featuredUntil,
+}: {
   jobId: string;
   isFeatured: boolean;
   featuredUntil: string | null;
 }) {
   const [isLoading, setIsLoading] = useState(false);
-  const isCurrentlyFeatured = isFeatured && featuredUntil && new Date(featuredUntil) > new Date();
+  const isCurrentlyFeatured =
+    isFeatured && featuredUntil && new Date(featuredUntil) > new Date();
 
   const handleFeature = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jobId }),
       });
       const data = await response.json();
       if (data.url) {
         window.location.href = data.url;
+      } else {
+        setIsLoading(false);
       }
     } catch {
       setIsLoading(false);
@@ -79,45 +83,54 @@ export function FeatureJobButton({ jobId, isFeatured, featuredUntil }: {
 
   if (isCurrentlyFeatured && featuredUntil) {
     return (
-      <span className="px-3 py-1.5 text-xs font-mono tracking-widest uppercase border border-yellow-400 text-stone-900 bg-yellow-50">
-        ★ Featured until {new Date(featuredUntil).toLocaleDateString()}
-      </span>
+      <Badge tone="featured">
+        Featured until {new Date(featuredUntil).toLocaleDateString()}
+      </Badge>
     );
   }
 
   return (
-    <button
-      onClick={handleFeature}
-      disabled={isLoading}
-      className="px-3 py-1.5 text-xs font-mono tracking-widest uppercase text-stone-900 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 border border-yellow-400 transition-colors font-bold"
-    >
-      {isLoading ? '…' : '★ Feature — $99'}
-    </button>
+    <Button variant="primary" size="compact" disabled={isLoading} onClick={handleFeature}>
+      {isLoading ? "…" : "Feature — $99"}
+    </Button>
   );
 }
 
 export function DeleteJobButton({ jobId }: { jobId: string }) {
+  const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  const handleDelete = () => {
-    if (!confirm('Are you sure you want to delete this job posting? This action cannot be undone.')) {
-      return;
-    }
-
-    startTransition(async () => {
-      await deleteJobPosting(jobId);
-      router.refresh();
-    });
-  };
-
   return (
-    <button
-      onClick={handleDelete}
-      disabled={isPending}
-      className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-    >
-      {isPending ? '...' : 'Delete'}
-    </button>
+    <>
+      <Button variant="quiet" size="compact" className="text-danger hover:text-danger" onClick={() => setOpen(true)}>
+        Delete
+      </Button>
+      <Modal
+        open={open}
+        onOpenChange={setOpen}
+        title="Delete this posting?"
+        description="This cannot be undone. The listing will be removed from the board."
+      >
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            disabled={isPending}
+            onClick={() => {
+              startTransition(async () => {
+                await deleteJobPosting(jobId);
+                setOpen(false);
+                router.refresh();
+              });
+            }}
+          >
+            {isPending ? "Deleting…" : "Delete posting"}
+          </Button>
+        </div>
+      </Modal>
+    </>
   );
 }

@@ -1,9 +1,21 @@
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
-import { JobStatusToggle, DeleteJobButton, FeatureJobButton, RenewJobButton } from './JobActions';
-import { FeaturedSuccessBanner } from './FeaturedSuccessBanner';
-import { getApplicationCountsByJob } from '@/lib/data/applications';
-import type { EmployerProfile, EmployerJob } from '@/lib/types';
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { isAdmin } from "@/lib/admin";
+import {
+  JobStatusToggle,
+  DeleteJobButton,
+  FeatureJobButton,
+  RenewJobButton,
+} from "./JobActions";
+import { FeaturedSuccessBanner } from "./FeaturedSuccessBanner";
+import { getApplicationCountsByJob } from "@/lib/data/applications";
+import { Badge } from "@/components/ui/Badge";
+import { LinkButton } from "@/components/ui/LinkButton";
+import {
+  DashboardEmptyState,
+  DashboardPageHeader,
+} from "@/components/dashboard/DashboardChrome";
+import type { EmployerProfile, EmployerJob } from "@/lib/types";
 
 const EXPIRY_SOON_DAYS = 7;
 
@@ -15,37 +27,63 @@ function getExpiryState(expiresAt: string | null): {
   if (!expiresAt) return null;
   const diffMs = new Date(expiresAt).getTime() - Date.now();
   const days = Math.ceil(diffMs / (24 * 60 * 60 * 1000));
-  if (days <= 0) return { label: 'Expired', expired: true, soon: false };
+  if (days <= 0) return { label: "Expired", expired: true, soon: false };
   if (days <= EXPIRY_SOON_DAYS)
     return { label: `Expires in ${days}d`, expired: false, soon: true };
-  return { label: `Expires ${new Date(expiresAt).toLocaleDateString()}`, expired: false, soon: false };
+  return {
+    label: `Expires ${new Date(expiresAt).toLocaleDateString()}`,
+    expired: false,
+    soon: false,
+  };
 }
 
 export const metadata = {
-  title: 'Manage Jobs - Nuclear Hustle',
+  title: "Manage Jobs - Nuclear Hustle",
 };
 
-export default async function ManageJobsPage({ searchParams }: { searchParams: Promise<{ featured?: string }> }) {
+export default async function ManageJobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ featured?: string }>;
+}) {
   const params = await searchParams;
-  const showFeaturedSuccess = params.featured === 'success';
+  const showFeaturedSuccess = params.featured === "success";
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return null;
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role === "job_seeker" && !isAdmin(user.email)) {
+    redirect("/dashboard");
+  }
+
   const { data: employerProfile } = await supabase
-    .from('employer_profiles')
-    .select('*')
-    .eq('user_id', user.id)
+    .from("employer_profiles")
+    .select("*")
+    .eq("user_id", user.id)
     .single();
 
   if (!employerProfile) {
     return (
       <div className="max-w-4xl">
-        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mb-6">Job Postings</h1>
-        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-8 text-center">
-          <p className="text-stone-500">No employer profile found.</p>
-        </div>
+        <DashboardPageHeader eyebrow="Employer" title="Job postings" />
+        <DashboardEmptyState
+          title="No company profile yet"
+          description="Finish company setup before posting jobs."
+          action={
+            <LinkButton href="/dashboard/profile" variant="primary">
+              Company profile
+            </LinkButton>
+          }
+        />
       </div>
     );
   }
@@ -53,10 +91,10 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
   const typedEmployerProfile = employerProfile as EmployerProfile;
 
   const { data: jobs } = await supabase
-    .from('employer_jobs')
-    .select('*')
-    .eq('employer_id', typedEmployerProfile.id)
-    .order('created_at', { ascending: false });
+    .from("employer_jobs")
+    .select("*")
+    .eq("employer_id", typedEmployerProfile.id)
+    .order("created_at", { ascending: false });
 
   const typedJobs = (jobs || []) as EmployerJob[];
   const applicationCounts = await getApplicationCountsByJob();
@@ -64,124 +102,109 @@ export default async function ManageJobsPage({ searchParams }: { searchParams: P
   return (
     <div className="max-w-4xl">
       {showFeaturedSuccess && <FeaturedSuccessBanner />}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900">Job Postings</h1>
-        <Link
-          href="/dashboard/jobs/new"
-          className="px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-semibold transition-colors text-center sm:text-left shrink-0"
-        >
-          Post New Job
-        </Link>
-      </div>
+      <DashboardPageHeader
+        eyebrow="Employer"
+        title="Job postings"
+        action={
+          <LinkButton href="/dashboard/jobs/new" variant="primary">
+            Post a job
+          </LinkButton>
+        }
+      />
 
       {typedJobs.length === 0 ? (
-        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-8 text-center">
-          <svg
-            className="mx-auto h-12 w-12 text-stone-400 mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-            />
-          </svg>
-          <p className="text-stone-500 mb-4">You haven&apos;t posted any jobs yet.</p>
-          <Link
-            href="/dashboard/jobs/new"
-            className="inline-block px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-semibold transition-colors"
-          >
-            Post Your First Job
-          </Link>
-        </div>
+        <DashboardEmptyState
+          title="No jobs posted yet"
+          description="Publish a listing to reach operators, engineers, and plant crews."
+          action={
+            <LinkButton href="/dashboard/jobs/new" variant="primary">
+              Post your first job
+            </LinkButton>
+          }
+        />
       ) : (
-        <div className="bg-[#EDE8DF] border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
+        <div className="border border-rule bg-raised divide-y divide-rule">
           {typedJobs.map((job) => {
             const appCount = applicationCounts[job.id];
             const expiry = getExpiryState(job.expires_at);
             return (
-            <div key={job.id} className="p-4">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-stone-900 truncate">{job.title}</h3>
-                    <span
-                      className={`px-2 py-0.5 text-xs font-medium ${
-                        job.is_active
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-[#E5DFD5] text-stone-500'
-                      }`}
-                    >
-                      {job.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                    {expiry && (
-                      <span
-                        className={`px-2 py-0.5 text-xs font-medium ${
-                          expiry.expired
-                            ? 'bg-red-100 text-red-700'
-                            : expiry.soon
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-[#E5DFD5] text-stone-500'
-                        }`}
+              <div key={job.id} className="p-4 md:p-5">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="font-sans text-base font-semibold text-ink truncate">
+                        {job.title}
+                      </h2>
+                      <Badge tone={job.is_active ? "success" : "neutral"}>
+                        {job.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                      {expiry && (
+                        <Badge
+                          tone={
+                            expiry.expired
+                              ? "danger"
+                              : expiry.soon
+                                ? "featured"
+                                : "neutral"
+                          }
+                        >
+                          {expiry.label}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="mt-1 font-sans text-sm text-secondary">{job.location}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs text-secondary">
+                      <span>Posted {new Date(job.created_at).toLocaleDateString()}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>{job.view_count} views</span>
+                      <span aria-hidden="true">·</span>
+                      <LinkButton
+                        href={`/dashboard/jobs/${job.id}/applications`}
+                        variant="quiet"
+                        size="compact"
+                        className="min-h-0 px-0"
                       >
-                        {expiry.label}
-                      </span>
-                    )}
+                        {appCount?.total ?? 0} application
+                        {(appCount?.total ?? 0) === 1 ? "" : "s"}
+                        {appCount?.new ? ` · ${appCount.new} new` : ""}
+                      </LinkButton>
+                    </div>
                   </div>
-                  <p className="text-sm text-stone-500 mt-1">{job.location}</p>
-                  <div className="flex items-center gap-3 mt-2 font-mono text-xs text-stone-400">
-                    <span>Posted {new Date(job.created_at).toLocaleDateString()}</span>
-                    <span>·</span>
-                    <span>{job.view_count} views</span>
-                    <span>·</span>
-                    <Link
-                      href={`/dashboard/jobs/${job.id}/applications`}
-                      className="text-stone-900 hover:text-stone-900 underline-offset-2 hover:underline"
-                    >
-                      {appCount?.total ?? 0} application{(appCount?.total ?? 0) === 1 ? '' : 's'}
-                      {appCount?.new ? (
-                        <span className="ml-1 inline-block bg-yellow-400 text-stone-900 px-1.5 py-0.5 font-bold">
-                          {appCount.new} new
-                        </span>
-                      ) : null}
-                    </Link>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2 flex-wrap">
-                  {expiry?.expired && <RenewJobButton jobId={job.id} />}
-                  <FeatureJobButton
-                    jobId={job.id}
-                    isFeatured={job.is_featured}
-                    featuredUntil={job.featured_until}
-                  />
-                  <JobStatusToggle jobId={job.id} isActive={job.is_active} />
-                  <Link
-                    href={`/dashboard/jobs/${job.id}/applications`}
-                    className="px-3 py-1.5 text-sm text-stone-900 hover:bg-[#E5DFD5] transition-colors"
-                  >
-                    Applicants
-                  </Link>
-                  <Link
-                    href={`/dashboard/jobs/${job.id}/edit`}
-                    className="px-3 py-1.5 text-sm text-stone-900 hover:bg-[#E5DFD5] transition-colors"
-                  >
-                    Edit
-                  </Link>
-                  <Link
-                    href={`/job/${job.slug}`}
-                    target="_blank"
-                    className="px-3 py-1.5 text-sm text-stone-900 hover:bg-[#E5DFD5] transition-colors"
-                  >
-                    View
-                  </Link>
-                  <DeleteJobButton jobId={job.id} />
+                  <div className="flex flex-wrap items-center gap-1">
+                    {expiry?.expired && <RenewJobButton jobId={job.id} />}
+                    <FeatureJobButton
+                      jobId={job.id}
+                      isFeatured={job.is_featured}
+                      featuredUntil={job.featured_until}
+                    />
+                    <JobStatusToggle jobId={job.id} isActive={job.is_active} />
+                    <LinkButton
+                      href={`/dashboard/jobs/${job.id}/applications`}
+                      variant="quiet"
+                      size="compact"
+                    >
+                      Applicants
+                    </LinkButton>
+                    <LinkButton
+                      href={`/dashboard/jobs/${job.id}/edit`}
+                      variant="quiet"
+                      size="compact"
+                    >
+                      Edit
+                    </LinkButton>
+                    <LinkButton
+                      href={`/job/${job.slug}`}
+                      target="_blank"
+                      variant="quiet"
+                      size="compact"
+                    >
+                      View
+                    </LinkButton>
+                    <DeleteJobButton jobId={job.id} />
+                  </div>
                 </div>
               </div>
-            </div>
             );
           })}
         </div>

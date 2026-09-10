@@ -125,11 +125,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect authenticated users away from auth pages (not onboarding)
+  // Redirect authenticated users away from auth pages (not onboarding or
+  // password reset — recovery links land authenticated on /reset-password).
   if (
     user &&
     (request.nextUrl.pathname.startsWith("/login") ||
-      request.nextUrl.pathname.startsWith("/signup"))
+      request.nextUrl.pathname.startsWith("/signup") ||
+      request.nextUrl.pathname === "/forgot-password")
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
@@ -146,5 +148,7 @@ export const config = {
     "/onboarding/:path*",
     "/login",
     "/signup/:path*",
+    "/forgot-password",
+    "/reset-password",
   ],
 };

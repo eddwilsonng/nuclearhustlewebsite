@@ -1,14 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { signIn, signInWithGoogle, type ActionState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/Button";
-import {
-  FieldGroup,
-  FieldLabel,
-  Input,
-} from "@/components/ui/Field";
+import { FieldGroup, FieldLabel, Input } from "@/components/ui/Field";
 import { AuthDivider, AuthError, GoogleAuthButton } from "./AuthShared";
+import { PasswordField } from "./PasswordField";
 
 export function LoginForm({ redirect }: { redirect?: string }) {
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
@@ -41,18 +39,17 @@ export function LoginForm({ redirect }: { redirect?: string }) {
           />
         </FieldGroup>
 
-        <FieldGroup>
-          <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            required
-            minLength={6}
-            autoComplete="current-password"
-            placeholder="••••••••"
-          />
-        </FieldGroup>
+        <div className="space-y-2">
+          <PasswordField autoComplete="current-password" />
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="font-sans text-sm text-secondary underline underline-offset-2 hover:text-ink"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        </div>
 
         <Button type="submit" variant="primary" fullWidth disabled={isPending}>
           {isPending ? "Signing in…" : "Sign in"}

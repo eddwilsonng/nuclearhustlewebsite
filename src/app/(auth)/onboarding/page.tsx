@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { signInWithGoogle } from "@/lib/auth/actions";
+import { completeGoogleJobSeekerProfile } from "@/lib/auth/actions";
 
 export const metadata = {
   title: "Complete Sign Up - Nuclear Hustle",
@@ -16,8 +16,7 @@ export default function OnboardingPage() {
       </p>
 
       <div className="grid gap-4">
-        <form action={signInWithGoogle}>
-          <input type="hidden" name="role" value="job_seeker" />
+        <form action={completeGoogleJobSeekerProfile}>
           <button
             type="submit"
             className="group block w-full border border-control p-6 text-left hover:bg-surface"

@@ -1,25 +1,34 @@
-import Link from 'next/link';
-import { cookies } from 'next/headers';
-import { Search, FileText, Heart, Check, X as XIcon } from 'lucide-react';
-import { createClient } from '@/lib/supabase/server';
-import { isAdmin, ADMIN_VIEW_COOKIE, type AdminViewRole } from '@/lib/admin';
-import { getStateByCode } from '@/lib/states';
-import type { Profile, EmployerProfile, JobSeekerProfile, EmployerJob } from '@/lib/types';
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { Check, X as XIcon } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { isAdmin, ADMIN_VIEW_COOKIE, type AdminViewRole } from "@/lib/admin";
+import { getStateByCode } from "@/lib/states";
+import { Badge } from "@/components/ui/Badge";
+import { LinkButton } from "@/components/ui/LinkButton";
+import {
+  DashboardCard,
+  DashboardPageHeader,
+  DashboardSectionLabel,
+} from "@/components/dashboard/DashboardChrome";
+import type { Profile, EmployerProfile, JobSeekerProfile, EmployerJob } from "@/lib/types";
 
 export const metadata = {
-  title: 'Dashboard - Nuclear Hustle',
+  title: "Dashboard - Nuclear Hustle",
 };
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return null;
 
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
     .single();
 
   if (!profile) return null;
@@ -30,116 +39,120 @@ export default async function DashboardPage() {
   if (isAdmin(user.email)) {
     const cookieStore = await cookies();
     const override = cookieStore.get(ADMIN_VIEW_COOKIE)?.value as AdminViewRole | undefined;
-    if (override === 'employer' || override === 'job_seeker') {
+    if (override === "employer" || override === "job_seeker") {
       viewRole = override;
     }
   }
 
-  if (viewRole === 'employer') {
+  if (viewRole === "employer") {
     return <EmployerDashboard userId={user.id} profile={typedProfile} />;
   }
 
   return <JobSeekerDashboard userId={user.id} profile={typedProfile} />;
 }
 
-async function JobSeekerDashboard({ userId, profile }: { userId: string; profile: Profile }) {
+async function JobSeekerDashboard({
+  userId,
+  profile,
+}: {
+  userId: string;
+  profile: Profile;
+}) {
   const supabase = await createClient();
 
   const { data: jobSeekerProfile } = await supabase
-    .from('job_seeker_profiles')
-    .select('*')
-    .eq('user_id', userId)
+    .from("job_seeker_profiles")
+    .select("*")
+    .eq("user_id", userId)
     .single();
 
   const typedJobSeekerProfile = jobSeekerProfile as JobSeekerProfile | null;
   const isActivelyLooking = typedJobSeekerProfile?.is_actively_looking ?? true;
-  const stateName = typedJobSeekerProfile?.state ? getStateByCode(typedJobSeekerProfile.state)?.name : null;
+  const stateName = typedJobSeekerProfile?.state
+    ? getStateByCode(typedJobSeekerProfile.state)?.name
+    : null;
 
   const statusRows = [
-    { label: 'Full Name', complete: true },
-    { label: 'City & State', complete: !!(typedJobSeekerProfile?.location || stateName) },
-    { label: 'Phone', complete: !!typedJobSeekerProfile?.phone },
-    { label: 'Resume', complete: !!typedJobSeekerProfile?.resume_url },
+    { label: "Full name", complete: true },
+    { label: "City & state", complete: !!(typedJobSeekerProfile?.location || stateName) },
+    { label: "Phone", complete: !!typedJobSeekerProfile?.phone },
+    { label: "Resume", complete: !!typedJobSeekerProfile?.resume_url },
   ];
+  const incomplete = statusRows.some((row) => !row.complete);
 
   const quickActions = [
-    { href: '/jobs', label: 'Browse Jobs', description: 'Find your next opportunity', Icon: Search },
-    { href: '/dashboard/profile', label: 'Upload Resume', description: 'Keep your resume up to date', Icon: FileText },
-    { href: '/dashboard/saved', label: 'Saved Jobs', description: "Jobs you've bookmarked", Icon: Heart },
+    { href: "/jobs", label: "Browse jobs", description: "Open roles across the US fleet" },
+    {
+      href: "/dashboard/profile",
+      label: incomplete ? "Finish profile" : "Update profile",
+      description: incomplete ? "Add the missing facts employers scan first" : "Keep resume and location current",
+    },
+    { href: "/dashboard/saved", label: "Saved jobs", description: "Roles you bookmarked" },
   ];
 
   return (
     <div className="max-w-4xl">
-      <div className="flex items-center gap-3 mb-6">
-        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900">
-          Welcome back, {profile.full_name.split(' ')[0]}!
-        </h1>
-        <span
-          className={`font-mono text-[10px] tracking-widest uppercase border px-2 py-0.5 ${
-            isActivelyLooking
-              ? 'border-yellow-400 bg-yellow-50 text-yellow-700'
-              : 'border-[#CFC8BC] text-stone-400'
-          }`}
-        >
-          {isActivelyLooking ? 'Open to opportunities' : 'Not looking'}
-        </span>
-      </div>
+      <DashboardPageHeader
+        eyebrow="Job seeker"
+        title={`Welcome back, ${profile.full_name.split(" ")[0]}`}
+        description={
+          <Badge tone={isActivelyLooking ? "featured" : "neutral"}>
+            {isActivelyLooking ? "Open to opportunities" : "Not looking"}
+          </Badge>
+        }
+      />
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Profile Completeness */}
-        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-6">
-          <h2 className="font-mono text-sm font-bold tracking-widest uppercase text-stone-900 mb-4">Profile Status</h2>
-          <div className="space-y-3">
+        <DashboardCard>
+          <DashboardSectionLabel>Profile status</DashboardSectionLabel>
+          <ul className="mt-4 space-y-3">
             {statusRows.map((row) => (
-              <div key={row.label} className="flex items-center justify-between">
-                <span className="font-mono text-xs text-stone-500">{row.label}</span>
-                <span className={row.complete ? 'text-green-600' : 'text-stone-400'}>
-                  {row.complete ? <Check size={16} /> : <XIcon size={16} />}
+              <li key={row.label} className="flex items-center justify-between">
+                <span className="font-sans text-sm text-secondary">{row.label}</span>
+                <span className={row.complete ? "text-success" : "text-muted"}>
+                  {row.complete ? <Check size={16} aria-label="Complete" /> : <XIcon size={16} aria-label="Incomplete" />}
                 </span>
-              </div>
+              </li>
             ))}
-          </div>
-          <Link
-            href="/dashboard/profile"
-            className="mt-4 block text-center py-2 px-4 border border-[#CFC8BC] bg-[#E5DFD5] hover:bg-[#CFC8BC] font-mono text-xs tracking-widest uppercase text-stone-900 transition-colors"
-          >
-            Complete Profile
-          </Link>
-        </div>
+          </ul>
+          <LinkButton href="/dashboard/profile" variant="secondary" className="mt-6" fullWidth>
+            {incomplete ? "Complete profile" : "Edit profile"}
+          </LinkButton>
+        </DashboardCard>
 
-        {/* Quick Actions */}
-        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-6">
-          <h2 className="font-mono text-sm font-bold tracking-widest uppercase text-stone-900 mb-4">Quick Actions</h2>
-          <div className="space-y-3">
-            {quickActions.map(({ href, label, description, Icon }) => (
+        <DashboardCard>
+          <DashboardSectionLabel>Next</DashboardSectionLabel>
+          <div className="mt-4 space-y-1">
+            {quickActions.map(({ href, label, description }) => (
               <Link
                 key={href}
                 href={href}
-                className="flex items-center gap-3 p-3 hover:bg-[#E5DFD5] transition-colors"
+                className="block px-3 py-3 transition-colors duration-150 hover:bg-surface"
               >
-                <div className="w-10 h-10 border border-[#CFC8BC] flex items-center justify-center shrink-0">
-                  <Icon size={18} className="text-stone-500" />
-                </div>
-                <div>
-                  <p className="font-mono text-sm font-semibold text-stone-900">{label}</p>
-                  <p className="font-mono text-xs text-stone-500">{description}</p>
-                </div>
+                <p className="font-sans text-sm font-semibold text-ink">{label}</p>
+                <p className="mt-0.5 font-sans text-sm text-secondary">{description}</p>
               </Link>
             ))}
           </div>
-        </div>
+        </DashboardCard>
       </div>
     </div>
   );
 }
 
-async function EmployerDashboard({ userId, profile }: { userId: string; profile: Profile }) {
+async function EmployerDashboard({
+  userId,
+  profile,
+}: {
+  userId: string;
+  profile: Profile;
+}) {
   const supabase = await createClient();
 
   const { data: employerProfile } = await supabase
-    .from('employer_profiles')
-    .select('*')
-    .eq('user_id', userId)
+    .from("employer_profiles")
+    .select("*")
+    .eq("user_id", userId)
     .single();
 
   const typedEmployerProfile = employerProfile as EmployerProfile | null;
@@ -147,10 +160,10 @@ async function EmployerDashboard({ userId, profile }: { userId: string; profile:
   let jobs: EmployerJob[] = [];
   if (typedEmployerProfile) {
     const { data } = await supabase
-      .from('employer_jobs')
-      .select('*')
-      .eq('employer_id', typedEmployerProfile.id)
-      .order('created_at', { ascending: false });
+      .from("employer_jobs")
+      .select("*")
+      .eq("employer_id", typedEmployerProfile.id)
+      .order("created_at", { ascending: false });
     jobs = (data || []) as EmployerJob[];
   }
 
@@ -159,92 +172,74 @@ async function EmployerDashboard({ userId, profile }: { userId: string; profile:
 
   return (
     <div className="max-w-4xl">
-      <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mb-6">
-        Welcome back, {profile.full_name.split(' ')[0]}!
-      </h1>
+      <DashboardPageHeader
+        eyebrow="Employer"
+        title={`Welcome back, ${profile.full_name.split(" ")[0]}`}
+        action={
+          <LinkButton href="/dashboard/jobs/new" variant="primary">
+            Post a job
+          </LinkButton>
+        }
+      />
 
-      {/* Stats */}
-      <div className="grid gap-6 md:grid-cols-3 mb-8">
-        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-6">
-          <p className="text-sm text-stone-500">Active Jobs</p>
-          <p className="text-3xl font-bold text-stone-900">{activeJobs}</p>
-        </div>
-        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-6">
-          <p className="text-sm text-stone-500">Total Jobs Posted</p>
-          <p className="text-3xl font-bold text-stone-900">{totalJobs}</p>
-        </div>
-        <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-6">
-          <p className="text-sm text-stone-500">Company</p>
-          <p className="text-lg font-semibold text-stone-900 truncate">
-            {typedEmployerProfile?.company_name || 'Not set'}
-          </p>
-        </div>
+      <div className="mb-8 grid gap-4 md:grid-cols-3">
+        {[
+          { label: "Active jobs", value: String(activeJobs) },
+          { label: "Total posted", value: String(totalJobs) },
+          { label: "Company", value: typedEmployerProfile?.company_name || "Not set" },
+        ].map((stat) => (
+          <DashboardCard key={stat.label}>
+            <p className="font-mono text-xs uppercase tracking-widest text-secondary">
+              {stat.label}
+            </p>
+            <p className="mt-2 truncate font-sans text-2xl font-semibold text-ink">
+              {stat.value}
+            </p>
+          </DashboardCard>
+        ))}
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         <Link
           href="/dashboard/jobs/new"
-          className="bg-yellow-400 hover:bg-yellow-300 p-6 transition-colors group"
+          className="border border-signal bg-signal p-6 text-ink transition-colors duration-150 hover:border-signal-hover hover:bg-signal-hover"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-yellow-500 flex items-center justify-center">
-              <svg className="w-6 h-6 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </div>
-            <div>
-              <p className="font-semibold text-stone-900">Post a New Job</p>
-              <p className="text-sm text-stone-400">Reach qualified candidates</p>
-            </div>
-          </div>
+          <p className="font-sans text-base font-semibold">Post a new job</p>
+          <p className="mt-1 font-sans text-sm">Reach operators, engineers, and plant crews.</p>
         </Link>
-
         <Link
           href="/dashboard/jobs"
-          className="bg-[#EDE8DF] hover:bg-[#E5DFD5] border border-[#CFC8BC] p-6 transition-colors"
+          className="border border-control bg-raised p-6 transition-colors duration-150 hover:bg-surface"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#E5DFD5] flex items-center justify-center">
-              <svg className="w-6 h-6 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-            <div>
-              <p className="font-semibold text-stone-900">Manage Job Postings</p>
-              <p className="text-sm text-stone-500">Edit or deactivate listings</p>
-            </div>
-          </div>
+          <p className="font-sans text-base font-semibold text-ink">Manage postings</p>
+          <p className="mt-1 font-sans text-sm text-secondary">Edit, feature, or close listings.</p>
         </Link>
       </div>
 
-      {/* Recent Jobs */}
       {jobs.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-lg font-semibold text-stone-900 mb-4">Recent Job Postings</h2>
-          <div className="bg-[#EDE8DF] border border-[#CFC8BC] divide-y divide-[#CFC8BC]">
+          <DashboardSectionLabel>Recent postings</DashboardSectionLabel>
+          <div className="mt-3 divide-y divide-rule border border-rule bg-raised">
             {jobs.slice(0, 5).map((job) => (
-              <div key={job.id} className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div
+                key={job.id}
+                className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
                 <div className="min-w-0">
-                  <p className="font-medium text-stone-900 truncate">{job.title}</p>
-                  <p className="text-sm text-stone-500">{job.location}</p>
+                  <p className="truncate font-sans text-sm font-semibold text-ink">{job.title}</p>
+                  <p className="font-sans text-sm text-secondary">{job.location}</p>
                 </div>
-                <div className="flex items-center gap-4 shrink-0">
-                  <span
-                    className={`px-2 py-1 text-xs font-medium ${
-                      job.is_active
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-[#E5DFD5] text-stone-500'
-                    }`}
-                  >
-                    {job.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                  <Link
+                <div className="flex shrink-0 items-center gap-3">
+                  <Badge tone={job.is_active ? "success" : "neutral"}>
+                    {job.is_active ? "Active" : "Inactive"}
+                  </Badge>
+                  <LinkButton
                     href={`/dashboard/jobs/${job.id}/edit`}
-                    className="text-sm text-yellow-600 hover:text-yellow-700 font-medium"
+                    variant="quiet"
+                    size="compact"
                   >
                     Edit
-                  </Link>
+                  </LinkButton>
                 </div>
               </div>
             ))}

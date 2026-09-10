@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ConditionalFooter } from "@/components/ConditionalFooter";
+import { ConditionalHeader } from "@/components/ConditionalHeader";
 import { ConditionalClicky } from "@/components/ConditionalClicky";
 import { Clicky } from "@/components/Clicky";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/schema";
@@ -70,7 +71,9 @@ export default function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }} />
         <div className="flex min-h-screen flex-col">
-          <Header />
+          <ConditionalHeader>
+            <Header />
+          </ConditionalHeader>
           <main id="main-content" className="flex-1" tabIndex={-1}>
           {children}
           </main>

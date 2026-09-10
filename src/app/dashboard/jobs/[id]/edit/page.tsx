@@ -1,11 +1,12 @@
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
-import { JobPostingForm } from '@/components/dashboard/JobPostingForm';
-import type { EmployerJob } from '@/lib/types';
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { JobPostingForm } from "@/components/dashboard/JobPostingForm";
+import { LinkButton } from "@/components/ui/LinkButton";
+import { DashboardPageHeader } from "@/components/dashboard/DashboardChrome";
+import type { EmployerJob } from "@/lib/types";
 
 export const metadata = {
-  title: 'Edit Job - Nuclear Hustle',
+  title: "Edit Job - Nuclear Hustle",
 };
 
 export default async function EditJobPage({
@@ -15,29 +16,29 @@ export default async function EditJobPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     notFound();
   }
 
-  // Get employer profile
   const { data: employerProfile } = await supabase
-    .from('employer_profiles')
-    .select('id')
-    .eq('user_id', user.id)
+    .from("employer_profiles")
+    .select("id")
+    .eq("user_id", user.id)
     .single();
 
   if (!employerProfile) {
     notFound();
   }
 
-  // Get job and verify ownership
   const { data: job } = await supabase
-    .from('employer_jobs')
-    .select('*')
-    .eq('id', id)
-    .eq('employer_id', employerProfile.id)
+    .from("employer_jobs")
+    .select("*")
+    .eq("id", id)
+    .eq("employer_id", employerProfile.id)
     .single();
 
   if (!job) {
@@ -48,21 +49,16 @@ export default async function EditJobPage({
 
   return (
     <div className="max-w-3xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Link
-          href="/dashboard/jobs"
-          className="text-stone-500 hover:text-stone-900"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </Link>
-        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900">Edit Job</h1>
-      </div>
-
-      <div className="bg-[#EDE8DF] border border-[#CFC8BC] p-6">
-        <JobPostingForm job={typedJob} mode="edit" />
-      </div>
+      <DashboardPageHeader
+        eyebrow="Employer"
+        title="Edit job"
+        action={
+          <LinkButton href="/dashboard/jobs" variant="quiet" size="compact">
+            Back to jobs
+          </LinkButton>
+        }
+      />
+      <JobPostingForm job={typedJob} mode="edit" />
     </div>
   );
 }

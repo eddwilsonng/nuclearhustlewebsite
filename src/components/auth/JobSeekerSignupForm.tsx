@@ -5,13 +5,13 @@ import { signUpJobSeeker, signInWithGoogle, type ActionState } from "@/lib/auth/
 import { US_STATES } from "@/lib/states";
 import { Button } from "@/components/ui/Button";
 import {
-  FieldDescription,
   FieldGroup,
   FieldLabel,
   Input,
   Select,
 } from "@/components/ui/Field";
 import { AuthDivider, AuthError, GoogleAuthButton } from "./AuthShared";
+import { PasswordField } from "./PasswordField";
 
 export function JobSeekerSignupForm({ redirect }: { redirect?: string }) {
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
@@ -55,19 +55,10 @@ export function JobSeekerSignupForm({ redirect }: { redirect?: string }) {
           />
         </FieldGroup>
 
-        <FieldGroup>
-          <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            required
-            minLength={8}
-            autoComplete="new-password"
-            placeholder="••••••••"
-          />
-          <FieldDescription>Minimum 8 characters.</FieldDescription>
-        </FieldGroup>
+        <PasswordField
+          autoComplete="new-password"
+          description="Minimum 8 characters."
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <FieldGroup>

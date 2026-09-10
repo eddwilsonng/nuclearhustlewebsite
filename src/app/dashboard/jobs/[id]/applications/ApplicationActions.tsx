@@ -1,23 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { getApplicationCvUrl, updateApplicationStatus } from '@/lib/auth/actions';
-import type { ApplicationStatus } from '@/lib/types';
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { getApplicationCvUrl, updateApplicationStatus } from "@/lib/auth/actions";
+import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Field";
+import type { ApplicationStatus } from "@/lib/types";
 
 const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
-  { value: 'new', label: 'New' },
-  { value: 'reviewed', label: 'Reviewed' },
-  { value: 'shortlisted', label: 'Shortlisted' },
-  { value: 'rejected', label: 'Rejected' },
+  { value: "new", label: "New" },
+  { value: "reviewed", label: "Reviewed" },
+  { value: "shortlisted", label: "Shortlisted" },
+  { value: "rejected", label: "Rejected" },
 ];
-
-const STATUS_STYLES: Record<ApplicationStatus, string> = {
-  new: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  reviewed: 'bg-blue-100 text-blue-800 border-blue-300',
-  shortlisted: 'bg-green-100 text-green-800 border-green-300',
-  rejected: 'bg-stone-200 text-stone-500 border-[#CFC8BC]',
-};
 
 export function StatusSelect({
   applicationId,
@@ -39,18 +34,19 @@ export function StatusSelect({
   };
 
   return (
-    <select
+    <Select
       value={current}
       disabled={isPending}
+      aria-label="Application status"
       onChange={(e) => handleChange(e.target.value as ApplicationStatus)}
-      className={`font-mono text-xs uppercase tracking-widest border px-2 py-1 disabled:opacity-50 ${STATUS_STYLES[current]}`}
+      className="w-auto min-w-36"
     >
       {STATUS_OPTIONS.map((opt) => (
         <option key={opt.value} value={opt.value}>
           {opt.label}
         </option>
       ))}
-    </select>
+    </Select>
   );
 }
 
@@ -65,31 +61,34 @@ export function DownloadCvButton({
   const [error, setError] = useState<string | null>(null);
 
   if (!hasCv) {
-    return <span className="font-mono text-xs uppercase tracking-widest text-stone-400">No CV</span>;
+    return <span className="font-mono text-xs text-secondary">No CV</span>;
   }
-
-  const handleClick = () => {
-    setError(null);
-    startTransition(async () => {
-      const result = await getApplicationCvUrl(applicationId);
-      if (result.url) {
-        window.open(result.url, '_blank', 'noopener,noreferrer');
-      } else {
-        setError(result.error ?? 'Could not open CV');
-      }
-    });
-  };
 
   return (
     <div className="flex flex-col items-start gap-1">
-      <button
-        onClick={handleClick}
+      <Button
+        variant="secondary"
+        size="compact"
         disabled={isPending}
-        className="font-mono text-xs uppercase tracking-widest border border-stone-900 px-3 py-1.5 hover:bg-stone-900 hover:text-[#EDE8DF] disabled:opacity-50 transition-colors"
+        onClick={() => {
+          setError(null);
+          startTransition(async () => {
+            const result = await getApplicationCvUrl(applicationId);
+            if (result.url) {
+              window.open(result.url, "_blank", "noopener,noreferrer");
+            } else {
+              setError(result.error ?? "Could not open CV");
+            }
+          });
+        }}
       >
-        {isPending ? 'Opening…' : 'Download CV'}
-      </button>
-      {error && <span className="font-mono text-xs text-red-600">{error}</span>}
+        {isPending ? "Opening…" : "Download CV"}
+      </Button>
+      {error && (
+        <span className="font-sans text-sm text-danger" role="alert">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

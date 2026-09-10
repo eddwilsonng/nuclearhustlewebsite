@@ -4,6 +4,7 @@ import { UserMenu } from "./UserMenu";
 import { DesktopNav } from "./DesktopNav";
 import { StickyHeader } from "./StickyHeader";
 import { createClient } from "@/lib/supabase/server";
+import { LinkButton } from "@/components/ui/LinkButton";
 import type { Profile } from "@/lib/types";
 
 export async function Header() {
@@ -22,7 +23,7 @@ export async function Header() {
     profile = (data as Profile) ?? null;
   }
 
-  const isAuthed = !!(user && profile);
+  const isAuthed = !!user;
 
   return (
     <StickyHeader>
@@ -35,7 +36,13 @@ export async function Header() {
         </Link>
 
         <DesktopNav isAuthed={isAuthed}>
-          {isAuthed ? <UserMenu user={user!} profile={profile!} /> : null}
+          {profile ? (
+            <UserMenu user={user!} profile={profile} />
+          ) : isAuthed ? (
+            <LinkButton href="/onboarding" size="compact">
+              Finish setup
+            </LinkButton>
+          ) : null}
         </DesktopNav>
 
         <MobileNav isAuthed={isAuthed} />

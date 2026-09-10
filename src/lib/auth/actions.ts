@@ -84,6 +84,63 @@ export async function signIn(
   redirect(safeInternalPath(formData.get("redirect")) ?? "/dashboard");
 }
 
+const resetEmailSchema = z.string().email("Invalid email address");
+
+export async function requestPasswordReset(
+  prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const parsed = resetEmailSchema.safeParse(formData.get("email"));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const supabase = await createClient();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
+    redirectTo: `${siteUrl}/api/auth/callback?next=/reset-password`,
+  });
+
+  if (error) {
+    console.error("Password reset request failed:", error);
+  }
+
+  // Always succeed so we don't leak whether the email exists.
+  return { success: true };
+}
+
+export async function updatePassword(
+  prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+  if (password.length < 8) {
+    return { error: "Password must be at least 8 characters" };
+  }
+  if (password !== confirmPassword) {
+    return { error: "Passwords do not match" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "This reset link has expired. Request a new one." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return { error: error.message };
+  }
+
+  redirect("/dashboard");
+}
+
 export async function signUpJobSeeker(
   prevState: ActionState,
   formData: FormData
@@ -246,7 +303,7 @@ export async function signUpEmployer(
     };
   }
 
-  redirect("/dashboard");
+  redirect(safeInternalPath(formData.get("redirect")) ?? "/dashboard");
 }
 
 export async function signInWithGoogle(formData: FormData) {
@@ -329,6 +386,52 @@ export async function completeGoogleEmployerProfile(
     });
 
   if (employerError) return { error: employerError.message };
+
+  redirect("/dashboard");
+}
+
+export async function completeGoogleJobSeekerProfile() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login?error=Could not authenticate");
+  }
+
+  const fullName =
+    (user.user_metadata?.full_name as string) || user.email!.split("@")[0];
+
+  const { error: profileError } = await supabase.from("profiles").upsert(
+    {
+      id: user.id,
+      email: user.email!,
+      full_name: fullName,
+      role: "job_seeker",
+    },
+    { onConflict: "id" }
+  );
+
+  if (profileError) {
+    redirect(`/login?error=${encodeURIComponent(profileError.message)}`);
+  }
+
+  const { data: existing } = await supabase
+    .from("job_seeker_profiles")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!existing) {
+    const { error: seekerError } = await supabase
+      .from("job_seeker_profiles")
+      .insert({ user_id: user.id });
+
+    if (seekerError) {
+      redirect(`/login?error=${encodeURIComponent(seekerError.message)}`);
+    }
+  }
 
   redirect("/dashboard");
 }
@@ -600,12 +703,12 @@ export async function uploadResume(
   }
 
   const fileExt = file.name.split(".").pop();
-  const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+  const filePath = `${user.id}/${Date.now()}.${fileExt}`;
 
   // Upload to Supabase Storage
   const { error: uploadError } = await supabase.storage
     .from("resumes")
-    .upload(fileName, file, {
+    .upload(filePath, file, {
       cacheControl: "3600",
       upsert: false,
     });
@@ -614,16 +717,11 @@ export async function uploadResume(
     return { error: uploadError.message };
   }
 
-  // Get public URL
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("resumes").getPublicUrl(fileName);
-
-  // Update job seeker profile with resume URL
+  // Store the private storage path — never a public URL. View via getResumeViewUrl.
   const { error: updateError } = await supabase
     .from("job_seeker_profiles")
     .update({
-      resume_url: publicUrl,
+      resume_url: filePath,
       resume_filename: file.name,
     })
     .eq("user_id", user.id);
@@ -633,6 +731,56 @@ export async function uploadResume(
   }
 
   return { success: true };
+}
+
+function resumeStoragePath(stored: string | null): string | null {
+  if (!stored) return null;
+  if (!stored.startsWith("http")) return stored;
+  const match = stored.match(/\/resumes\/(.+?)(?:\?|$)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+export async function getResumeViewUrl(): Promise<{
+  url?: string;
+  error?: string;
+}> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { data: profile, error } = await supabase
+    .from("job_seeker_profiles")
+    .select("resume_url")
+    .eq("user_id", user.id)
+    .single();
+
+  if (error || !profile) {
+    return { error: "Resume not found" };
+  }
+
+  const path = resumeStoragePath(
+    (profile as { resume_url: string | null }).resume_url
+  );
+  if (!path) {
+    return { error: "No resume on file" };
+  }
+
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const admin = createAdminClient();
+  const { data: signed, error: signError } = await admin.storage
+    .from("resumes")
+    .createSignedUrl(path, 60 * 5);
+
+  if (signError || !signed) {
+    return { error: "Could not generate resume link" };
+  }
+
+  return { url: signed.signedUrl };
 }
 
 // Job posting validation schema

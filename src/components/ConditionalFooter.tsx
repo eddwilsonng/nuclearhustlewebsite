@@ -2,7 +2,14 @@
 
 import { usePathname } from 'next/navigation';
 
-const HIDE_FOOTER_PREFIXES = ['/dashboard', '/login', '/signup', '/onboarding'];
+const HIDE_FOOTER_PREFIXES = [
+  '/dashboard',
+  '/login',
+  '/signup',
+  '/onboarding',
+  '/forgot-password',
+  '/reset-password',
+];
 
 export function ConditionalFooter({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

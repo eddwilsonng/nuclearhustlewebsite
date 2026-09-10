@@ -44,7 +44,7 @@ export default async function SignupPage({
         </Link>
 
         <Link
-          href="/signup/employer"
+          href={`/signup/employer${q}`}
           className="group flex items-center justify-between gap-4 border border-control p-6 hover:bg-surface"
         >
           <div>

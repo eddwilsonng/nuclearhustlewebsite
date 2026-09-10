@@ -4,15 +4,15 @@ import { useActionState } from "react";
 import { signUpEmployer, signInWithGoogle, type ActionState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/Button";
 import {
-  FieldDescription,
   FieldGroup,
   FieldLabel,
   Input,
   Textarea,
 } from "@/components/ui/Field";
 import { AuthDivider, AuthError, GoogleAuthButton } from "./AuthShared";
+import { PasswordField } from "./PasswordField";
 
-export function EmployerSignupForm() {
+export function EmployerSignupForm({ redirect }: { redirect?: string }) {
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     signUpEmployer,
     {},
@@ -27,6 +27,7 @@ export function EmployerSignupForm() {
       <AuthDivider />
 
       <form action={formAction} className="space-y-5">
+        {redirect && <input type="hidden" name="redirect" value={redirect} />}
         {state.error && <AuthError>{state.error}</AuthError>}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -54,19 +55,10 @@ export function EmployerSignupForm() {
           </FieldGroup>
         </div>
 
-        <FieldGroup>
-          <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            required
-            minLength={8}
-            autoComplete="new-password"
-            placeholder="••••••••"
-          />
-          <FieldDescription>Minimum 8 characters.</FieldDescription>
-        </FieldGroup>
+        <PasswordField
+          autoComplete="new-password"
+          description="Minimum 8 characters."
+        />
 
         <div className="h-px bg-rule" />
         <p className="font-mono text-xs uppercase tracking-widest text-secondary">
