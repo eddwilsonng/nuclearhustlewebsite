@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdmin } from "@/lib/admin";
 import { extractState } from "@/lib/states";
+import { parseJobPostingForm } from "@/lib/jobs/postingInput";
 import type { ActionState } from "@/lib/auth/actions";
 import { z } from "zod";
 import { promises as fs } from "fs";
@@ -31,22 +32,6 @@ function getAdminClient() {
     return null;
   }
 }
-
-const jobPostingSchema = z.object({
-  title: z.string().min(2, "Title must be at least 2 characters"),
-  location: z.string().min(2, "Location is required"),
-  category: z.string().min(1, "Category is required"),
-  employmentType: z.string().optional(),
-  applicationType: z.string().optional(),
-  applicationUrl: z.string().optional(),
-  applicationEmail: z.string().optional(),
-  about: z.string().optional(),
-  responsibilities: z.string().optional(),
-  qualifications: z.string().optional(),
-  desired: z.string().optional(),
-  locationDetails: z.string().optional(),
-  whatWeOffer: z.string().optional(),
-});
 
 // --- Employer job actions (via Supabase service role) ---
 
@@ -97,83 +82,12 @@ export async function adminUpdateJob(
 
   const jobId = formData.get("jobId") as string;
 
-  const rawData = {
-    title: formData.get("title") as string,
-    location: formData.get("location") as string,
-    category: formData.get("category") as string,
-    employmentType: formData.get("employmentType") as string,
-    applicationType: (formData.get("applicationType") as string) || "link",
-    applicationUrl: (formData.get("applicationUrl") as string) || "",
-    applicationEmail: (formData.get("applicationEmail") as string) || "",
-    about: (formData.get("about") as string) || "",
-    responsibilities: (formData.get("responsibilities") as string) || "",
-    qualifications: (formData.get("qualifications") as string) || "",
-    desired: (formData.get("desired") as string) || "",
-    locationDetails: (formData.get("locationDetails") as string) || "",
-    whatWeOffer: (formData.get("whatWeOffer") as string) || "",
-  };
-
-  const validatedFields = jobPostingSchema.safeParse(rawData);
-
-  if (!validatedFields.success) {
-    return { error: validatedFields.error.issues[0].message };
-  }
-
-  const { applicationType, applicationUrl, applicationEmail } =
-    validatedFields.data;
-
-  if (applicationType === "form" && !applicationEmail) {
-    return {
-      error: "An application email is required when using the form method",
-    };
-  }
-
-  const structured = {
-    about: validatedFields.data.about || undefined,
-    responsibilities: validatedFields.data.responsibilities || undefined,
-    qualifications: validatedFields.data.qualifications || undefined,
-    desired: validatedFields.data.desired || undefined,
-    location_details: validatedFields.data.locationDetails || undefined,
-    what_we_offer: validatedFields.data.whatWeOffer || undefined,
-  };
-  const hasContent = Object.values(structured).some(Boolean);
-  if (!hasContent) {
-    return { error: "Please fill in at least one description field" };
-  }
-
-  const descriptionFallback = [
-    structured.about && `About this Role\n${structured.about}`,
-    structured.responsibilities &&
-      `Responsibilities\n${structured.responsibilities}`,
-    structured.qualifications &&
-      `Qualifications\n${structured.qualifications}`,
-    structured.desired && `Desired\n${structured.desired}`,
-    structured.location_details &&
-      `Location\n${structured.location_details}`,
-    structured.what_we_offer &&
-      `What We Offer\n${structured.what_we_offer}`,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
-
-  const state = extractState(validatedFields.data.location);
+  const parsed = parseJobPostingForm(formData);
+  if (!parsed.ok) return { error: parsed.error };
 
   const { error: updateError } = await admin
     .from("employer_jobs")
-    .update({
-      title: validatedFields.data.title,
-      location: validatedFields.data.location,
-      state,
-      category: validatedFields.data.category,
-      description: descriptionFallback,
-      structured_description: structured,
-      employment_type: validatedFields.data.employmentType || "full-time",
-      application_type: applicationType,
-      application_url:
-        applicationType === "link" ? applicationUrl || null : null,
-      application_email:
-        applicationType === "form" ? applicationEmail || null : null,
-    })
+    .update(parsed.data)
     .eq("id", jobId);
 
   if (updateError) {

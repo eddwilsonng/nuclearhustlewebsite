@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { cache } from 'react';
+import { unstable_rethrow } from 'next/navigation';
 import { Company, JobWithCompany, JobListItem, Region, EmployerJobWithProfile } from '../types';
 import { JobCategory } from '../categorize';
 import { createClient } from '@/lib/supabase/server';
@@ -63,6 +64,17 @@ function toEmployerJob(job: EmployerJobWithProfile): JobWithCompany {
     featured_until: job.featured_until ?? null,
     application_type: job.application_type ?? 'link',
     employment_type: job.employment_type,
+    work_mode: job.work_mode ?? null,
+    plant_id: job.plant_id ?? null,
+    salary:
+      job.salary_min || job.salary_max
+        ? {
+            min: job.salary_min ?? null,
+            max: job.salary_max ?? null,
+            period: job.salary_period ?? 'year',
+            source: 'structured',
+          }
+        : null,
     company,
   };
 }
@@ -95,6 +107,7 @@ export const getEmployerJobs = cache(async (): Promise<JobWithCompany[]> => {
       .filter((job) => job.employer)
       .map(toEmployerJob);
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Error fetching employer jobs:', error);
     return [];
   }
@@ -117,7 +130,8 @@ export async function getEmployerJobBySlug(slug: string): Promise<JobWithCompany
     }
 
     return toEmployerJob(data as EmployerJobWithProfile);
-  } catch {
+  } catch (error) {
+    unstable_rethrow(error);
     return undefined;
   }
 }

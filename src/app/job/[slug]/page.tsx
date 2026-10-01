@@ -140,9 +140,19 @@ export default async function JobPage({ params }: PageProps) {
     job.featured_until &&
     new Date(job.featured_until) > new Date();
 
+  const isRemote = job.work_mode === "remote";
   const locationParts = job.location.split(",").map((s: string) => s.trim());
-  const city = locationParts[0] || job.location;
-  const region = locationParts[1] || stateInfo?.name || "";
+  const city = isRemote ? facts.plant?.city ?? "" : locationParts[0] || job.location;
+  const region = isRemote
+    ? facts.plant?.state ?? stateInfo?.name ?? ""
+    : locationParts[1] || stateInfo?.name || "";
+  const locationLabel = isRemote
+    ? facts.plant
+      ? `Remote · supports ${facts.plant.name}`
+      : "Remote"
+    : facts.plant
+      ? `${facts.plant.name}, ${job.location}`
+      : job.location;
 
   const postedDate = new Date(job.scraped_at);
   const validThrough = new Date(postedDate);
@@ -202,6 +212,12 @@ export default async function JobPage({ params }: PageProps) {
     url: `${siteUrl}/job/${job.slug}`,
   };
 
+  if (isRemote) {
+    structuredData.jobLocationType = "TELECOMMUTE";
+    structuredData.applicantLocationRequirements = { "@type": "Country", name: "US" };
+    if (!city) delete structuredData.jobLocation;
+  }
+
   if (job.salary?.min || job.salary?.max) {
     structuredData.baseSalary = {
       "@type": "MonetaryAmount",
@@ -235,7 +251,7 @@ export default async function JobPage({ params }: PageProps) {
 
   const factRows = [
     salaryLabel ? { label: "Salary", value: salaryLabel } : null,
-    { label: "Location", value: facts.plant ? `${facts.plant.name}, ${job.location}` : job.location },
+    { label: "Location", value: locationLabel },
     facts.workMode ? { label: "Work mode", value: facts.workMode } : null,
     facts.schedule ? { label: "Schedule", value: facts.schedule } : null,
     facts.travel ? { label: "Travel", value: facts.travel } : null,
@@ -323,7 +339,7 @@ export default async function JobPage({ params }: PageProps) {
               {job.company.name}
             </BrowseMetaLink>
             <span aria-hidden="true"> · </span>
-            {facts.plant ? facts.plant.name : job.location}
+            {isRemote ? locationLabel : facts.plant ? facts.plant.name : job.location}
             {salaryLabel && (
               <>
                 <span aria-hidden="true"> · </span>

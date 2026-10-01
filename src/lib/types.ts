@@ -60,6 +60,8 @@ export interface JobWithCompany extends Job {
   application_type?: "link" | "form";
   employment_type?: string;
   structured_description?: StructuredDescription | null;
+  work_mode?: "on-site" | "hybrid" | "remote" | null;
+  plant_id?: string | null;
 }
 
 export type Region = Plant["region"];
@@ -162,6 +164,11 @@ export interface EmployerJob {
   expires_at: string | null;
   view_count: number;
   created_at: string;
+  work_mode?: "on-site" | "hybrid" | "remote" | null;
+  plant_id?: string | null;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  salary_period?: "hour" | "year" | null;
 }
 
 export interface EmployerJobWithProfile extends EmployerJob {

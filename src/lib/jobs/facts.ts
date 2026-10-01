@@ -15,7 +15,7 @@ export interface JobFacts {
   employmentType?: string;
 }
 
-type PlantRecord = { name: string; city: string; state: string };
+type PlantRecord = { id: string; name: string; city: string; state: string };
 
 const PLANTS: PlantRecord[] = (plantsData as { plants: PlantRecord[] }).plants
   .slice()
@@ -98,11 +98,17 @@ function employmentTypeFrom(job: JobWithCompany, text: string): string | undefin
   return undefined;
 }
 
+const WORK_MODE_LABELS = { "on-site": "On-site", hybrid: "Hybrid", remote: "Remote" } as const;
+
+function plantById(id: string | null | undefined): PlantMatch | undefined {
+  return id ? PLANTS.find((plant) => plant.id === id) : undefined;
+}
+
 export function getJobFacts(job: JobWithCompany): JobFacts {
   const text = corpusFrom(job);
   return {
-    plant: matchPlant(text, job.title),
-    workMode: workModeFrom(text),
+    plant: plantById(job.plant_id) ?? matchPlant(text, job.title),
+    workMode: job.work_mode ? WORK_MODE_LABELS[job.work_mode] : workModeFrom(text),
     schedule: scheduleFrom(text),
     travel: travelFrom(text),
     employmentType: employmentTypeFrom(job, text),
