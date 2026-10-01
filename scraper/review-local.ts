@@ -2,6 +2,11 @@
  * Local (no API) relevance pass over pending_review jobs.
  * Title + plant-site first. Mixed-fleet utilities only publish with a
  * nuclear/site signal. Run: npx tsx scraper/review-local.ts
+ *
+ * Manual verdicts (e.g. a human / in-editor agent review) override the rules:
+ *   npx tsx scraper/review-local.ts --verdicts=path/to/verdicts.json
+ * where the file is { "<job id>": { "verdict": "publish" | "reject" | "flag", "reason": "..." } }.
+ * Jobs not in the file are left untouched.
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -118,7 +123,17 @@ function decide(job: {
   return { verdict: 'flag', reason: 'Nuclear-industry employer, title unclear' };
 }
 
+type ManualVerdicts = Record<string, { verdict: Verdict; reason: string }>;
+
+function loadManualVerdicts(): ManualVerdicts | null {
+  const arg = process.argv.find((a) => a.startsWith('--verdicts='));
+  if (!arg) return null;
+  const file = path.resolve(arg.slice('--verdicts='.length));
+  return JSON.parse(fs.readFileSync(file, 'utf-8')) as ManualVerdicts;
+}
+
 async function main() {
+  const manual = loadManualVerdicts();
   const data = JSON.parse(fs.readFileSync(JOBS_PATH, 'utf-8')) as {
     jobs: Array<{
       id: string;
@@ -143,7 +158,10 @@ async function main() {
 
   for (const job of data.jobs) {
     if (job.status !== 'pending_review') continue;
-    const { verdict, reason } = decide(job);
+    if (manual && !manual[job.id]) continue;
+    const { verdict, reason } = manual
+      ? { verdict: manual[job.id].verdict, reason: `Manual review: ${manual[job.id].reason}` }
+      : decide(job);
     if (verdict === 'publish') {
       if (!job.description || job.description.length < 80) {
         job.review_notes = `Local review: ${reason} — held, no description to format`;
