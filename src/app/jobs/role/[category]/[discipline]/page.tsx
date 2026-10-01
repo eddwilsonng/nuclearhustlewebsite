@@ -3,11 +3,11 @@ import { notFound, redirect } from 'next/navigation';
 import Script from 'next/script';
 import { Suspense } from 'react';
 import {
-  getJobsByEngineeringDiscipline,
-  getActiveEngineeringDisciplines,
-  getActiveStates,
-  getCompanies,
-} from '@/lib/data/static';
+  getAllJobsByEngineeringDiscipline,
+  getAllActiveEngineeringDisciplines,
+  getAllActiveStates,
+  getAllCompanies,
+} from '@/lib/data/employer';
 import {
   getAllEngineeringDisciplineSlugs,
   getEngineeringDisciplineInfo,
@@ -58,7 +58,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   }
 
   const info = getEngineeringDisciplineInfo(discipline)!;
-  const jobs = getJobsByEngineeringDiscipline(discipline);
+  const jobs = await getAllJobsByEngineeringDiscipline(discipline);
   const basePath = `/jobs/role/${category}/${discipline}`;
 
   return buildJobsPaginationMetadata({
@@ -82,7 +82,7 @@ export default async function DisciplinePage({ params, searchParams }: PageProps
   if (!isEngineeringDiscipline(category, discipline)) notFound();
 
   const info = getEngineeringDisciplineInfo(discipline)!;
-  const jobs = getJobsByEngineeringDiscipline(discipline);
+  const jobs = await getAllJobsByEngineeringDiscipline(discipline);
   // Strip heavy description fields — listing cards don't use them, and they
   // would bloat the serialized client payload past Google's 2MB indexing limit.
   const listJobs = jobs.map((j) => {
@@ -102,12 +102,12 @@ export default async function DisciplinePage({ params, searchParams }: PageProps
     redirect(buildJobsPageUrl(basePath, totalPages));
   }
 
-  const activeStates = getActiveStates();
-  const siblingDisciplines = getActiveEngineeringDisciplines().filter(
+  const activeStates = await getAllActiveStates();
+  const siblingDisciplines = (await getAllActiveEngineeringDisciplines()).filter(
     (d) => d.slug !== discipline
   );
 
-  const companies = getCompanies();
+  const companies = await getAllCompanies();
   const companyMap = new Map(companies.map((c) => [c.id, c.name]));
 
   const url = `https://www.nuclearhustle.com${basePath}`;

@@ -1,7 +1,12 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
-import { getJobsForList, getActiveStates, getActiveCategories, getCompanies } from '@/lib/data/static';
+import {
+  getAllJobsForList,
+  getAllActiveStates,
+  getAllActiveCategories,
+  getAllCompanies,
+} from '@/lib/data/employer';
 import { JobList } from '@/components/JobList';
 import {
   BrowsePageHeader,
@@ -19,7 +24,7 @@ interface PageProps {
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const { page: pageParam } = await searchParams;
-  const jobs = getJobsForList();
+  const jobs = await getAllJobsForList();
 
   return buildJobsPaginationMetadata({
     pageParam,
@@ -46,10 +51,12 @@ function JobListFallback() {
 export default async function JobsPage({ searchParams }: PageProps) {
   const { page: pageParam } = await searchParams;
   const page = parsePageParam(pageParam);
-  const jobs = getJobsForList();
-  const companies = getCompanies();
-  const activeStates = getActiveStates();
-  const activeCategories = getActiveCategories();
+  const [jobs, companies, activeStates, activeCategories] = await Promise.all([
+    getAllJobsForList(),
+    getAllCompanies(),
+    getAllActiveStates(),
+    getAllActiveCategories(),
+  ]);
   const totalPages = getTotalPages(jobs.length);
 
   if (page > totalPages) {

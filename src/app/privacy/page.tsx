@@ -35,8 +35,8 @@ export default function PrivacyPage() {
               </p>
               <p className="text-secondary text-sm leading-relaxed mt-3">
                 If you have any questions about this policy, please contact us at{' '}
-                <a href="mailto:hello@nuclearhustle.com" className="text-ink underline hover:text-ink transition-colors">
-                  hello@nuclearhustle.com
+                <a href="mailto:nuclearhustle@gmail.com" className="text-ink underline hover:text-ink transition-colors">
+                  nuclearhustle@gmail.com
                 </a>.
               </p>
             </div>
@@ -92,8 +92,8 @@ export default function PrivacyPage() {
               <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">5. Data retention</h2>
               <p className="text-secondary text-sm leading-relaxed">
                 We retain your personal data for as long as your account is active. You can request deletion of your account and associated data at any time by contacting us at{' '}
-                <a href="mailto:hello@nuclearhustle.com" className="text-ink underline hover:text-ink transition-colors">
-                  hello@nuclearhustle.com
+                <a href="mailto:nuclearhustle@gmail.com" className="text-ink underline hover:text-ink transition-colors">
+                  nuclearhustle@gmail.com
                 </a>.
               </p>
             </div>
@@ -119,8 +119,8 @@ export default function PrivacyPage() {
               </ul>
               <p className="text-secondary text-sm leading-relaxed mt-4">
                 To exercise these rights, contact us at{' '}
-                <a href="mailto:hello@nuclearhustle.com" className="text-ink underline hover:text-ink transition-colors">
-                  hello@nuclearhustle.com
+                <a href="mailto:nuclearhustle@gmail.com" className="text-ink underline hover:text-ink transition-colors">
+                  nuclearhustle@gmail.com
                 </a>.
               </p>
             </div>

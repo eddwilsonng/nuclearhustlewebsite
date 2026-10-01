@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getCompanies, getCompanyById, getPlantsByCompany, getJobsByCompany, toJobListItem } from '@/lib/data/static';
+import { getCompanies, getPlantsByCompany, toJobListItem } from '@/lib/data/static';
+import { getAllCompanies, getAnyCompanyById, getAllJobsByCompany } from '@/lib/data/employer';
 import { JobCard } from '@/components/JobCard';
 import { Sidebar, SidebarSection, SidebarNavList } from '@/components/sidebar/Sidebar';
 import {
@@ -25,11 +26,11 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const company = getCompanyById(slug);
+  const company = await getAnyCompanyById(slug);
 
   if (!company) return { title: 'Company Not Found | Nuclear Hustle' };
 
-  const jobs = getJobsByCompany(slug);
+  const jobs = await getAllJobsByCompany(slug);
   const title = `${company.name} Nuclear Jobs — ${jobs.length} Positions | Nuclear Hustle`;
   const description = `Find ${jobs.length} nuclear jobs at ${company.name}. Browse open positions and apply today.`;
 
@@ -45,13 +46,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CompanyPage({ params }: PageProps) {
   const { slug } = await params;
-  const company = getCompanyById(slug);
+  const company = await getAnyCompanyById(slug);
 
   if (!company) notFound();
 
   const plants = getPlantsByCompany(slug);
-  const jobs = getJobsByCompany(slug);
-  const otherCompanies = getCompanies().filter((c) => c.id !== slug).slice(0, 6);
+  const jobs = await getAllJobsByCompany(slug);
+  const otherCompanies = (await getAllCompanies()).filter((c) => c.id !== slug).slice(0, 6);
 
   const plantsByRegion = plants.reduce((acc, plant) => {
     if (!acc[plant.region]) acc[plant.region] = [];
@@ -93,30 +94,42 @@ export default async function CompanyPage({ params }: PageProps) {
             ) : (
               <div className="border border-rule p-8 text-center">
                 <p className="font-mono text-sm text-secondary mb-4">No open positions currently listed.</p>
-                <a
-                  href={company.careers_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-xs tracking-widest uppercase text-ink hover:text-ink transition-colors"
-                >
-                  Visit {company.name} careers page ↗
-                </a>
+                {company.careers_url && (
+                  <a
+                    href={company.careers_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-xs tracking-widest uppercase text-ink hover:text-ink transition-colors"
+                  >
+                    Visit {company.name} careers page ↗
+                  </a>
+                )}
               </div>
             )}
           </div>
 
           {/* Sidebar */}
           <Sidebar>
-            <SidebarSection label="Info">
-              <a
-                href={company.careers_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono text-xs tracking-widest uppercase text-secondary hover:text-ink transition-colors"
-              >
-                Careers page ↗
-              </a>
-            </SidebarSection>
+            {company.description && (
+              <SidebarSection label="About">
+                <p className="font-sans text-sm leading-relaxed text-secondary">
+                  {company.description}
+                </p>
+              </SidebarSection>
+            )}
+
+            {company.careers_url && (
+              <SidebarSection label="Info">
+                <a
+                  href={company.careers_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-xs tracking-widest uppercase text-secondary hover:text-ink transition-colors"
+                >
+                  Careers page ↗
+                </a>
+              </SidebarSection>
+            )}
 
             {plants.length > 0 && (
               <SidebarSection label="Nuclear plants">

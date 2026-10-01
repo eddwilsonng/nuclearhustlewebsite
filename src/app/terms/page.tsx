@@ -51,8 +51,8 @@ export default function TermsPage() {
               <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">3. Accounts</h2>
               <p className="text-secondary text-sm leading-relaxed">
                 You are responsible for maintaining the security of your account credentials. You must notify us immediately at{' '}
-                <a href="mailto:hello@nuclearhustle.com" className="text-ink underline hover:text-ink transition-colors">
-                  hello@nuclearhustle.com
+                <a href="mailto:nuclearhustle@gmail.com" className="text-ink underline hover:text-ink transition-colors">
+                  nuclearhustle@gmail.com
                 </a>{' '}
                 if you suspect unauthorised access to your account. We reserve the right to suspend or terminate accounts that violate these terms.
               </p>
@@ -109,8 +109,8 @@ export default function TermsPage() {
               </ul>
               <p className="text-secondary text-sm leading-relaxed mt-4">
                 If you are an employer and want a listing removed or corrected, email us at{' '}
-                <a href="mailto:hello@nuclearhustle.com" className="text-ink underline hover:text-ink transition-colors">
-                  hello@nuclearhustle.com
+                <a href="mailto:nuclearhustle@gmail.com" className="text-ink underline hover:text-ink transition-colors">
+                  nuclearhustle@gmail.com
                 </a>{' '}
                 and we will action it promptly.
               </p>
@@ -134,8 +134,8 @@ export default function TermsPage() {
               <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">12. Contact</h2>
               <p className="text-secondary text-sm leading-relaxed">
                 Questions about these terms? Contact us at{' '}
-                <a href="mailto:hello@nuclearhustle.com" className="text-ink underline hover:text-ink transition-colors">
-                  hello@nuclearhustle.com
+                <a href="mailto:nuclearhustle@gmail.com" className="text-ink underline hover:text-ink transition-colors">
+                  nuclearhustle@gmail.com
                 </a>.
               </p>
             </div>

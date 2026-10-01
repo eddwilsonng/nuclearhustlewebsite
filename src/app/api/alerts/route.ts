@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
       const resend = new Resend(resendApiKey);
       await resend.emails.send({
         from: 'Nuclear Hustle <jobs@nuclearhustle.com>',
+        replyTo: 'nuclearhustle@gmail.com',
         to: email,
         subject: welcomeEmailSubject(),
         html: buildWelcomeEmailHtml(email),

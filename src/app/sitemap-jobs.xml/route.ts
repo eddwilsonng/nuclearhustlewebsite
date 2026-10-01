@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getAllJobSlugs } from '@/lib/data/static';
+import { getAllPublicJobSlugs } from '@/lib/data/employer';
 
 const BASE_URL = 'https://www.nuclearhustle.com';
 const lastmod = new Date().toISOString().split('T')[0];
 
-export function GET() {
-  const slugs = getAllJobSlugs();
+export async function GET() {
+  const slugs = await getAllPublicJobSlugs();
 
   const entries = slugs.map((slug) => `  <url>
     <loc>${BASE_URL}/job/${slug}</loc>

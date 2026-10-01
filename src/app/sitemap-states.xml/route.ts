@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
-import { getAllStateSlugs, getActiveStateCategoryCombos } from '@/lib/data/static';
+import { getAllActiveStates, getAllActiveStateCategoryCombos } from '@/lib/data/employer';
 
 const BASE_URL = 'https://www.nuclearhustle.com';
 const lastmod = new Date().toISOString().split('T')[0];
 
-export function GET() {
-  const slugs = getAllStateSlugs();
+export async function GET() {
+  const [activeStates, combos] = await Promise.all([
+    getAllActiveStates(),
+    getAllActiveStateCategoryCombos(),
+  ]);
+  const slugs = activeStates.map(({ state }) => state.slug);
 
   const stateEntries = slugs.map((slug) => `  <url>
     <loc>${BASE_URL}/jobs/${slug}</loc>
@@ -15,7 +19,7 @@ export function GET() {
   </url>`);
 
   // State×role intersection pages — only those with live listings.
-  const comboEntries = getActiveStateCategoryCombos().map(({ stateSlug, category }) => `  <url>
+  const comboEntries = combos.map(({ stateSlug, category }) => `  <url>
     <loc>${BASE_URL}/jobs/${stateSlug}/${category}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>daily</changefreq>

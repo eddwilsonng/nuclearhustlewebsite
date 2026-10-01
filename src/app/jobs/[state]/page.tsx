@@ -2,7 +2,12 @@ import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { getJobsByState, getAllStateSlugs, getActiveCategoriesByState, getActiveStates, toJobListItem } from '@/lib/data/static';
+import { getAllStateSlugs, toJobListItem } from '@/lib/data/static';
+import {
+  getAllJobsByState,
+  getAllActiveCategoriesByState,
+  getAllActiveStates,
+} from '@/lib/data/employer';
 import { getStateBySlug } from '@/lib/states';
 import { PaginatedJobResults } from '@/components/PaginatedJobResults';
 import { FilterChip } from '@/components/FilterChip';
@@ -40,7 +45,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
   if (!stateInfo) return { title: 'State Not Found | Nuclear Hustle' };
 
-  const jobs = getJobsByState(state);
+  const jobs = await getAllJobsByState(state);
   const basePath = `/jobs/${state}`;
 
   return buildJobsPaginationMetadata({
@@ -64,7 +69,7 @@ export default async function StatePage({ params, searchParams }: PageProps) {
 
   if (!stateInfo) notFound();
 
-  const jobs = getJobsByState(state);
+  const jobs = await getAllJobsByState(state);
   const jobListItems = jobs.map(toJobListItem);
   const basePath = `/jobs/${state}`;
   const totalPages = getTotalPages(jobs.length);
@@ -74,10 +79,10 @@ export default async function StatePage({ params, searchParams }: PageProps) {
   }
   // Role chips show in-state counts and deep-link to the state×role page, so
   // the number on the chip matches what you see after clicking.
-  const categories = getActiveCategoriesByState(state);
+  const categories = await getAllActiveCategoriesByState(state);
 
   // Build sidebar: other states with job counts, sorted by count desc
-  const allActiveStates = getActiveStates()
+  const allActiveStates = (await getAllActiveStates())
     .filter(({ state: s }) => s.slug !== state)
     .slice(0, 12);
 

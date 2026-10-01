@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { getCompanies, getPlantsByCompany, getJobsByCompany } from '@/lib/data/static';
+import { getPlantsByCompany, getCompanyById } from '@/lib/data/static';
+import { getAllCompanies, getAllJobs } from '@/lib/data/employer';
 import {
   BrowsePageHeader,
   BrowseBreadcrumb,
@@ -17,13 +18,19 @@ export const metadata: Metadata = {
   alternates: { canonical: '/companies' },
 };
 
-export default function CompaniesPage() {
-  const companies = getCompanies();
+export default async function CompaniesPage() {
+  const [companies, jobs] = await Promise.all([getAllCompanies(), getAllJobs()]);
+
+  const jobCounts = new Map<string, number>();
+  for (const job of jobs) {
+    jobCounts.set(job.company_id, (jobCounts.get(job.company_id) || 0) + 1);
+  }
 
   const companiesWithStats = companies.map((company) => ({
     ...company,
     plants: getPlantsByCompany(company.id),
-    jobCount: getJobsByCompany(company.id).length,
+    isDirectEmployer: !getCompanyById(company.id),
+    jobCount: jobCounts.get(company.id) || 0,
   })).sort((a, b) => b.jobCount - a.jobCount);
 
   return (
@@ -60,7 +67,9 @@ export default function CompaniesPage() {
                     {company.name}
                   </h2>
                   <p className="mt-0.5 font-sans text-sm text-secondary">
-                    {company.plants.length} plant{company.plants.length !== 1 ? 's' : ''}
+                    {company.isDirectEmployer
+                      ? 'Direct employer'
+                      : `${company.plants.length} plant${company.plants.length !== 1 ? 's' : ''}`}
                   </p>
                 </div>
               </div>

@@ -7,6 +7,7 @@ import { z } from "zod";
 import { createFeaturedCheckoutSession } from "@/lib/stripe/featured";
 import { expiryFromNow } from "@/lib/jobs/expiry";
 import { isAdmin, ADMIN_VIEW_COOKIE, type AdminViewRole } from "@/lib/admin";
+import { extractState } from "@/lib/states";
 
 // Validation schemas
 const loginSchema = z.object({
@@ -880,14 +881,7 @@ export async function createJobPosting(
     structured.what_we_offer && `What We Offer\n${structured.what_we_offer}`,
   ].filter(Boolean).join("\n\n");
 
-  // Extract state from location
-  const locationParts = validatedFields.data.location.split(",");
-  let state = null;
-  if (locationParts.length >= 2) {
-    const stateCode = locationParts[locationParts.length - 1].trim();
-    // Convert state code to slug format
-    state = stateCode.toLowerCase().replace(/\s+/g, "-");
-  }
+  const state = extractState(validatedFields.data.location);
 
   // Generate slug
   const baseSlug = generateSlug(validatedFields.data.title);
@@ -1005,13 +999,7 @@ export async function updateJobPosting(
     structured.what_we_offer && `What We Offer\n${structured.what_we_offer}`,
   ].filter(Boolean).join("\n\n");
 
-  // Extract state from location
-  const locationParts = validatedFields.data.location.split(",");
-  let state = null;
-  if (locationParts.length >= 2) {
-    const stateCode = locationParts[locationParts.length - 1].trim();
-    state = stateCode.toLowerCase().replace(/\s+/g, "-");
-  }
+  const state = extractState(validatedFields.data.location);
 
   const { error: updateError } = await supabase
     .from("employer_jobs")

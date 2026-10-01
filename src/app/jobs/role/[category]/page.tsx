@@ -3,7 +3,13 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import Script from 'next/script';
 import { Suspense } from 'react';
-import { getJobsByCategory, getActiveStates, getActiveCategories, getActiveEngineeringDisciplines, getCompanies } from '@/lib/data/static';
+import {
+  getAllJobsByCategory,
+  getAllActiveStates,
+  getAllActiveCategories,
+  getAllActiveEngineeringDisciplines,
+  getAllCompanies,
+} from '@/lib/data/employer';
 import { getCategoryInfo, getAllCategories, JobCategory } from '@/lib/categorize';
 import { CategoryJobsList } from '@/components/CategoryJobsList';
 import { FilterChip } from '@/components/FilterChip';
@@ -43,7 +49,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     return { title: 'Category Not Found | Nuclear Hustle' };
   }
 
-  const jobs = getJobsByCategory(category as JobCategory);
+  const jobs = await getAllJobsByCategory(category as JobCategory);
   const basePath = `/jobs/role/${category}`;
 
   return buildJobsPaginationMetadata({
@@ -68,7 +74,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
   if (!allCategories.includes(category as JobCategory)) notFound();
 
-  const jobs = getJobsByCategory(category as JobCategory);
+  const jobs = await getAllJobsByCategory(category as JobCategory);
   // CategoryJobsList is a client component, so anything passed to it is
   // serialized into the page HTML. Strip the heavy description fields (not used
   // by listing cards, which need `state` for filtering so toJobListItem won't
@@ -89,17 +95,17 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   if (page > totalPages) {
     redirect(buildJobsPageUrl(basePath, totalPages));
   }
-  const activeStates = getActiveStates();
+  const activeStates = await getAllActiveStates();
   // Exclude current category and 'other' from the sidebar list
-  const activeCategories = getActiveCategories().filter(
+  const activeCategories = (await getAllActiveCategories()).filter(
     (c) => c.category !== category && c.category !== 'other'
   );
   // Engineering exposes discipline sub-facets (electrical, mechanical, …).
   const engineeringDisciplines =
-    category === 'engineering' ? getActiveEngineeringDisciplines() : [];
+    category === 'engineering' ? await getAllActiveEngineeringDisciplines() : [];
 
   // Get company names for schema
-  const companies = getCompanies();
+  const companies = await getAllCompanies();
   const companyMap = new Map(companies.map((c) => [c.id, c.name]));
 
   // Generate schema markup

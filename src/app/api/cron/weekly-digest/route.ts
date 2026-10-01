@@ -67,6 +67,7 @@ export async function GET(request: NextRequest) {
       const batch = eligible.slice(i, i + BATCH_SIZE);
       const emails = batch.map((sub) => ({
         from: 'Nuclear Hustle <jobs@nuclearhustle.com>',
+        replyTo: 'nuclearhustle@gmail.com',
         to: sub.email,
         subject,
         html: buildWeeklyDigestHtml(jobs, sub.email),

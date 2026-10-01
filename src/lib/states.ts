@@ -109,6 +109,18 @@ export function extractState(location: string): string | null {
   return null;
 }
 
+/** Accepts a slug ("pennsylvania"), code ("PA"/"pa") or name and returns the slug. */
+export function normalizeStateSlug(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  return (
+    stateBySlug.get(trimmed.toLowerCase())?.slug ??
+    stateByCode.get(trimmed.toUpperCase())?.slug ??
+    stateByName.get(trimmed.toLowerCase())?.slug ??
+    null
+  );
+}
+
 export function getStateBySlug(slug: string): StateInfo | null {
   return stateBySlug.get(slug) || null;
 }

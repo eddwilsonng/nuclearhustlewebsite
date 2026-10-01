@@ -319,15 +319,9 @@ export default async function JobPage({ params }: PageProps) {
           <BrowseTitle>{job.title}</BrowseTitle>
 
           <p className="font-sans text-base text-inverse-ink/80">
-            {isEmployerJob ? (
-              <span className="font-semibold text-inverse-ink">
-                {job.company.name}
-              </span>
-            ) : (
-              <BrowseMetaLink href={`/companies/${job.company.id}`}>
-                {job.company.name}
-              </BrowseMetaLink>
-            )}
+            <BrowseMetaLink href={`/companies/${job.company.id}`}>
+              {job.company.name}
+            </BrowseMetaLink>
             <span aria-hidden="true"> · </span>
             {facts.plant ? facts.plant.name : job.location}
             {salaryLabel && (
@@ -501,18 +495,12 @@ export default async function JobPage({ params }: PageProps) {
                 <h2 className="font-sans text-sm font-semibold text-ink">
                   About the company
                 </h2>
-                {isEmployerJob ? (
-                  <p className="mt-2 font-sans text-sm font-semibold text-ink">
-                    {job.company.name}
-                  </p>
-                ) : (
-                  <Link
-                    href={`/companies/${job.company.id}`}
-                    className="mt-2 block font-sans text-sm font-semibold text-ink hover:underline"
-                  >
-                    {job.company.name}
-                  </Link>
-                )}
+                <Link
+                  href={`/companies/${job.company.id}`}
+                  className="mt-2 block font-sans text-sm font-semibold text-ink hover:underline"
+                >
+                  {job.company.name}
+                </Link>
                 {job.company.description && (
                   <p className="mt-2 font-sans text-sm leading-relaxed text-secondary">
                     {job.company.description}

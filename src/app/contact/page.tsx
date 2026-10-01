@@ -36,10 +36,10 @@ export default function ContactPage() {
                 Questions about how the platform works, or anything else.
               </p>
               <a
-                href="mailto:hello@nuclearhustle.com"
+                href="mailto:nuclearhustle@gmail.com"
                 className="font-mono text-xs uppercase tracking-widest text-ink underline underline-offset-2"
               >
-                hello@nuclearhustle.com
+                nuclearhustle@gmail.com
               </a>
             </div>
 
@@ -50,10 +50,10 @@ export default function ContactPage() {
                 Interested in posting jobs or featuring your listings? We&apos;d love to hear from you.
               </p>
               <a
-                href="mailto:employers@nuclearhustle.com"
+                href="mailto:nuclearhustle@gmail.com"
                 className="font-mono text-xs uppercase tracking-widest text-ink underline underline-offset-2"
               >
-                employers@nuclearhustle.com
+                nuclearhustle@gmail.com
               </a>
             </div>
 
@@ -64,10 +64,10 @@ export default function ContactPage() {
                 Industry organisations, training providers, or media — let&apos;s work together.
               </p>
               <a
-                href="mailto:partnerships@nuclearhustle.com"
+                href="mailto:nuclearhustle@gmail.com"
                 className="font-mono text-xs uppercase tracking-widest text-ink underline underline-offset-2"
               >
-                partnerships@nuclearhustle.com
+                nuclearhustle@gmail.com
               </a>
             </div>
 
@@ -82,7 +82,7 @@ export default function ContactPage() {
             <div>
               <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-2">Response time</p>
               <p className="text-secondary text-sm leading-relaxed max-w-md">
-                We aim to respond to all enquiries within one business day. For urgent employer issues, use the employers address above.
+                We aim to respond to all enquiries within one business day. For urgent employer issues, put &ldquo;Urgent&rdquo; in the subject line.
               </p>
             </div>
             <LinkButton href="/jobs" variant="primary" className="self-start whitespace-nowrap md:self-auto">

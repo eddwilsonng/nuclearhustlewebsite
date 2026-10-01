@@ -100,7 +100,10 @@ export function getJobsByCategory(category: JobCategory): JobWithCompany[] {
 }
 
 export function getActiveStates(): { state: StateInfo; count: number }[] {
-  const jobs = publishedJobs();
+  return countStates(publishedJobs());
+}
+
+export function countStates(jobs: Job[]): { state: StateInfo; count: number }[] {
   const stateCounts = new Map<string, number>();
 
   for (const job of jobs) {
@@ -119,22 +122,29 @@ export function getActiveStates(): { state: StateInfo; count: number }[] {
 }
 
 export function getJobsByEngineeringDiscipline(slug: string): JobWithCompany[] {
-  const info = getEngineeringDisciplineInfo(slug);
-  if (!info) return [];
-
-  const jobs = publishedJobs().filter(
-    (j) => j.category === 'engineering' && info.pattern.test(j.title)
-  );
   const companies = companiesData.companies as Company[];
 
-  return jobs.map((job) => ({
+  return filterByEngineeringDiscipline(publishedJobs(), slug).map((job) => ({
     ...job,
     company: companies.find((c) => c.id === job.company_id)!,
   }));
 }
 
+export function filterByEngineeringDiscipline<T extends Job>(jobs: T[], slug: string): T[] {
+  const info = getEngineeringDisciplineInfo(slug);
+  if (!info) return [];
+
+  return jobs.filter((j) => j.category === 'engineering' && info.pattern.test(j.title));
+}
+
 export function getActiveEngineeringDisciplines(): { slug: string; name: string; count: number }[] {
-  const engineeringJobs = publishedJobs().filter((j) => j.category === 'engineering');
+  return countEngineeringDisciplines(publishedJobs());
+}
+
+export function countEngineeringDisciplines(
+  jobs: Job[]
+): { slug: string; name: string; count: number }[] {
+  const engineeringJobs = jobs.filter((j) => j.category === 'engineering');
 
   return ENGINEERING_DISCIPLINES.map((d) => ({
     slug: d.slug,
@@ -146,7 +156,12 @@ export function getActiveEngineeringDisciplines(): { slug: string; name: string;
 }
 
 export function getActiveCategories(): { category: JobCategory; name: string; count: number }[] {
-  const jobs = publishedJobs();
+  return countCategories(publishedJobs());
+}
+
+export function countCategories(
+  jobs: Job[]
+): { category: JobCategory; name: string; count: number }[] {
   const categoryCounts = new Map<JobCategory, number>();
 
   for (const job of jobs) {
@@ -185,8 +200,15 @@ export function getJobsByStateAndCategory(
 export function getActiveCategoriesByState(
   stateSlug: string
 ): { category: JobCategory; name: string; count: number }[] {
+  return countCategoriesInState(publishedJobs(), stateSlug);
+}
+
+export function countCategoriesInState(
+  jobs: Job[],
+  stateSlug: string
+): { category: JobCategory; name: string; count: number }[] {
   const counts = new Map<JobCategory, number>();
-  for (const job of publishedJobs()) {
+  for (const job of jobs) {
     if (job.state === stateSlug) {
       counts.set(job.category, (counts.get(job.category) || 0) + 1);
     }
@@ -210,8 +232,16 @@ export function getActiveStateCategoryCombos(): {
   category: JobCategory;
   count: number;
 }[] {
+  return countStateCategoryCombos(publishedJobs());
+}
+
+export function countStateCategoryCombos(jobs: Job[]): {
+  stateSlug: string;
+  category: JobCategory;
+  count: number;
+}[] {
   const counts = new Map<string, number>();
-  for (const job of publishedJobs()) {
+  for (const job of jobs) {
     if (!job.state || job.category === 'other') continue;
     const key = `${job.state}|${job.category}`;
     counts.set(key, (counts.get(key) || 0) + 1);

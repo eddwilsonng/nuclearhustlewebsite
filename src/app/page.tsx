@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { getJobsForList, getCompanies, getActiveStates, getActiveCategories } from "@/lib/data/static";
+import {
+  getAllJobsForList,
+  getAllCompanies,
+  getAllActiveStates,
+  getAllActiveCategories,
+} from "@/lib/data/employer";
 import { JobCard } from "@/components/JobCard";
 import { FeaturedJobsSection, FeaturedJobsSkeleton } from "@/components/FeaturedJobsSection";
 import { JobAlertForm } from "@/components/JobAlertForm";
@@ -27,10 +32,12 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const jobs = getJobsForList();
-  const companies = getCompanies();
-  const activeStates = getActiveStates();
-  const activeCategories = getActiveCategories();
+  const [jobs, companies, activeStates, activeCategories] = await Promise.all([
+    getAllJobsForList(),
+    getAllCompanies(),
+    getAllActiveStates(),
+    getAllActiveCategories(),
+  ]);
   const recentJobs = jobs.slice(0, 12);
 
   const supabase = await createClient();

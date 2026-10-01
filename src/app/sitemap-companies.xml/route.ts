@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getCompanies } from '@/lib/data/static';
+import { getAllCompanies } from '@/lib/data/employer';
 
 const BASE_URL = 'https://www.nuclearhustle.com';
 const lastmod = new Date().toISOString().split('T')[0];
 
-export function GET() {
-  const companies = getCompanies();
+export async function GET() {
+  const companies = await getAllCompanies();
 
   const entries = companies.map((company) => `  <url>
     <loc>${BASE_URL}/companies/${company.id}</loc>

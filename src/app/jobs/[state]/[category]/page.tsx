@@ -2,13 +2,13 @@ import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import Script from 'next/script';
 import { Suspense } from 'react';
+import { getActiveStateCategoryCombos, toJobListItem } from '@/lib/data/static';
 import {
-  getJobsByStateAndCategory,
-  getActiveCategoriesByState,
-  getActiveStateCategoryCombos,
-  getCompanies,
-  toJobListItem,
-} from '@/lib/data/static';
+  getAllJobsByStateAndCategory,
+  getAllActiveCategoriesByState,
+  getAllActiveStateCategoryCombos,
+  getAllCompanies,
+} from '@/lib/data/employer';
 import { getStateBySlug } from '@/lib/states';
 import { getCategoryInfo, getAllCategories, JobCategory } from '@/lib/categorize';
 import { PaginatedJobResults } from '@/components/PaginatedJobResults';
@@ -55,7 +55,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
   const stateInfo = getStateBySlug(state)!;
   const categoryInfo = getCategoryInfo(category as JobCategory);
-  const jobs = getJobsByStateAndCategory(state, category as JobCategory);
+  const jobs = await getAllJobsByStateAndCategory(state, category as JobCategory);
   const basePath = `/jobs/${state}/${category}`;
 
   return buildJobsPaginationMetadata({
@@ -80,7 +80,7 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
 
   const stateInfo = getStateBySlug(state)!;
   const categoryInfo = getCategoryInfo(category as JobCategory);
-  const jobs = getJobsByStateAndCategory(state, category as JobCategory);
+  const jobs = await getAllJobsByStateAndCategory(state, category as JobCategory);
   const jobListItems = jobs.map(toJobListItem);
   const basePath = `/jobs/${state}/${category}`;
   const totalPages = getTotalPages(jobs.length);
@@ -90,16 +90,16 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
   }
 
   // Sidebar cross-links: other roles in this state, and this role in other states.
-  const otherRolesInState = getActiveCategoriesByState(state).filter(
+  const otherRolesInState = (await getAllActiveCategoriesByState(state)).filter(
     (c) => c.category !== category
   );
-  const sameRoleOtherStates = getActiveStateCategoryCombos()
+  const sameRoleOtherStates = (await getAllActiveStateCategoryCombos())
     .filter((c) => c.category === category && c.stateSlug !== state)
     .map((c) => ({ ...c, state: getStateBySlug(c.stateSlug) }))
     .filter((c) => c.state)
     .slice(0, 10);
 
-  const companies = getCompanies();
+  const companies = await getAllCompanies();
   const companyMap = new Map(companies.map((c) => [c.id, c.name]));
   const url = `https://www.nuclearhustle.com${basePath}`;
   const schemaData = generateCategoryPageSchema({

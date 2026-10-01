@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdmin } from "@/lib/admin";
+import { extractState } from "@/lib/states";
 import type { ActionState } from "@/lib/auth/actions";
 import { z } from "zod";
 import { promises as fs } from "fs";
@@ -155,12 +156,7 @@ export async function adminUpdateJob(
     .filter(Boolean)
     .join("\n\n");
 
-  const locationParts = validatedFields.data.location.split(",");
-  let state = null;
-  if (locationParts.length >= 2) {
-    const stateCode = locationParts[locationParts.length - 1].trim();
-    state = stateCode.toLowerCase().replace(/\s+/g, "-");
-  }
+  const state = extractState(validatedFields.data.location);
 
   const { error: updateError } = await admin
     .from("employer_jobs")
@@ -265,12 +261,7 @@ export async function adminUpdateScrapedJob(
     const idx = data.jobs.findIndex((j) => j.id === jobId);
     if (idx === -1) return { error: "Job not found" };
 
-    const locationParts = validated.data.location.split(",");
-    let state: string | null = null;
-    if (locationParts.length >= 2) {
-      const stateCode = locationParts[locationParts.length - 1].trim();
-      state = stateCode.toLowerCase().replace(/\s+/g, "-");
-    }
+    const state = extractState(validated.data.location);
 
     data.jobs[idx] = {
       ...data.jobs[idx],
