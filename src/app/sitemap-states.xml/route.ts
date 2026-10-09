@@ -1,42 +1,41 @@
-import { NextResponse } from 'next/server';
-import { getAllActiveStates, getAllActiveStateCategoryCombos } from '@/lib/data/employer';
-
-const BASE_URL = 'https://www.nuclearhustle.com';
-const lastmod = new Date().toISOString().split('T')[0];
+import {
+  getAllActiveStates,
+  getAllActiveStateCategoryCombos,
+  getAllJobs,
+} from '@/lib/data/employer';
+import {
+  SITEMAP_BASE_URL,
+  groupJobsBy,
+  lastmodTag,
+  newestJobDate,
+  xmlResponse,
+} from '@/lib/sitemap';
 
 export async function GET() {
-  const [activeStates, combos] = await Promise.all([
+  const [activeStates, combos, jobs] = await Promise.all([
     getAllActiveStates(),
     getAllActiveStateCategoryCombos(),
+    getAllJobs(),
   ]);
-  const slugs = activeStates.map(({ state }) => state.slug);
 
-  const stateEntries = slugs.map((slug) => `  <url>
-    <loc>${BASE_URL}/jobs/${slug}</loc>
-    <lastmod>${lastmod}</lastmod>
+  const jobsByState = groupJobsBy(jobs, (job) => job.state);
+  const jobsByCombo = groupJobsBy(jobs, (job) => job.state && `${job.state}|${job.category}`);
+
+  const stateEntries = activeStates.map(({ state }) => `  <url>
+    <loc>${SITEMAP_BASE_URL}/jobs/${state.slug}</loc>${lastmodTag(newestJobDate(jobsByState.get(state.slug) ?? []))}
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>`);
 
   // State×role intersection pages — only those with live listings.
   const comboEntries = combos.map(({ stateSlug, category }) => `  <url>
-    <loc>${BASE_URL}/jobs/${stateSlug}/${category}</loc>
-    <lastmod>${lastmod}</lastmod>
+    <loc>${SITEMAP_BASE_URL}/jobs/${stateSlug}/${category}</loc>${lastmodTag(newestJobDate(jobsByCombo.get(`${stateSlug}|${category}`) ?? []))}
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>`);
 
-  const entries = [...stateEntries, ...comboEntries].join('\n');
-
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  return xmlResponse(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${entries}
-</urlset>`;
-
-  return new NextResponse(xml, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
-    },
-  });
+${[...stateEntries, ...comboEntries].join('\n')}
+</urlset>`);
 }

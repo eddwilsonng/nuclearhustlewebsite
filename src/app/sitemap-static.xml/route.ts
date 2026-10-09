@@ -1,37 +1,27 @@
-import { NextResponse } from 'next/server';
-
-const BASE_URL = 'https://www.nuclearhustle.com';
-const lastmod = new Date().toISOString().split('T')[0];
+import { getAllJobs } from '@/lib/data/employer';
+import { SITEMAP_BASE_URL, lastmodTag, newestJobDate, xmlResponse } from '@/lib/sitemap';
 
 const pages = [
-  { path: '', priority: '1.0', changefreq: 'daily' },
-  { path: '/jobs', priority: '0.9', changefreq: 'daily' },
-  { path: '/companies', priority: '0.9', changefreq: 'daily' },
-  { path: '/about', priority: '0.5', changefreq: 'monthly' },
-  { path: '/contact', priority: '0.5', changefreq: 'monthly' },
-  { path: '/privacy', priority: '0.3', changefreq: 'monthly' },
-  { path: '/terms', priority: '0.3', changefreq: 'monthly' },
+  { path: '', priority: '1.0', changefreq: 'daily', listsJobs: true },
+  { path: '/jobs', priority: '0.9', changefreq: 'daily', listsJobs: true },
+  { path: '/companies', priority: '0.9', changefreq: 'daily', listsJobs: true },
+  { path: '/about', priority: '0.5', changefreq: 'monthly', listsJobs: false },
+  { path: '/contact', priority: '0.5', changefreq: 'monthly', listsJobs: false },
+  { path: '/privacy', priority: '0.3', changefreq: 'monthly', listsJobs: false },
+  { path: '/terms', priority: '0.3', changefreq: 'monthly', listsJobs: false },
 ];
 
-function urlEntry(path: string, priority: string, changefreq: string) {
-  return `  <url>
-    <loc>${BASE_URL}${path}</loc>
-    <lastmod>${lastmod}</lastmod>
+export async function GET() {
+  const newestJob = newestJobDate(await getAllJobs());
+
+  const entries = pages.map(({ path, priority, changefreq, listsJobs }) => `  <url>
+    <loc>${SITEMAP_BASE_URL}${path}</loc>${lastmodTag(listsJobs ? newestJob : undefined)}
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
-  </url>`;
-}
+  </url>`).join('\n');
 
-export function GET() {
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  return xmlResponse(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${pages.map(({ path, priority, changefreq }) => urlEntry(path, priority, changefreq)).join('\n')}
-</urlset>`;
-
-  return new NextResponse(xml, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
-    },
-  });
+${entries}
+</urlset>`);
 }

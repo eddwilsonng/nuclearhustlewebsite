@@ -1,39 +1,33 @@
-import { NextResponse } from 'next/server';
 import { getAllCategories } from '@/lib/categorize';
-import { getActiveEngineeringDisciplines } from '@/lib/data/static';
+import { getActiveEngineeringDisciplines, filterByEngineeringDiscipline } from '@/lib/data/static';
+import { getAllJobs } from '@/lib/data/employer';
+import {
+  SITEMAP_BASE_URL,
+  groupJobsBy,
+  lastmodTag,
+  newestJobDate,
+  xmlResponse,
+} from '@/lib/sitemap';
 
-const BASE_URL = 'https://www.nuclearhustle.com';
-const lastmod = new Date().toISOString().split('T')[0];
+export async function GET() {
+  const jobs = await getAllJobs();
+  const jobsByCategory = groupJobsBy(jobs, (job) => job.category);
 
-export function GET() {
-  const categories = getAllCategories();
-
-  const categoryEntries = categories.map((category) => `  <url>
-    <loc>${BASE_URL}/jobs/role/${category}</loc>
-    <lastmod>${lastmod}</lastmod>
+  const categoryEntries = getAllCategories().map((category) => `  <url>
+    <loc>${SITEMAP_BASE_URL}/jobs/role/${category}</loc>${lastmodTag(newestJobDate(jobsByCategory.get(category) ?? []))}
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>`);
 
   // Engineering discipline facets — only those with live listings.
   const disciplineEntries = getActiveEngineeringDisciplines().map(({ slug }) => `  <url>
-    <loc>${BASE_URL}/jobs/role/engineering/${slug}</loc>
-    <lastmod>${lastmod}</lastmod>
+    <loc>${SITEMAP_BASE_URL}/jobs/role/engineering/${slug}</loc>${lastmodTag(newestJobDate(filterByEngineeringDiscipline(jobs, slug)))}
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>`);
 
-  const entries = [...categoryEntries, ...disciplineEntries].join('\n');
-
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  return xmlResponse(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${entries}
-</urlset>`;
-
-  return new NextResponse(xml, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
-    },
-  });
+${[...categoryEntries, ...disciplineEntries].join('\n')}
+</urlset>`);
 }

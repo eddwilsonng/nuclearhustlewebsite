@@ -1,28 +1,17 @@
-import { NextResponse } from 'next/server';
-import { getAllPublicJobSlugs } from '@/lib/data/employer';
-
-const BASE_URL = 'https://www.nuclearhustle.com';
-const lastmod = new Date().toISOString().split('T')[0];
+import { getAllJobs } from '@/lib/data/employer';
+import { SITEMAP_BASE_URL, lastmodTag, xmlResponse } from '@/lib/sitemap';
 
 export async function GET() {
-  const slugs = await getAllPublicJobSlugs();
+  const jobs = await getAllJobs();
 
-  const entries = slugs.map((slug) => `  <url>
-    <loc>${BASE_URL}/job/${slug}</loc>
-    <lastmod>${lastmod}</lastmod>
+  const entries = jobs.map((job) => `  <url>
+    <loc>${SITEMAP_BASE_URL}/job/${job.slug}</loc>${lastmodTag(job.scraped_at.split('T')[0])}
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>`).join('\n');
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  return xmlResponse(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${entries}
-</urlset>`;
-
-  return new NextResponse(xml, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
-    },
-  });
+</urlset>`);
 }

@@ -12,34 +12,9 @@ import {
   plantStatusLabel,
   plantStatusTextClass,
 } from '@/lib/plants/statusUi';
+import { OPERATOR_TO_COMPANY } from '@/lib/plants/operators';
 
 export const revalidate = 3600;
-
-// Operator name → company id mapping
-const OPERATOR_TO_COMPANY: Record<string, string> = {
-  'Ameren': 'ameren',
-  'Arizona Public Service': 'aps',
-  'Constellation': 'constellation',
-  'DTE Energy': 'dte',
-  'Dominion Energy': 'dominion',
-  'Duke Energy': 'duke',
-  'Energy Northwest': 'energy-northwest',
-  'Entergy': 'entergy',
-  'Indiana Michigan Power': 'aep',
-  'NPPD': 'nppd',
-  'NextEra Energy': 'nextera',
-  'PG&E': 'pge',
-  'PSEG': 'pseg',
-  'Southern Company': 'southern-nuclear',
-  'TVA': 'tva',
-  'Talen Energy': 'talen',
-  'Vistra Energy': 'vistra',
-  'Xcel Energy': 'xcel',
-  'NRG Energy': 'nrg',
-  'Evergy': 'evergy',
-  'FirstEnergy': 'firstenergy',
-  'Holtec International': 'holtec',
-};
 
 export async function generateStaticParams() {
   return plantsData.plants.map(p => ({ slug: p.id }));

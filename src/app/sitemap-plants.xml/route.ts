@@ -1,34 +1,36 @@
-import { NextResponse } from 'next/server';
 import plantsData from '@/data/plants.json';
-
-const BASE_URL = 'https://www.nuclearhustle.com';
-const lastmod = new Date().toISOString().split('T')[0];
+import { getJobsWithCompany } from '@/lib/data/static';
+import { OPERATOR_TO_COMPANY } from '@/lib/plants/operators';
+import {
+  SITEMAP_BASE_URL,
+  groupJobsBy,
+  lastmodTag,
+  newestJobDate,
+  xmlResponse,
+} from '@/lib/sitemap';
 
 export function GET() {
-  const plantEntries = plantsData.plants.map((plant) => `  <url>
-    <loc>${BASE_URL}/plants/${plant.id}</loc>
-    <lastmod>${lastmod}</lastmod>
+  // Plant pages list the operator's scraped jobs, so that's what changes them.
+  const jobsByCompany = groupJobsBy(getJobsWithCompany(), (job) => job.company_id);
+
+  const plantEntries = plantsData.plants.map((plant) => {
+    const operatorJobs = jobsByCompany.get(OPERATOR_TO_COMPANY[plant.operator]) ?? [];
+    return `  <url>
+    <loc>${SITEMAP_BASE_URL}/plants/${plant.id}</loc>${lastmodTag(newestJobDate(operatorJobs))}
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
-  </url>`).join('\n');
+  </url>`;
+  }).join('\n');
 
   const indexEntry = `  <url>
-    <loc>${BASE_URL}/plants</loc>
-    <lastmod>${lastmod}</lastmod>
+    <loc>${SITEMAP_BASE_URL}/plants</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>`;
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  return xmlResponse(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${indexEntry}
 ${plantEntries}
-</urlset>`;
-
-  return new NextResponse(xml, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
-    },
-  });
+</urlset>`);
 }
