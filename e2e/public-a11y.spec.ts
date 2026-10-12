@@ -16,7 +16,11 @@ test("homepage has one main and a hidden skip link", async ({ page }) => {
   await expect(page.locator("main#main-content")).toHaveCount(1);
   const skip = page.getByRole("link", { name: "Skip to main content" });
   await expect(skip).toHaveCount(1);
-  await expect(skip).not.toBeVisible();
+  // Visually hidden by clipping to 1px, which Playwright still counts as visible.
+  expect((await skip.boundingBox())?.width).toBeLessThanOrEqual(1);
+  await page.keyboard.press("Tab");
+  await expect(skip).toBeFocused();
+  expect((await skip.boundingBox())?.width).toBeGreaterThan(1);
 });
 
 test("homepage search submits to /jobs", async ({ page }) => {

@@ -99,12 +99,18 @@ export function JobCard({
           <dl className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-secondary">
             {isFeatured && (
               <div>
-                <Badge tone="featured">Featured</Badge>
+                <dt className="sr-only">Listing</dt>
+                <dd>
+                  <Badge tone="featured">Featured</Badge>
+                </dd>
               </div>
             )}
             {isEmployerJob && !isFeatured && (
               <div>
-                <Badge tone="featured">Direct employer</Badge>
+                <dt className="sr-only">Listing</dt>
+                <dd>
+                  <Badge tone="featured">Direct employer</Badge>
+                </dd>
               </div>
             )}
             {salaryLabel && (
