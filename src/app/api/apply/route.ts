@@ -58,6 +58,25 @@ async function isRateLimited(ip: string): Promise<boolean> {
   }
 }
 
+// The apex and www hosts both serve the site, so accept either regardless of
+// which one NEXT_PUBLIC_SITE_URL is set to.
+function getAllowedOrigins(): Set<string> {
+  const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+  const apexHost = siteUrl.host.replace(/^www\./, '');
+  return new Set([
+    `${siteUrl.protocol}//${apexHost}`,
+    `${siteUrl.protocol}//www.${apexHost}`,
+  ]);
+}
+
+function isAllowedOrigin(url: string): boolean {
+  try {
+    return getAllowedOrigins().has(new URL(url).origin);
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
   try {
     // Rate limit by IP
@@ -74,13 +93,11 @@ export async function POST(request: Request) {
     // Validate origin
     const origin = request.headers.get('origin');
     const referer = request.headers.get('referer');
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const allowedOrigin = new URL(siteUrl).origin;
 
-    if (origin && origin !== allowedOrigin) {
+    if (origin && !isAllowedOrigin(origin)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
-    if (!origin && referer && !referer.startsWith(allowedOrigin)) {
+    if (!origin && referer && !isAllowedOrigin(referer)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
