@@ -39,6 +39,7 @@ export default async function Home() {
     getAllActiveCategories(),
   ]);
   const recentJobs = jobs.slice(0, 12);
+  const jobCount = jobs.length.toLocaleString("en-US");
 
   const supabase = await createClient();
   const {
@@ -52,7 +53,7 @@ export default async function Home() {
         <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 md:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] md:py-24">
           <div>
             <p className="font-mono text-xs uppercase tracking-widest text-secondary">
-              {jobs.length} open roles · updated today
+              {jobCount} open roles · updated today
             </p>
             <h1 className="mt-4 font-sans text-4xl leading-tight font-bold text-ink md:text-5xl lg:text-6xl text-balance">
               Find your next nuclear job.
@@ -82,14 +83,14 @@ export default async function Home() {
               </Button>
             </form>
 
-            <p className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-2 font-sans text-sm text-secondary">
-              <Link href="/jobs" className="hover:text-ink hover:underline">
-                Browse {jobs.length} jobs
-              </Link>
-              <Link href="/companies" className="hover:text-ink hover:underline">
-                View companies →
-              </Link>
-            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <LinkButton href="/jobs" variant="secondary" size="compact">
+                Browse {jobCount} jobs
+              </LinkButton>
+              <LinkButton href="/companies" variant="secondary" size="compact">
+                View companies
+              </LinkButton>
+            </div>
           </div>
 
           <div className="relative hidden md:block">
@@ -140,7 +141,7 @@ export default async function Home() {
               href="/jobs"
               className="font-sans text-sm text-secondary hover:text-ink"
             >
-              All {jobs.length} jobs →
+              All {jobCount} jobs →
             </Link>
           </div>
           <div className="border border-rule">
@@ -165,7 +166,7 @@ export default async function Home() {
               >
                 {name}
                 <span className="ml-2 font-mono text-xs tabular-nums text-ink">
-                  {count}
+                  {count.toLocaleString("en-US")}
                 </span>
               </Link>
             ))}
@@ -187,7 +188,7 @@ export default async function Home() {
               >
                 {state.name}
                 <span className="ml-2 font-mono text-xs tabular-nums text-ink">
-                  {count}
+                  {count.toLocaleString("en-US")}
                 </span>
               </Link>
             ))}
@@ -210,7 +211,7 @@ export default async function Home() {
               New reactors. Life extensions. A workforce shortage.
             </h2>
             <p className="mt-4 font-sans text-base leading-relaxed text-secondary">
-              {jobs.length} open roles across {companies.length} employers.
+              {jobCount} open roles across {companies.length} employers.
               Get the Monday digest or post a listing.
             </p>
             <div className="mt-8">
