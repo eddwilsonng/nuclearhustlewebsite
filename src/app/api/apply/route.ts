@@ -191,6 +191,7 @@ export async function POST(request: Request) {
 
     if (insertError) {
       console.error('[apply] Failed to persist application:', insertError.message);
+      return NextResponse.json({ error: 'Could not save application' }, { status: 500 });
     }
 
     // Send email with escaped values
@@ -208,7 +209,7 @@ export async function POST(request: Request) {
       const eMessage = message ? escapeHtml(message) : null;
       const eCvUrl = cvUrl ? escapeHtml(cvUrl) : null;
 
-      await resend.emails.send({
+      const { error: sendError } = await resend.emails.send({
         from: 'Nuclear Hustle <applications@nuclearhustle.com>',
         to: job.application_email,
         replyTo: applicantEmail,
@@ -250,9 +251,19 @@ export async function POST(request: Request) {
           </div>
         `,
       });
+      if (sendError) {
+        console.error('[apply] Failed to send notification:', sendError.message);
+        return NextResponse.json(
+          { error: 'Application saved, but the notification email failed' },
+          { status: 502 },
+        );
+      }
     } else {
-      // No email provider configured — log only non-PII details
-      console.warn('[apply] RESEND_API_KEY not set. Application received for job:', job.id);
+      console.error('[apply] RESEND_API_KEY not set. Application saved for job:', job.id);
+      return NextResponse.json(
+        { error: 'Application saved, but the notification email failed' },
+        { status: 502 },
+      );
     }
 
     return NextResponse.json({ success: true });
