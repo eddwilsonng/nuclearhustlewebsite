@@ -32,6 +32,9 @@ const SECTION_MAP: { match: string; field: Field }[] = [
   { match: 'Basic Qualifications', field: 'qualifications' },
   { match: 'Preferred Qualifications', field: 'desired' },
   { match: 'Desired Qualifications', field: 'desired' },
+  { match: "What You'll Do", field: 'responsibilities' },
+  { match: 'What You Will Do', field: 'responsibilities' },
+  { match: 'Key Accountabilities', field: 'responsibilities' },
   { match: 'Key Responsibilities', field: 'responsibilities' },
   { match: 'Job Responsibilities', field: 'responsibilities' },
   { match: 'Primary Responsibilities', field: 'responsibilities' },
@@ -58,7 +61,7 @@ const SECTION_MAP: { match: string; field: Field }[] = [
 SECTION_MAP.sort((a, b) => b.match.length - a.match.length);
 
 const MARKETING =
-  /join (our|the) team|more than a career|make a difference|friendly work environment|who we are|total rewards|powered by passion|thanks for your interest|you'll find a friendly|build an exciting|we're creating healthier|cultivating a workplace|11:59|job posting expire|submit your application|important application/i;
+  /join (our|the) team|more than a career|make a difference|friendly work environment|who we are|total rewards|powered by passion|thanks for your interest|you'll find a friendly|build an exciting|build the future of nuclear|we're creating healthier|cultivating a workplace|11:59|job posting expire|submit your application|important application/i;
 
 const ABOUT_SKIP =
   /benefits offered for this position|\.pdf\b|total compensation and benefits|equal opportunity employer|nyse:\s*so\b|net-zero greenhouse|facebook\.com\/southernnuclear|in one or two sentences, provide a brief overview/i;
@@ -72,12 +75,15 @@ const STRIP: RegExp[] = [
   /Who We Are[\s\S]*?(?=Primary Purpose|Job Summary|Position Summary|This position)/i,
   /Total Rewards[\s\S]*?(?=Primary Purpose|Job Summary|Expected salary|This position)/i,
   /Thanks for your interest in Oklo!?\s*/i,
+  /Are you interested in being part of an innovative team[\s\S]*?About the role:\s*/gi,
+  /As the largest private-sector power producer[\s\S]*?tomorrow\.\s*/gi,
   /At Talen Energy[\s\S]*?(?:drive meaningful change by:|In this role[,:]?)/i,
   /Relocation Assistance Provided[\s\S]*$/i,
   /We are an [Ee]qual [Oo]pportunity[\s\S]*$/g,
   /Equal Opportunity Employer[\s\S]*$/g,
   /Duke Energy is an [Ee]qual[\s\S]*$/gi,
-  /TerraPower is an [Ee]qual[\s\S]*$/gi,
+  /TerraPower is an [Ee]qual [Oo]pportunity Employer\.[\s\S]*?local law\.\s*/gi,
+  /As a result, the company.s activities[\s\S]*?human health benefits\.?"?\s*/gi,
   /Oklo is an [Ee]qual[\s\S]*$/gi,
   /Constellation is proud to be an[\s\S]*$/gi,
   /Privacy(?: Policy)?[\s\S]*$/i,
@@ -120,6 +126,9 @@ const UNIQUE_HEADERS = new Set(
     'Basic Qualifications',
     'Preferred Qualifications',
     'Desired Qualifications',
+    "What You'll Do",
+    'What You Will Do',
+    'Key Accountabilities',
     'Key Responsibilities',
     'Job Responsibilities',
     'Primary Responsibilities',
@@ -176,6 +185,11 @@ const SKILL_PATTERNS: [RegExp, string][] = [
 
 export function normalizeAtsText(raw: string): string {
   let t = raw.replace(/\r\n/g, '\n');
+  t = t.replace(/&#39;|&apos;|&#8217;|&rsquo;/g, "'");
+  t = t.replace(/&amp;/g, '&');
+  t = t.replace(/&nbsp;/g, ' ');
+  t = t.replace(/&quot;|&#34;/g, '"');
+  t = t.replace(/&#\d+;/g, ' ');
   t = t.replace(/[“”]/g, '"');
   t = t.replace(/([a-z])([A-Z])/g, '$1 $2');
   t = t.replace(/([a-zA-Z])(\d)/g, '$1 $2');
@@ -234,10 +248,23 @@ function fieldForHeader(header: string): Field | null {
   return null;
 }
 
+const DUTY_VERB =
+  'Act|Acquire|Analyze|Apply|Assist|Assign|Build|Collaborate|Collect|Communicate|Complete|Conduct|Coordinate|Create|Demonstrate|Develop|Direct|Ensure|Evaluate|Guide|Identify|Implement|Lead|Maintain|Manage|Monitor|Obtain|Order|Oversee|Perform|Plan|Prepare|Process|Provide|Retrieve|Review|Schedule|Serve|Supervise|Support|Verify';
+
 function splitIntoItems(text: string): string[] {
-  let remaining = text.replace(/[•●]/g, '\n- ');
+  let remaining = text.replace(/[•●·∙]/g, '\n- ');
   remaining = remaining.replace(/;\s+(?=[A-Z])/g, '.\n');
   remaining = remaining.replace(/([.!?])\s+(?=[A-Z])/g, '$1\n');
+  // Career sites often flatten bullets into one line and drop the period:
+  // "responsibility Plan, organize, and monitor"
+  remaining = remaining.replace(
+    new RegExp(`(?<=[a-z)])\\s+(?=(?:${DUTY_VERB})(?:s|es|ed|ing)?\\b)`, 'g'),
+    '\n',
+  );
+  remaining = remaining.replace(
+    /(?<=[a-z.])\s+(?=(?:Education|Experience|Knowledge(?:,| and Skills)|KEY)\b)/g,
+    '\n',
+  );
 
   const lines = remaining.split('\n').map((l) => l.trim()).filter(Boolean);
   const items: string[] = [];
@@ -253,6 +280,7 @@ function splitIntoItems(text: string): string[] {
     if (/\(\s*i\.e\.?\s*$/i.test(cleaned)) continue;
     if (/\b(and|or|the|of|including|with)\s*$/i.test(cleaned)) continue;
     if (/privacy|cookie|do not sell|terms of use|equal opportunity|eeo|§§|@@/i.test(cleaned)) continue;
+    if (/job posting end date|if you have what it takes|exciting employment opportunities/i.test(cleaned)) continue;
     if (MARKETING.test(cleaned) || ABOUT_SKIP.test(cleaned)) continue;
     items.push(cleaned.replace(/\s+/g, ' '));
   }

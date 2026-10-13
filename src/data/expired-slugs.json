@@ -165,11 +165,6 @@
     "category": "engineering"
   },
   {
-    "slug": "mechanical-engineer-byron-illinois-825",
-    "state": "illinois",
-    "category": "engineering"
-  },
-  {
     "slug": "nuclear-corporate-intern-warrenville-illinois-3818",
     "state": "illinois",
     "category": "other"
@@ -253,11 +248,6 @@
     "slug": "mechanical-valve-engineering-analyst-byron-illinois-2027",
     "state": "illinois",
     "category": "engineering"
-  },
-  {
-    "slug": "supv-fuel-handling-oswego-new-york-4230",
-    "state": "new-york",
-    "category": "operations"
   },
   {
     "slug": "engineer-digital-relay-design-kennett-square-penns-1607",
@@ -348,11 +338,6 @@
     "slug": "manager-design-engineering-byron-illinois-4233",
     "state": "illinois",
     "category": "engineering"
-  },
-  {
-    "slug": "sr-rxs-specialist-lusby-maryland-3840",
-    "state": "maryland",
-    "category": "administrative"
   },
   {
     "slug": "sr-performance-specialist-middletown-pennsylva-3841",
@@ -520,11 +505,6 @@
     "category": "administrative"
   },
   {
-    "slug": "mt-instructor-byron-illinois-3828",
-    "state": "illinois",
-    "category": "training"
-  },
-  {
     "slug": "supervisor-security-ops-delta-pennsylvania-3829",
     "state": "pennsylvania",
     "category": "other"
@@ -576,11 +556,6 @@
   },
   {
     "slug": "project-financial-analyst-middletown-pennsylva-3848",
-    "state": "pennsylvania",
-    "category": "administrative"
-  },
-  {
-    "slug": "mgr-site-regulatory-assurance-middletown-pennsylva-3850",
     "state": "pennsylvania",
     "category": "administrative"
   },
@@ -673,11 +648,6 @@
     "slug": "supervisor-maintenance-electrical-marseilles-illinois-2358",
     "state": "illinois",
     "category": "maintenance"
-  },
-  {
-    "slug": "maintenance-planner-electrical-lusby-maryland-77",
-    "state": "maryland",
-    "category": "administrative"
   },
   {
     "slug": "supervisor-maintenance-pottstown-pennsylvan-2801",
@@ -815,11 +785,6 @@
     "category": "administrative"
   },
   {
-    "slug": "work-week-manager-oswego-new-york-3259",
-    "state": "new-york",
-    "category": "administrative"
-  },
-  {
     "slug": "sr-ai-solutions-specialist-baltimore-maryland-3266",
     "state": "maryland",
     "category": "administrative"
@@ -943,11 +908,6 @@
     "slug": "structural-engineer-warrenville-illinois-68",
     "state": "illinois",
     "category": "engineering"
-  },
-  {
-    "slug": "sr-operations-instructor-ops-instructor-byron-illinois-2565",
-    "state": "illinois",
-    "category": "training"
   },
   {
     "slug": "engineer-electrical-design-oswego-new-york-845",
