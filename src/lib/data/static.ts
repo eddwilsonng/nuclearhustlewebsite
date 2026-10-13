@@ -36,6 +36,12 @@ export function getPublishedJobsForSkills(): Job[] {
   return publishedJobs();
 }
 
+/** When the published job index was last built. */
+export function getJobsIndexGeneratedAt(): string | null {
+  const stamp = (jobsIndex as { generatedAt?: unknown }).generatedAt;
+  return typeof stamp === 'string' ? stamp : null;
+}
+
 export function getJobsWithCompany(filters?: {
   companyId?: string;
   region?: Region;

@@ -163,15 +163,16 @@ export const SKILL_TAXONOMY: CanonicalSkill[] = [
   { slug: 'alara', name: 'ALARA', facet: 'skill', aliases: ['alara'] },
   { slug: 'dosimetry', name: 'Dosimetry', facet: 'skill', aliases: ['dosimetry'] },
   { slug: 'radiochemistry', name: 'Radiochemistry', facet: 'skill', aliases: ['radiochemistry', 'radiation chemistry'] },
-  { slug: 'ansi-ans-3-1', name: 'ANSI/ANS-3.1', facet: 'skill', aliases: ['ansi/ans-3.1-2014', 'ansi/ans-3.1', 'ans-3.1'] },
+  { slug: 'ansi-ans-3-1', name: 'ANSI/ANS-3.1', facet: 'skill', aliases: ['ansi/ans-3.1-2014', 'ansi/ans-3.1', 'ansi/ans 3.1', 'ansi/ans-3.1-1978', 'ansi/ans 3.1-1978', 'ans-3.1'] },
   { slug: 'nqa-1', name: 'ASME NQA-1', facet: 'skill', aliases: ['asme nqa-1', 'nqa-1', 'nqa1'] },
-  { slug: 'asme', name: 'ASME Codes', facet: 'skill', aliases: ['asme section iii', 'asme standards', 'asme code', 'asme codes', 'asme bpvc', 'asme b31.1', 'asme'] },
+  { slug: 'asme', name: 'ASME Codes', facet: 'skill', aliases: ['asme section iii', 'asme section xi', 'asme section viii', 'asme section ix', 'asme iii', 'asme standards', 'asme code', 'asme codes', 'asme bpvc', 'asme b&pv', 'asme b&pv code', 'asme b31.1', 'asme b31.3', 'asme'] },
   { slug: 'aisc', name: 'AISC', facet: 'skill', aliases: ['aisc'] },
   { slug: 'aci', name: 'ACI', facet: 'skill', aliases: ['aci'] },
   { slug: 'iso-9001', name: 'ISO 9001', facet: 'skill', aliases: ['iso 9001', 'iso9001'] },
   { slug: '10-cfr-50', name: '10 CFR 50', facet: 'skill', aliases: ['10 cfr 50 appendix b', '10 cfr 50.59', '10 cfr 50', '10cfr50'] },
   { slug: '10-cfr-21', name: '10 CFR 21', facet: 'skill', aliases: ['10 cfr 21'] },
-  { slug: 'nrc-regulations', name: 'NRC Regulations', facet: 'skill', aliases: ['nrc regulations', 'nrc compliance', 'nrc licensing', 'regulatory compliance', 'nrc'] },
+  { slug: '10-cfr', name: '10 CFR', facet: 'skill', aliases: ['10 cfr', '10 cfr regulations'] },
+  { slug: 'nrc-regulations', name: 'NRC Regulations', facet: 'skill', aliases: ['nrc regulations', 'nrc regulatory', 'nrc compliance', 'nrc licensing', 'regulatory compliance', 'nrc'] },
   { slug: 'inpo', name: 'INPO', facet: 'skill', aliases: ['inpo'] },
   { slug: 'sat', name: 'SAT', facet: 'skill', aliases: ['sat', 'systematic approach to training'] },
   { slug: 'quality-assurance', name: 'Quality Assurance', facet: 'skill', aliases: ['quality assurance', 'supplier quality', 'supplier management'] },
@@ -186,7 +187,7 @@ export const SKILL_TAXONOMY: CanonicalSkill[] = [
   { slug: 'relay-testing', name: 'Relay Testing', facet: 'skill', aliases: ['relay testing'] },
 
   // ── Skills: engineering domains ───────────────────────────────────────────
-  { slug: 'i-and-c', name: 'I&C Systems', facet: 'skill', aliases: ['i&c systems', 'i&c', 'instrumentation and controls', 'instrumentation & controls'] },
+  { slug: 'i-and-c', name: 'I&C Systems', facet: 'skill', aliases: ['i&c systems', 'i&c', 'instrumentation and controls', 'instrumentation & controls', 'instrumentation and control', 'instrumentation & control', 'instrument & control'] },
   { slug: 'thermal-hydraulics', name: 'Thermal Hydraulics', facet: 'skill', aliases: ['thermal-hydraulic analysis', 'thermal hydraulics', 'thermal-hydraulics'] },
   { slug: 'structural-analysis', name: 'Structural Analysis', facet: 'skill', aliases: ['structural analysis'] },
   { slug: 'electrical-engineering', name: 'Electrical Engineering', facet: 'skill', aliases: ['electrical engineering', 'electrical systems', 'electrical design'] },
@@ -197,7 +198,7 @@ export const SKILL_TAXONOMY: CanonicalSkill[] = [
   { slug: 'fea', name: 'FEA', facet: 'skill', aliases: ['finite element analysis', 'fea'] },
   { slug: 'gdt', name: 'GD&T', facet: 'skill', aliases: ['gd&t', 'geometric dimensioning and tolerancing'] },
   { slug: 'piping-design', name: 'Piping Design', facet: 'skill', aliases: ['piping design'] },
-  { slug: 'project-management', name: 'Project Management', facet: 'skill', aliases: ['project management', 'project controls', 'outage planning', 'cost estimating'] },
+  { slug: 'project-management', name: 'Project Management', facet: 'skill', aliases: ['project management', 'project controls', 'outage planning', 'outage management', 'cost estimating'] },
   { slug: 'commissioning', name: 'Commissioning', facet: 'skill', aliases: ['commissioning'] },
 
   // ── Skills: software / tools ──────────────────────────────────────────────
