@@ -27,10 +27,10 @@ export async function Header() {
 
   return (
     <StickyHeader>
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-8 px-6">
         <Link
           href="/"
-          className="inline-flex min-h-11 items-center font-sans text-base font-bold tracking-tight text-ink"
+          className="inline-flex min-h-11 shrink-0 items-center font-sans text-base font-bold tracking-tight text-ink"
         >
           Nuclear Hustle
         </Link>

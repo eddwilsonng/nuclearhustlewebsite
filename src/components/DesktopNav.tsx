@@ -2,32 +2,73 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { Menu } from "@base-ui/react/menu";
+import { LinkButton } from "@/components/ui/LinkButton";
+import { isNavActive, PRIMARY_NAV, RESOURCE_NAV } from "@/components/site-nav";
 
-const BROWSE_LINKS = [
-  { href: "/jobs", label: "Jobs" },
-  { href: "/companies", label: "Companies" },
-  { href: "/status", label: "Fleet Status" },
-  { href: "/about", label: "About" },
-];
+function ResourcesMenu({ pathname }: { pathname: string }) {
+  const [open, setOpen] = useState(false);
+  const active = RESOURCE_NAV.some(({ href }) => isNavActive(pathname, href));
 
-const RESOURCES_LINKS = [
-  {
-    href: "/nuclear-salary",
-    label: "Nuclear Salary Guide",
-    desc: "Pay ranges by role and state",
-  },
-  {
-    href: "/nuclear-skills",
-    label: "Nuclear Skills Report",
-    desc: "In-demand skills and credentials",
-  },
-];
-
-function navLinkClass(active: boolean) {
-  return `relative font-sans text-sm transition-colors duration-150 ${
-    active ? "font-semibold text-ink" : "text-secondary hover:text-ink"
-  }`;
+  return (
+    <Menu.Root onOpenChange={setOpen}>
+      <Menu.Trigger
+        className={`relative inline-flex h-16 items-center gap-1.5 px-3 font-sans text-sm font-medium transition-colors duration-150 data-popup-open:text-ink ${
+          active ? "text-ink" : "text-secondary hover:text-ink"
+        }`}
+      >
+        Resources
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 12 12"
+          aria-hidden="true"
+          className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+        >
+          <path
+            d="M2.5 4.5 6 8l3.5-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.25"
+          />
+        </svg>
+        {active ? (
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-3 bottom-0 h-0.5 bg-ink"
+          />
+        ) : null}
+      </Menu.Trigger>
+      <Menu.Portal>
+        <Menu.Positioner sideOffset={8} align="start" className="z-50">
+          <Menu.Popup className="card-raised min-w-44 border border-control bg-raised py-1 outline-none">
+            {RESOURCE_NAV.map(({ href, label }) => {
+              const itemActive = isNavActive(pathname, href);
+              return (
+                <Menu.Item
+                  key={href}
+                  render={
+                    <Link
+                      href={href}
+                      aria-current={itemActive ? "page" : undefined}
+                      className={`block px-4 py-3 font-sans text-sm no-underline outline-none data-highlighted:bg-surface ${
+                        itemActive
+                          ? "font-medium text-ink"
+                          : "text-secondary data-highlighted:text-ink"
+                      }`}
+                    />
+                  }
+                >
+                  {label}
+                </Menu.Item>
+              );
+            })}
+          </Menu.Popup>
+        </Menu.Positioner>
+      </Menu.Portal>
+    </Menu.Root>
+  );
 }
 
 function NavLink({
@@ -43,49 +84,18 @@ function NavLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`inline-flex min-h-11 items-center ${navLinkClass(active)}`}
+      className={`relative inline-flex h-16 items-center px-3 font-sans text-sm font-medium transition-colors duration-150 ${
+        active ? "text-ink" : "text-secondary hover:text-ink"
+      }`}
     >
       {label}
+      {active ? (
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-3 bottom-0 h-0.5 bg-ink"
+        />
+      ) : null}
     </Link>
-  );
-}
-
-function ResourcesMenu({ active }: { active: boolean }) {
-  return (
-    <Menu.Root>
-      <Menu.Trigger
-        className={`${navLinkClass(active)} inline-flex min-h-11 items-center gap-1`}
-      >
-        Resources
-        <span aria-hidden="true" className="text-xs">
-          ▾
-        </span>
-      </Menu.Trigger>
-      <Menu.Portal>
-        <Menu.Positioner sideOffset={8} className="z-50">
-          <Menu.Popup className="card-raised min-w-64 border border-control bg-raised py-1 outline-none">
-            {RESOURCES_LINKS.map(({ href, label, desc }) => (
-              <Menu.Item
-                key={href}
-                render={
-                  <Link
-                    href={href}
-                    className="block px-4 py-3 no-underline outline-none data-highlighted:bg-surface"
-                  />
-                }
-              >
-                <span className="block font-sans text-sm font-semibold text-ink">
-                  {label}
-                </span>
-                <span className="mt-0.5 block font-sans text-sm text-secondary">
-                  {desc}
-                </span>
-              </Menu.Item>
-            ))}
-          </Menu.Popup>
-        </Menu.Positioner>
-      </Menu.Portal>
-    </Menu.Root>
   );
 }
 
@@ -97,36 +107,43 @@ export function DesktopNav({
   children?: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isActive = (href: string) =>
-    pathname === href || pathname.startsWith(`${href}/`);
-  const resourcesActive = RESOURCES_LINKS.some(({ href }) => isActive(href));
 
   return (
-    <nav aria-label="Primary" className="hidden items-center gap-6 md:flex">
-      {BROWSE_LINKS.map(({ href, label }) => (
-        <NavLink
-          key={href}
-          href={href}
-          label={label}
-          active={isActive(href)}
-        />
-      ))}
-      <ResourcesMenu active={resourcesActive} />
-
-      {isAuthed ? (
-        children
-      ) : (
-        <>
+    <nav
+      aria-label="Primary"
+      className="hidden h-16 min-w-0 flex-1 items-center lg:flex"
+    >
+      <div className="flex h-full items-center">
+        {PRIMARY_NAV.map(({ href, label }) => (
           <NavLink
-            href="/signup/employer"
-            label="Post a job"
-            active={isActive("/signup/employer")}
+            key={href}
+            href={href}
+            label={label}
+            active={isNavActive(pathname, href)}
           />
-          {pathname !== "/login" && (
-            <NavLink href="/login" label="Log in" active={isActive("/login")} />
-          )}
-        </>
-      )}
+        ))}
+        <ResourcesMenu pathname={pathname} />
+      </div>
+
+      <div className="ml-auto flex items-center gap-2 pl-6">
+        {isAuthed ? (
+          children
+        ) : (
+          <>
+            {pathname !== "/login" && (
+              <Link
+                href="/login"
+                className="inline-flex min-h-11 items-center px-3 font-sans text-sm font-medium text-ink"
+              >
+                Log in
+              </Link>
+            )}
+            <LinkButton href="/signup/employer" variant="secondary">
+              Post a job
+            </LinkButton>
+          </>
+        )}
+      </div>
     </nav>
   );
 }
