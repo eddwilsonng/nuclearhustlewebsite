@@ -74,8 +74,10 @@ body {
   outline-offset: 3px;
 }
 
-:where(button, input, select, textarea) {
-  font: inherit;
+@layer base {
+  :where(button, input, select, textarea) {
+    font: inherit;
+  }
 }
 
 :where(button, [role="button"]):not(:disabled) {
