@@ -10,6 +10,7 @@ import {
   BrowseDescription,
 } from '@/components/BrowsePageHeader';
 import { LinkButton } from '@/components/ui/LinkButton';
+import { getListingSalarySnapshot } from '@/lib/salaryGuide';
 
 export const metadata: Metadata = {
   title: 'Nuclear Salary Report 2026: What Nuclear Jobs Actually Pay | Nuclear Hustle',
@@ -117,16 +118,7 @@ const STATE_SALARIES = [
   { state: 'Alabama', reactors: 4, engMedianK: 126, note: '' },
 ];
 
-// Salary ranges extracted from job listings that disclosed compensation.
-// Only rows with n >= 4 have enough data to be directionally meaningful.
-const LISTING_RANGES = [
-  { category: 'Administrative', n: 33, medianK: 147, minK: 63, maxK: 325, reliable: true },
-  { category: 'Engineering', n: 27, medianK: 147, minK: 71, maxK: 252, reliable: true },
-  { category: 'Training & Licensing', n: 4, medianK: 124, minK: 84, maxK: 163, reliable: true },
-  { category: 'Operations', n: 2, medianK: 134, minK: 105, maxK: 163, reliable: false },
-  { category: 'Health Physics', n: 2, medianK: 134, minK: 84, maxK: 172, reliable: false },
-  { category: 'Maintenance', n: 2, medianK: 147, minK: 88, maxK: 177, reliable: false },
-];
+const LISTINGS = getListingSalarySnapshot();
 
 const FAQS = [
   {
@@ -380,9 +372,20 @@ export default function SalaryPage() {
             <section>
               <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-1">From current listings</p>
               <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-2">What employers are advertising</h2>
-              <p className="mb-6 font-sans text-sm leading-relaxed text-secondary">
-                Based on {LISTING_RANGES.reduce((a, b) => a + b.n, 0)} job listings on Nuclear Hustle that disclosed a compensation range. Coverage is partial — most nuclear employers do not post salary ranges publicly. Rows marked * have fewer than 4 listings and should be treated as illustrative only.
-              </p>
+              <div className="mb-6 space-y-3 font-sans text-sm leading-relaxed text-secondary">
+                <p>
+                  {LISTINGS.disclosingCount.toLocaleString('en-US')} of {LISTINGS.publishedCount.toLocaleString('en-US')} published listings state a pay figure, as of {LISTINGS.asOfLabel}. Hourly rates are annualised at 2,080 hours. The median column is the median midpoint of each posted range. Low and high are the median floor and median ceiling of those ranges.
+                </p>
+                <p>
+                  {LISTINGS.topEmployer
+                    ? `${LISTINGS.topEmployer.name} accounts for ${LISTINGS.topEmployer.count.toLocaleString('en-US')} of the listings that state pay (${LISTINGS.topEmployer.share}%). `
+                    : ''}
+                  {LISTINGS.uncategorizedCount > 0
+                    ? `${LISTINGS.uncategorizedCount.toLocaleString('en-US')} listings with no role category are left out of the table. `
+                    : ''}
+                  Rows marked * have fewer than 4 listings.
+                </p>
+              </div>
 
               <div className="border border-rule">
                 <div className="grid grid-cols-4 gap-4 px-4 py-2 border-b border-rule">
@@ -391,17 +394,17 @@ export default function SalaryPage() {
                   <span className="font-mono text-xs tracking-widest uppercase text-secondary text-right">Low</span>
                   <span className="font-mono text-xs tracking-widest uppercase text-secondary text-right">High</span>
                 </div>
-                {LISTING_RANGES.map((row) => (
+                {LISTINGS.ranges.map((row) => (
                   <div key={row.category} className={`grid grid-cols-4 gap-4 px-4 py-3 border-b border-rule last:border-b-0 hover:bg-surface transition-colors ${!row.reliable ? 'opacity-50' : ''}`}>
                     <div>
                       <span className="font-mono text-xs text-ink font-semibold">
-                        {row.category}{!row.reliable && '*'}
+                        {row.label}{!row.reliable && '*'}
                       </span>
-                      <span className="block font-mono text-xs text-secondary">{row.n} listing{row.n !== 1 ? 's' : ''}</span>
+                      <span className="block font-mono text-xs text-secondary">{row.n.toLocaleString('en-US')} listing{row.n !== 1 ? 's' : ''}</span>
                     </div>
                     <span className="font-mono text-xs text-ink font-bold text-right self-center">${row.medianK}k</span>
-                    <span className="font-mono text-xs text-secondary text-right self-center">${row.minK}k</span>
-                    <span className="font-mono text-xs text-secondary text-right self-center">${row.maxK}k</span>
+                    <span className="font-mono text-xs text-secondary text-right self-center">${row.lowK}k</span>
+                    <span className="font-mono text-xs text-secondary text-right self-center">${row.highK}k</span>
                   </div>
                 ))}
               </div>
@@ -430,10 +433,14 @@ export default function SalaryPage() {
                   <strong className="text-ink">BLS figures</strong> are from the Bureau of Labor Statistics Occupational Employment and Wage Statistics (OEWS) survey, May 2025 release, sourced directly from the BLS public API (series OEUN*). Wages are national figures across all industries and experience levels employing each occupation.
                 </p>
                 <p>
-                  <strong className="text-ink">Listing ranges</strong> are extracted from job descriptions on Nuclear Hustle that explicitly stated a compensation or salary range. Only labeled ranges (e.g. &quot;Compensation Range: $X – $Y&quot;) are included. Hourly rates are annualised at 2,080 hours.
+                  <strong className="text-ink">Listing ranges</strong> come from published jobs on Nuclear Hustle whose posting states a pay amount. A posted range uses its midpoint for the median. A single rate is used as-is. Hourly rates are annualised at 2,080 hours. Low and high are the median of posted minimums and the median of posted maximums.
                 </p>
                 <p>
-                  Coverage is non-random: companies that post ranges tend to be larger utilities and new-build firms. Treat listing figures as directional, not representative of industry-wide pay.
+                  Companies that post pay are not a random sample of the industry.
+                  {LISTINGS.topEmployer
+                    ? ` ${LISTINGS.topEmployer.name} is ${LISTINGS.topEmployer.share}% of the listings that state pay.`
+                    : ''}
+                  {' '}Treat listing figures as directional, not representative of industry-wide pay.
                 </p>
               </div>
             </section>
@@ -477,7 +484,7 @@ export default function SalaryPage() {
               <div className="border border-rule p-5">
                 <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-2">Data source</p>
                 <p className="mb-3 font-sans text-sm leading-relaxed text-secondary">
-                  BLS figures are from the May 2024 Occupational Employment and Wage Statistics survey.
+                  BLS figures are from the May 2025 Occupational Employment and Wage Statistics survey.
                 </p>
                 <a
                   href="https://www.bls.gov/oes/"
