@@ -82,17 +82,14 @@ export default async function Home() {
               </Button>
             </form>
 
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <LinkButton href="/jobs" variant="primary" size="large">
+            <p className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-2 font-sans text-sm text-secondary">
+              <Link href="/jobs" className="hover:text-ink hover:underline">
                 Browse {jobs.length} jobs
-              </LinkButton>
-              <Link
-                href="/companies"
-                className="font-sans text-sm text-secondary underline-offset-2 hover:text-ink hover:underline"
-              >
+              </Link>
+              <Link href="/companies" className="hover:text-ink hover:underline">
                 View companies →
               </Link>
-            </div>
+            </p>
           </div>
 
           <div className="relative hidden md:block">
