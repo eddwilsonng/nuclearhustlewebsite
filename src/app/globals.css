@@ -74,6 +74,10 @@ body {
   outline-offset: 3px;
 }
 
+.inverse-bar :where(a, button, input, select, textarea):focus-visible {
+  outline-color: var(--inverse-ink) !important;
+}
+
 @layer base {
   :where(button, input, select, textarea) {
     font: inherit;
