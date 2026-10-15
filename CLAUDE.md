@@ -145,8 +145,9 @@ and declined (no transactional sends, read-only MCP). **Free tier now, Pro later
 - DNS checklist (Resend dashboard, do before any volume): verify domain → add SPF + DKIM,
   add a custom MAIL FROM subdomain (e.g. `send.nuclearhustle.com`), publish DMARC at
   `_dmarc.nuclearhustle.com` (start `p=none`, then `p=quarantine`).
-- `CRON_SECRET` seeds the unsubscribe-token HMAC — **must stay stable** (rotating it breaks
-  all outstanding unsubscribe links).
+- Unsubscribe tokens are HMAC'd with `SUPABASE_SERVICE_ROLE_KEY` (`src/lib/email/unsubscribe.ts`).
+ That key must stay stable — rotating it breaks outstanding unsubscribe links. `CRON_SECRET`
+ only authorizes `/api/cron/weekly-digest` and is not part of the token.
 
 **Data visibility (free tier):** open/click analytics are Pro-only. To get deliverability
 data for free, the [Resend webhook](src/app/api/webhooks/resend/route.ts) writes

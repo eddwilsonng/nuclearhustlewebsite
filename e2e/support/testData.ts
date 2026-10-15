@@ -32,8 +32,8 @@ export function testCv(name = "e2e-cv.pdf") {
 }
 
 export function unsubscribeToken(email: string): string {
-  const secret = process.env.CRON_SECRET ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!secret) throw new Error("CRON_SECRET or SUPABASE_SERVICE_ROLE_KEY must be set");
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret) throw new Error("SUPABASE_SERVICE_ROLE_KEY must be set");
   return createHmac("sha256", secret).update(email.toLowerCase()).digest("hex").slice(0, 32);
 }
 

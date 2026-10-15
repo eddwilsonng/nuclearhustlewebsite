@@ -3,9 +3,12 @@ import { createHmac, timingSafeEqual } from 'crypto';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.nuclearhustle.com';
 
 function getSecret(): string {
-  const secret = process.env.CRON_SECRET ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Pinned to the service role key. CRON_SECRET was never set in production, so
+  // every existing unsubscribe link was signed with this value. Do not fall
+  // back to CRON_SECRET — adding that variable would invalidate them.
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!secret) {
-    throw new Error('Missing CRON_SECRET env var for unsubscribe tokens');
+    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY for unsubscribe tokens');
   }
   return secret;
 }
