@@ -92,7 +92,8 @@ in Mono. Keep reading lines near 60–68 characters.
 - Use spacing and alignment before borders or cards.
 - A surface must represent interaction, selection, warning, or a real grouping.
 - Keep sharp corners. Circles are allowed only for genuinely circular controls
-  or indicators.
+  or indicators. The homepage companies link may stack operator marks in
+  overlapping discs. The marks are decorative and the link label stays visible.
 - One subtle elevation is allowed for sticky conversion surfaces and overlays.
 
 ### Motion

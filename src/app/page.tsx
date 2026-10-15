@@ -9,6 +9,7 @@ import { JobCard } from "@/components/JobCard";
 import { FeaturedJobsSection, FeaturedJobsSkeleton } from "@/components/FeaturedJobsSection";
 import { JobAlertForm } from "@/components/JobAlertForm";
 import { HiringStrip } from "@/components/HiringStrip";
+import { CompanyLogoStack } from "@/components/CompanyLogoStack";
 import { createClient } from "@/lib/supabase/server";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { Button } from "@/components/ui/Button";
@@ -87,9 +88,13 @@ export default async function Home() {
               <LinkButton href="/jobs" variant="secondary" size="compact">
                 Browse {jobCount} jobs
               </LinkButton>
-              <LinkButton href="/companies" variant="secondary" size="compact">
+              <Link
+                href="/companies"
+                className="inline-flex min-h-11 items-center gap-3 font-sans text-sm font-semibold text-ink underline-offset-4 hover:underline"
+              >
+                <CompanyLogoStack />
                 View companies
-              </LinkButton>
+              </Link>
             </div>
           </div>
 
