@@ -1,4 +1,5 @@
 import type { Job } from '@/lib/types';
+import { HOME_ENTITY_DESCRIPTION } from '@/lib/seo/homeFaq';
 
 const SITE_URL = 'https://www.nuclearhustle.com';
 
@@ -14,7 +15,7 @@ export function generateOrganizationSchema(): object {
       width: 512,
       height: 512,
     },
-    description: 'Specialist job board for US nuclear power plant professionals — operators, engineers, health physicists, and maintenance crews.',
+    description: HOME_ENTITY_DESCRIPTION,
     sameAs: ['https://x.com/nuclearhustle'],
   };
 }
@@ -33,6 +34,23 @@ export function generateWebSiteSchema(): object {
       },
       'query-input': 'required name=search_term_string',
     },
+  };
+}
+
+export function generateFaqSchema(
+  items: ReadonlyArray<{ question: string; answer: string }>
+): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
   };
 }
 

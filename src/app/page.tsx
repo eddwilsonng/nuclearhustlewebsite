@@ -8,6 +8,7 @@ import {
 import { JobCard } from "@/components/JobCard";
 import { FeaturedJobsSection, FeaturedJobsSkeleton } from "@/components/FeaturedJobsSection";
 import { JobAlertForm } from "@/components/JobAlertForm";
+import { HomeFaq } from "@/components/HomeFaq";
 import { HiringStrip } from "@/components/HiringStrip";
 import { CompanyLogoStack } from "@/components/CompanyLogoStack";
 import { createClient } from "@/lib/supabase/server";
@@ -208,6 +209,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <HomeFaq />
 
       <section className="border-t border-rule py-20">
         <div className="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-2">
