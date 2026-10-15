@@ -3,6 +3,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { categorizeJob, JobCategory } from "../src/lib/categorize";
 import { extractState, generateJobSlug } from "../src/lib/states";
+import { flushFirstSeen, rememberFirstSeen } from "./firstSeen";
 import { scoreNuclearRelevance } from "./relevance";
 import { ScrapedJob } from "./types";
 import { parseSalary } from "./parseSalary";
@@ -17,6 +18,7 @@ export interface EnrichedJob {
   location: string;
   url: string;
   scraped_at: string;
+  first_seen_at?: string;
   slug: string;
   state: string | null;
   category: JobCategory;
@@ -111,12 +113,17 @@ export function mergeCompanyJobs(
       // Seen at source this run: it's alive. Refresh volatile fields, preserve
       // identity + review state, and reset the hygiene counters.
       const wasExpired = existing.status === "expired";
+      const firstSeen = rememberFirstSeen(
+        existing.id,
+        existing.first_seen_at ?? existing.scraped_at,
+      );
       merged.push({
         ...existing,
         title: job.title,
         location: job.location,
         url: job.url,
         scraped_at: now,
+        first_seen_at: firstSeen,
         last_seen_at: now,
         link_check_failures: 0,
         state: extractState(job.location),
@@ -151,6 +158,7 @@ export function mergeCompanyJobs(
     }
 
     const id = String(++maxId);
+    const firstSeen = rememberFirstSeen(id, now);
     const created: EnrichedJob = {
       id,
       company_id: companyId,
@@ -158,6 +166,7 @@ export function mergeCompanyJobs(
       location: job.location,
       url: job.url,
       scraped_at: now,
+      first_seen_at: firstSeen,
       slug: generateJobSlug(job.title, job.location, id),
       state: extractState(job.location),
       category: categorizeJob(job.title),
@@ -177,9 +186,15 @@ export function mergeCompanyJobs(
 
   // Keep jobs not seen this run.
   for (const leftover of existingByUrl.values()) {
-    merged.push(leftover);
+    const firstSeen = rememberFirstSeen(
+      leftover.id,
+      leftover.first_seen_at ?? leftover.scraped_at,
+    );
+    merged.push({ ...leftover, first_seen_at: firstSeen });
     stats.kept++;
   }
+
+  flushFirstSeen();
 
   return { jobs: [...otherCompanyJobs, ...merged], stats, added };
 }

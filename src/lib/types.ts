@@ -33,6 +33,8 @@ export interface Job {
   location: string;
   url: string;
   scraped_at: string;
+  /** Set once, when the role first lands on the board. Scrapes must not move it. */
+  first_seen_at?: string;
   slug: string;
   state: string | null;
   category: JobCategory;

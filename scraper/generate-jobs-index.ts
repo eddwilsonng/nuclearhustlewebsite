@@ -27,6 +27,7 @@ function toIndexJob(job: Job): Job {
     location: job.location,
     url: job.url,
     scraped_at: job.scraped_at,
+    first_seen_at: job.first_seen_at,
     slug: job.slug,
     state: job.state,
     category: job.category,

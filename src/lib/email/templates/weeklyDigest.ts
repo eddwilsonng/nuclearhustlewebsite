@@ -10,7 +10,7 @@ import { unsubscribeUrl } from '../unsubscribe';
 import { jobOneLiner } from '@/lib/jobs/oneLiner';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.nuclearhustle.com';
-const MAX_PER_CATEGORY = 5;
+const MAX_PER_CATEGORY = 3;
 const MAX_FEATURED = 3;
 
 function getCompanyInitials(name: string): string {
@@ -157,7 +157,7 @@ function renderHero(stats: DigestStats): string {
       This week&apos;s open roles
     </h1>
     <p style="font-family: monospace; font-size: 12px; color: #78716c; margin: 0 0 0;">
-      ${weekLabel}${stats.newThisWeek > 0 ? ` &mdash; ${stats.newThisWeek} new this week` : ''}
+      ${weekLabel}${stats.totalJobs > 0 ? ` &mdash; ${stats.totalJobs} new this week` : ''}
     </p>
     ${renderStatsStrip(stats)}
   `;
@@ -216,18 +216,28 @@ function renderCategorySections(
     const categoryJobs = grouped.get(category);
     if (!categoryJobs?.length) continue;
 
-    const name = getCategoryInfo(category).name.toUpperCase();
+    const info = getCategoryInfo(category);
+    const name = info.name.toUpperCase();
     const slice = categoryJobs.slice(0, MAX_PER_CATEGORY);
+    const hidden = categoryJobs.length - slice.length;
     const cards = slice.map((job) => renderJobCard(job, { showCategory: false })).join('');
+    const more = hidden
+      ? `<p style="margin: 4px 0 0;">
+          <a href="${SITE_URL}/jobs/role/${category}" style="font-family: monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #111; text-decoration: none; font-weight: bold;">
+            ${hidden} more in ${escapeHtml(info.name)} &rarr;
+          </a>
+        </p>`
+      : '';
 
     sections.push(`
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 28px;">
         <tr>
           <td>
             <p style="font-family: monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #78716c; margin: 0 0 12px; font-weight: bold; border-bottom: 1px solid #CFC8BC; padding-bottom: 8px;">
-              ${escapeHtml(name)} &middot; ${slice.length} role${slice.length === 1 ? '' : 's'}
+              ${escapeHtml(name)} &middot; ${categoryJobs.length} role${categoryJobs.length === 1 ? '' : 's'}
             </p>
             ${cards}
+            ${more}
           </td>
         </tr>
       </table>
@@ -281,19 +291,41 @@ export function buildWeeklyDigestHtml(jobs: JobWithCompany[], email: string): st
 
 export { weeklyDigestPreheader, weeklyDigestSubject } from '../subjectLine';
 
+function plainJobLine(job: JobWithCompany): string {
+  return `- ${job.title} at ${job.company.name} (${formatJobLocation(job)})\n  ${jobUrl(job)}`;
+}
+
 export function weeklyDigestPlainText(jobs: JobWithCompany[], email: string): string {
   const stats = computeDigestStats(jobs);
+  const featured = pickFeaturedJobs(jobs);
+  const featuredIds = new Set(featured.map((job) => job.id));
   const lines = [
-    `This week's open roles — ${stats.totalJobs} roles across ${stats.stateCount} states`,
+    `This week's open roles — ${stats.totalJobs} new across ${stats.stateCount} states`,
     '',
-    ...jobs.map((job) => {
-      const url = jobUrl(job);
-      return `- ${job.title} at ${job.company.name} (${formatJobLocation(job)})\n  ${url}`;
-    }),
-    '',
-    `Browse all jobs: ${SITE_URL}/jobs`,
-    '',
-    `Unsubscribe: ${unsubscribeUrl(email)}`,
   ];
+
+  if (featured.length) {
+    lines.push('Featured & direct', ...featured.map(plainJobLine), '');
+  }
+
+  const remaining = jobs.filter((job) => !featuredIds.has(job.id));
+  const grouped = groupJobsByCategory(remaining);
+  for (const category of CATEGORY_ORDER) {
+    const categoryJobs = grouped.get(category);
+    if (!categoryJobs?.length) continue;
+    const name = getCategoryInfo(category).name;
+    const slice = categoryJobs.slice(0, MAX_PER_CATEGORY);
+    const hidden = categoryJobs.length - slice.length;
+    lines.push(
+      `${name} · ${categoryJobs.length} role${categoryJobs.length === 1 ? '' : 's'}`,
+      ...slice.map(plainJobLine),
+    );
+    if (hidden) {
+      lines.push(`${hidden} more in ${name}: ${SITE_URL}/jobs/role/${category}`);
+    }
+    lines.push('');
+  }
+
+  lines.push(`Browse all jobs: ${SITE_URL}/jobs`, '', `Unsubscribe: ${unsubscribeUrl(email)}`);
   return lines.join('\n');
 }
