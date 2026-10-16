@@ -6,22 +6,29 @@ import { Dialog } from "@base-ui/react/dialog";
 import { useState } from "react";
 import { signOut } from "@/lib/auth/actions";
 import { LinkButton } from "@/components/ui/LinkButton";
-import { isNavActive, PRIMARY_NAV, RESOURCE_NAV } from "@/components/site-nav";
+import {
+  COMPANIES_NAV,
+  EMPLOYER_NAV,
+  FIND_WORK_NAV,
+  JOBS_NAV_GROUPS,
+  isNavItemActive,
+  type NavItem,
+} from "@/components/site-nav";
 
 function MenuLink({
-  href,
-  label,
-  active,
+  item,
+  pathname,
   onNavigate,
 }: {
-  href: string;
-  label: string;
-  active: boolean;
+  item: NavItem;
+  pathname: string;
   onNavigate: () => void;
 }) {
+  const active = isNavItemActive(pathname, item);
+
   return (
     <Link
-      href={href}
+      href={item.href}
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
       className={`relative flex min-h-14 items-center border-b border-rule font-sans text-lg font-medium ${
@@ -34,8 +41,40 @@ function MenuLink({
           className="absolute top-1/2 -left-4 h-4 w-0.5 -translate-y-1/2 bg-ink"
         />
       ) : null}
-      {label}
+      {item.label}
     </Link>
+  );
+}
+
+function Section({
+  label,
+  items,
+  pathname,
+  onNavigate,
+  first = false,
+}: {
+  label: string;
+  items: readonly NavItem[];
+  pathname: string;
+  onNavigate: () => void;
+  first?: boolean;
+}) {
+  return (
+    <div>
+      <p
+        className={`pb-1 font-mono text-xs uppercase tracking-widest text-secondary ${first ? "pt-2" : "pt-6"}`}
+      >
+        {label}
+      </p>
+      {items.map((item) => (
+        <MenuLink
+          key={item.href}
+          item={item}
+          pathname={pathname}
+          onNavigate={onNavigate}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -76,51 +115,60 @@ export function MobileNav({ isAuthed = false }: { isAuthed?: boolean }) {
             aria-label="Mobile"
             className="flex flex-1 flex-col overflow-y-auto px-6 py-2"
           >
-            {PRIMARY_NAV.map(({ href, label }) => (
-              <MenuLink
-                key={href}
-                href={href}
-                label={label}
-                active={isNavActive(pathname, href)}
-                onNavigate={close}
-              />
-            ))}
-
-            <p className="pt-6 pb-1 font-mono text-xs uppercase tracking-widest text-secondary">
-              Resources
-            </p>
-            {RESOURCE_NAV.map(({ href, label }) => (
-              <MenuLink
-                key={href}
-                href={href}
-                label={label}
-                active={isNavActive(pathname, href)}
-                onNavigate={close}
-              />
-            ))}
-            <MenuLink
-              href="/about"
-              label="About"
-              active={isNavActive(pathname, "/about")}
+            <Section
+              label="Find work"
+              items={FIND_WORK_NAV}
+              pathname={pathname}
+              onNavigate={close}
+              first
+            />
+            <Section
+              label="Employers"
+              items={EMPLOYER_NAV}
+              pathname={pathname}
               onNavigate={close}
             />
+            <div className="pt-6">
+              <MenuLink
+                item={COMPANIES_NAV}
+                pathname={pathname}
+                onNavigate={close}
+              />
+            </div>
+            {JOBS_NAV_GROUPS.map((group, index) => (
+              <Section
+                key={group[0]?.href ?? index}
+                label={index === 0 ? "Jobs" : index === 1 ? "By state" : "Fleet"}
+                items={group}
+                pathname={pathname}
+                onNavigate={close}
+              />
+            ))}
 
             <div className="mt-8">
               {isAuthed ? (
                 <>
-                  {[
-                    { href: "/dashboard", label: "Dashboard" },
-                    { href: "/dashboard/profile", label: "Profile" },
-                    { href: "/dashboard/saved", label: "Saved jobs" },
-                  ].map(({ href, label }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      onClick={close}
-                      className="flex min-h-12 items-center border-b border-rule font-sans text-base text-secondary hover:text-ink"
-                    >
-                      {label}
-                    </Link>
+                  {(
+                    [
+                      { href: "/dashboard", label: "Dashboard", match: "exact" },
+                      {
+                        href: "/dashboard/profile",
+                        label: "Profile",
+                        match: "exact",
+                      },
+                      {
+                        href: "/dashboard/saved",
+                        label: "Saved jobs",
+                        match: "exact",
+                      },
+                    ] as const satisfies readonly NavItem[]
+                  ).map((item) => (
+                    <MenuLink
+                      key={item.href}
+                      item={item}
+                      pathname={pathname}
+                      onNavigate={close}
+                    />
                   ))}
                   <form action={signOut}>
                     <button

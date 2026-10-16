@@ -5,11 +5,47 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu } from "@base-ui/react/menu";
 import { LinkButton } from "@/components/ui/LinkButton";
-import { isNavActive, PRIMARY_NAV, RESOURCE_NAV } from "@/components/site-nav";
+import {
+  COMPANIES_NAV,
+  EMPLOYER_NAV,
+  FIND_WORK_NAV,
+  JOBS_NAV_GROUPS,
+  isNavItemActive,
+  type NavItem,
+} from "@/components/site-nav";
 
-function ResourcesMenu({ pathname }: { pathname: string }) {
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      aria-hidden="true"
+      className={`transition-transform duration-150 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
+    >
+      <path
+        d="M2.5 4.5 6 8l3.5-3.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.25"
+      />
+    </svg>
+  );
+}
+
+function NavMenu({
+  label,
+  pathname,
+  groups,
+}: {
+  label: string;
+  pathname: string;
+  groups: readonly (readonly NavItem[])[];
+}) {
   const [open, setOpen] = useState(false);
-  const active = RESOURCE_NAV.some(({ href }) => isNavActive(pathname, href));
+  const active = groups.some((group) =>
+    group.some((item) => isNavItemActive(pathname, item)),
+  );
 
   return (
     <Menu.Root onOpenChange={setOpen}>
@@ -18,21 +54,8 @@ function ResourcesMenu({ pathname }: { pathname: string }) {
           active ? "text-ink" : "text-secondary hover:text-ink"
         }`}
       >
-        Resources
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 12 12"
-          aria-hidden="true"
-          className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}
-        >
-          <path
-            d="M2.5 4.5 6 8l3.5-3.5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.25"
-          />
-        </svg>
+        {label}
+        <Chevron open={open} />
         {active ? (
           <span
             aria-hidden="true"
@@ -42,28 +65,38 @@ function ResourcesMenu({ pathname }: { pathname: string }) {
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner sideOffset={8} align="start" className="z-50">
-          <Menu.Popup className="card-raised min-w-44 border border-control bg-raised py-1 outline-none">
-            {RESOURCE_NAV.map(({ href, label }) => {
-              const itemActive = isNavActive(pathname, href);
-              return (
-                <Menu.Item
-                  key={href}
-                  render={
-                    <Link
-                      href={href}
-                      aria-current={itemActive ? "page" : undefined}
-                      className={`block px-4 py-3 font-sans text-sm no-underline outline-none data-highlighted:bg-surface ${
-                        itemActive
-                          ? "font-medium text-ink"
-                          : "text-secondary data-highlighted:text-ink"
-                      }`}
-                    />
-                  }
-                >
-                  {label}
-                </Menu.Item>
-              );
-            })}
+          <Menu.Popup className="card-raised max-h-[min(32rem,70vh)] min-w-56 overflow-y-auto border border-control bg-raised py-1 outline-none">
+            {groups.map((group, index) => (
+              <Menu.Group key={group[0]?.href ?? index}>
+                {index > 0 ? (
+                  <div
+                    role="separator"
+                    className="mx-3 my-1 border-t border-rule"
+                  />
+                ) : null}
+                {group.map((item) => {
+                  const itemActive = isNavItemActive(pathname, item);
+                  return (
+                    <Menu.Item
+                      key={item.href}
+                      render={
+                        <Link
+                          href={item.href}
+                          aria-current={itemActive ? "page" : undefined}
+                          className={`block px-4 py-3 font-sans text-sm no-underline outline-none data-highlighted:bg-surface ${
+                            itemActive
+                              ? "font-medium text-ink"
+                              : "text-secondary data-highlighted:text-ink"
+                          }`}
+                        />
+                      }
+                    >
+                      {item.label}
+                    </Menu.Item>
+                  );
+                })}
+              </Menu.Group>
+            ))}
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>
@@ -114,15 +147,14 @@ export function DesktopNav({
       className="hidden h-16 min-w-0 flex-1 items-center lg:flex"
     >
       <div className="flex h-full items-center">
-        {PRIMARY_NAV.map(({ href, label }) => (
-          <NavLink
-            key={href}
-            href={href}
-            label={label}
-            active={isNavActive(pathname, href)}
-          />
-        ))}
-        <ResourcesMenu pathname={pathname} />
+        <NavMenu label="Find work" pathname={pathname} groups={[FIND_WORK_NAV]} />
+        <NavMenu label="Employers" pathname={pathname} groups={[EMPLOYER_NAV]} />
+        <NavLink
+          href={COMPANIES_NAV.href}
+          label={COMPANIES_NAV.label}
+          active={isNavItemActive(pathname, COMPANIES_NAV)}
+        />
+        <NavMenu label="Jobs" pathname={pathname} groups={JOBS_NAV_GROUPS} />
       </div>
 
       <div className="ml-auto flex items-center gap-2 pl-6">
