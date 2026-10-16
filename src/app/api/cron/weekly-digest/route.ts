@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getFeaturedJobs } from '@/lib/data/employer';
 import {
   buildWeeklyDigestHtml,
   getWeeklyDigestJobs,
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const jobs = await getWeeklyDigestJobs();
+    const [jobs, featured] = await Promise.all([getWeeklyDigestJobs(), getFeaturedJobs()]);
     if (jobs.length === 0) {
       return NextResponse.json({ success: true, sent: 0, skipped: 'no_jobs' });
     }
@@ -70,8 +71,8 @@ export async function GET(request: NextRequest) {
         replyTo: 'nuclearhustle@gmail.com',
         to: sub.email,
         subject,
-        html: buildWeeklyDigestHtml(jobs, sub.email),
-        text: weeklyDigestPlainText(jobs, sub.email),
+        html: buildWeeklyDigestHtml(jobs, sub.email, featured),
+        text: weeklyDigestPlainText(jobs, sub.email, featured),
         headers: {
           'X-Entity-Ref-ID': `weekly-digest-${Date.now()}`,
           // Gmail/Yahoo bulk-sender rules require one-click list-unsubscribe.

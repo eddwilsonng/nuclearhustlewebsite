@@ -103,6 +103,7 @@ export interface DigestSection {
 export interface DigestModel {
   heading: string;
   intro: string;
+  featured: JobWithCompany[];
   sections: DigestSection[];
   closer: string;
   browseLabel: string;
@@ -195,7 +196,7 @@ export function digestPlantName(job: JobWithCompany): string | null {
   return match?.name ?? null;
 }
 
-export function digestRowMeta(job: JobWithCompany): string {
+export function digestRowMeta(job: JobWithCompany, options?: { markFeatured?: boolean }): string {
   const location = formatDigestLocation(job);
   const city = location.split(',')[0]?.trim() ?? '';
   const plant = digestPlantName(job);
@@ -204,7 +205,7 @@ export function digestRowMeta(job: JobWithCompany): string {
     .join(', ');
   const parts: string[] = [];
 
-  if (isFeaturedJob(job)) parts.push('Featured');
+  if (options?.markFeatured !== false && isFeaturedJob(job)) parts.push('Featured');
   if (place) parts.push(place);
   if (job.company.name) parts.push(job.company.name);
   return parts.join(' · ');
@@ -367,7 +368,22 @@ export function describeSection(section: DigestSection): string {
   return where ? `${section.total} new ${noun}. ${where}.` : `${section.total} new ${noun}.`;
 }
 
-export function buildDigestModel(jobs: JobWithCompany[]): DigestModel {
+function liveFeatured(jobs: JobWithCompany[]): JobWithCompany[] {
+  const byId = new Map<string, JobWithCompany>();
+  for (const job of jobs) {
+    if (!isFeaturedJob(job) || byId.has(job.id)) continue;
+    byId.set(job.id, job);
+  }
+  return [...byId.values()].sort(compareJobs);
+}
+
+export function buildDigestModel(
+  jobs: JobWithCompany[],
+  featured: JobWithCompany[] = [],
+): DigestModel {
+  const featuredJobs = liveFeatured([...featured, ...jobs]);
+  const featuredIds = new Set(featuredJobs.map((job) => job.id));
+
   const grouped = new Map<string, JobWithCompany[]>();
   for (const job of jobs) {
     const key = regionForJob(job) ?? 'Other';
@@ -390,7 +406,10 @@ export function buildDigestModel(jobs: JobWithCompany[]): DigestModel {
     return {
       label: key,
       total: regionJobs.length,
-      listed: pickListed(regionJobs, index === 0 ? LEAD_CAP : NEXT_CAP),
+      listed: pickListed(
+        regionJobs.filter((job) => !featuredIds.has(job.id)),
+        index === 0 ? LEAD_CAP : NEXT_CAP,
+      ),
       states: states.slice(0, 4),
       otherStateCount: Math.max(0, states.length - 4),
     };
@@ -401,6 +420,7 @@ export function buildDigestModel(jobs: JobWithCompany[]): DigestModel {
   return {
     heading: digestHeading(jobs),
     intro: jobs.length === 0 ? '' : DIGEST_INTRO,
+    featured: featuredJobs,
     sections,
     closer:
       unlocated > 0 && sections.length > 0

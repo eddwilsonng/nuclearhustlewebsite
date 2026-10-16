@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getFeaturedJobs } from '@/lib/data/employer';
 import { escapeHtml } from '@/lib/email/escapeHtml';
 import {
   buildWeeklyDigestHtml,
@@ -25,10 +26,10 @@ export async function GET(request: NextRequest) {
   }
 
   const email = request.nextUrl.searchParams.get('email') ?? 'you@example.com';
-  const jobs = await getWeeklyDigestJobs();
+  const [jobs, featured] = await Promise.all([getWeeklyDigestJobs(), getFeaturedJobs()]);
   const subject = weeklyDigestSubject(jobs);
   const preheader = weeklyDigestPreheader(jobs);
-  const bodyContent = buildWeeklyDigestHtml(jobs, email);
+  const bodyContent = buildWeeklyDigestHtml(jobs, email, featured);
 
   const previewBar = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; color: #57534E; max-width: 600px; margin: 0 auto 12px; padding: 12px 14px; background: #fff; border: 1px solid #CFC8BC; line-height: 1.5;">
