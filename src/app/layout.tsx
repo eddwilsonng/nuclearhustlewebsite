@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   // Plain string (no template): every page sets its own full title including the
   // brand, so a "%s | Nuclear Hustle" template would append the brand a second
   // time (double brand). Title-less pages fall back to this string.
-  title: "Nuclear Hustle — Nuclear Power Plant Jobs",
+  title: "Nuclear Hustle | Job Board Built for Nuclear Professionals",
   description: "Find nuclear power plant jobs across the US. Updated daily from major operators.",
   keywords: ["nuclear jobs", "nuclear power plant careers", "nuclear engineer jobs", "reactor operator jobs"],
   alternates: { canonical: "/" },
@@ -41,14 +41,14 @@ export const metadata: Metadata = {
     siteName: "Nuclear Hustle",
     locale: "en_US",
     url: "https://www.nuclearhustle.com",
-    title: "Nuclear Hustle — Nuclear Power Plant Jobs",
+    title: "Nuclear Hustle | Job Board Built for Nuclear Professionals",
     description: "Find nuclear power plant jobs across the US. Updated daily from major operators.",
-    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Nuclear Hustle — Nuclear Power Plant Jobs" }],
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Nuclear Hustle | Job Board Built for Nuclear Professionals" }],
   },
   twitter: {
     card: "summary_large_image",
     site: "@nuclearhustle",
-    title: "Nuclear Hustle — Nuclear Power Plant Jobs",
+    title: "Nuclear Hustle | Job Board Built for Nuclear Professionals",
     description: "Find nuclear power plant jobs across the US. Updated daily from major operators.",
     images: ["/opengraph-image"],
   },

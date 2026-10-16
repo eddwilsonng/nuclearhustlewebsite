@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const alt = 'Nuclear Hustle — Nuclear Power Plant Jobs';
+export const alt = 'Nuclear Hustle | Job Board Built for Nuclear Professionals';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 

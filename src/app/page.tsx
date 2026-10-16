@@ -20,7 +20,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Nuclear Hustle — Nuclear Power Plant Jobs",
+  title: "Nuclear Hustle | Job Board Built for Nuclear Professionals",
   description:
     "Find nuclear power plant jobs across the US. Browse reactor operator, engineering, and health physics roles at top operators. Updated daily.",
   keywords: [
