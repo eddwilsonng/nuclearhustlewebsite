@@ -2,14 +2,22 @@ import { escapeHtml } from './escapeHtml';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.nuclearhustle.com';
 
-export function emailBrandHeader(): string {
+export const EMAIL_SANS =
+  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
+export const EMAIL_MONO = "Consolas, 'Courier New', monospace";
+
+export function emailBrandHeader(aside?: string): string {
+  const dateCell = aside
+    ? `<td align="right" style="padding-bottom: 28px; vertical-align: middle; font-family: ${EMAIL_MONO}; font-size: 12px; color: #57534E;">${escapeHtml(aside)}</td>`
+    : '';
+
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
       <tr>
-        <td style="padding-bottom: 24px;">
-          <span style="font-family: monospace; font-size: 14px; color: #a8a29e;">##</span>
-          <span style="font-family: monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #111; font-weight: bold; margin-left: 6px;">nuclearhustle</span>
+        <td style="padding-bottom: 28px; vertical-align: middle;">
+          <a href="${SITE_URL}" style="font-family: ${EMAIL_SANS}; font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: #1C1917; text-decoration: none;">Nuclear Hustle</a>
         </td>
+        ${dateCell}
       </tr>
     </table>
   `;
@@ -30,15 +38,15 @@ export function emailFooter(unsubscribeHref: string, footerNote?: string): strin
     'You&apos;re receiving this because you signed up for Nuclear Hustle job alerts.';
 
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-top: 40px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-top: 32px;">
       <tr>
         <td style="padding-top: 16px; border-top: 1px solid #CFC8BC;">
-          <p style="font-family: monospace; font-size: 11px; color: #aaa; margin: 0; line-height: 1.6;">
+          <p style="font-family: ${EMAIL_SANS}; font-size: 12px; color: #57534E; margin: 0; line-height: 1.6;">
             ${note}
-            <a href="${unsubscribeHref}" style="color: #888;">Unsubscribe</a>
+            <a href="${unsubscribeHref}" style="color: #57534E;">Unsubscribe</a>
           </p>
-          <p style="font-family: monospace; font-size: 10px; color: #bbb; margin: 8px 0 0;">
-            <a href="${SITE_URL}" style="color: #bbb; text-decoration: none;">nuclearhustle.com</a>
+          <p style="font-family: ${EMAIL_SANS}; font-size: 12px; color: #57534E; margin: 8px 0 0;">
+            <a href="${SITE_URL}" style="color: #57534E; text-decoration: none;">nuclearhustle.com</a>
           </p>
         </td>
       </tr>
@@ -48,11 +56,11 @@ export function emailFooter(unsubscribeHref: string, footerNote?: string): strin
 
 export function emailPrimaryCta(href: string, label: string): string {
   return `
-    <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-top: 28px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-top: 20px;">
       <tr>
-        <td style="background: #facc15; padding: 12px 24px;">
-          <a href="${href}" style="font-family: monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: bold; color: #111; text-decoration: none; display: inline-block;">
-            ${label}
+        <td style="background: #FACC15; border: 1px solid #FACC15;">
+          <a href="${href}" style="font-family: ${EMAIL_SANS}; font-size: 14px; font-weight: 600; color: #1C1917; text-decoration: none; display: inline-block; padding: 14px 20px; line-height: 1.2;">
+            ${escapeHtml(label)}
           </a>
         </td>
       </tr>
@@ -64,10 +72,17 @@ interface EmailShellOptions {
   preheader?: string;
   unsubscribeHref: string;
   footerNote?: string;
+  headerAside?: string;
   content: string;
 }
 
-export function wrapEmailShell({ preheader, unsubscribeHref, footerNote, content }: EmailShellOptions): string {
+export function wrapEmailShell({
+  preheader,
+  unsubscribeHref,
+  footerNote,
+  headerAside,
+  content,
+}: EmailShellOptions): string {
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -83,8 +98,8 @@ export function wrapEmailShell({ preheader, unsubscribeHref, footerNote, content
             <td align="center" style="padding: 24px 12px;">
               <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="border-collapse: collapse; max-width: 600px; width: 100%; background: #EDE8DF; border: 1px solid #CFC8BC;">
                 <tr>
-                  <td style="padding: 32px 24px; font-family: monospace; color: #111;">
-                    ${emailBrandHeader()}
+                  <td style="padding: 32px 24px; font-family: ${EMAIL_SANS}; color: #1C1917;">
+                    ${emailBrandHeader(headerAside)}
                     ${content}
                     ${emailFooter(unsubscribeHref, footerNote)}
                   </td>
@@ -98,9 +113,14 @@ export function wrapEmailShell({ preheader, unsubscribeHref, footerNote, content
   `;
 }
 
-export function emailBodyOnly(content: string, unsubscribeHref: string, footerNote?: string): string {
+export function emailBodyOnly(
+  content: string,
+  unsubscribeHref: string,
+  footerNote?: string,
+  headerAside?: string,
+): string {
   return `
-    ${emailBrandHeader()}
+    ${emailBrandHeader(headerAside)}
     ${content}
     ${emailFooter(unsubscribeHref, footerNote)}
   `;

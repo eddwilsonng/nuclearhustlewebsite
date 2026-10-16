@@ -31,38 +31,18 @@ export async function GET(request: NextRequest) {
   const bodyContent = buildWeeklyDigestHtml(jobs, email);
 
   const previewBar = `
-    <div style="font-family: monospace; font-size: 11px; letter-spacing: 1px; color: #666; max-width: 600px; margin: 0 auto 12px; padding: 10px 14px; background: #fff; border: 1px solid #CFC8BC; line-height: 1.6;">
-      <strong style="text-transform: uppercase; letter-spacing: 2px;">Preview</strong><br />
-      ${jobs.length} job${jobs.length === 1 ? '' : 's'} &middot;
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; color: #57534E; max-width: 600px; margin: 0 auto 12px; padding: 12px 14px; background: #fff; border: 1px solid #CFC8BC; line-height: 1.5;">
+      <strong style="color: #1C1917;">Preview</strong><br />
+      ${jobs.length} job${jobs.length === 1 ? '' : 's'}<br />
       Subject: ${escapeHtml(subject)}<br />
       Preheader: ${escapeHtml(preheader)}
     </div>
   `;
 
-  const previewHtml = `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${escapeHtml(subject)}</title>
-  </head>
-  <body style="margin: 0; padding: 24px 12px; background: #d8d2c8;">
-    ${previewBar}
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
-      <tr>
-        <td align="center">
-          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="border-collapse: collapse; max-width: 600px; width: 100%; background: #EDE8DF; border: 1px solid #CFC8BC;">
-            <tr>
-              <td style="padding: 32px 24px;">
-                ${bodyContent}
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>`;
+  const previewHtml = bodyContent.replace(
+    '<body style="margin: 0; padding: 0; background: #d8d2c8;">',
+    `<body style="margin: 0; padding: 24px 12px; background: #d8d2c8;">${previewBar}`,
+  );
 
   return new NextResponse(previewHtml, {
     headers: { 'Content-Type': 'text/html; charset=utf-8' },

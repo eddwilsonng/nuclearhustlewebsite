@@ -1,331 +1,131 @@
-import { getCategoryInfo, JobCategory } from '@/lib/categorize';
-import { getStateBySlug } from '@/lib/states';
 import type { JobWithCompany } from '@/lib/types';
-import { CATEGORY_ORDER, computeDigestStats, type DigestStats } from '../digestStats';
-import { weeklyDigestPreheader } from '../subjectLine';
-import { emailBodyOnly, emailPreheader, emailPrimaryCta } from '../emailShell';
+import { buildDigestModel, describeSection, digestRowMeta, type DigestSection } from '../digestModel';
+import { EMAIL_SANS, emailPrimaryCta, wrapEmailShell } from '../emailShell';
 import { escapeHtml } from '../escapeHtml';
-import { formatPostedLabel, isNewThisWeek } from '../formatPostedLabel';
+import { weeklyDigestPreheader } from '../subjectLine';
 import { unsubscribeUrl } from '../unsubscribe';
-import { jobOneLiner } from '@/lib/jobs/oneLiner';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.nuclearhustle.com';
-const MAX_PER_CATEGORY = 3;
-const MAX_FEATURED = 3;
-
-function getCompanyInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((word) => word[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-function formatJobLocation(job: JobWithCompany): string {
-  const stateName = job.state ? getStateBySlug(job.state)?.name : null;
-  if (stateName && !job.location.toLowerCase().includes(stateName.toLowerCase())) {
-    return `${job.location}, ${stateName}`;
-  }
-  return job.location;
-}
-
-function isFeaturedJob(job: JobWithCompany): boolean {
-  return Boolean(
-    job.is_featured && job.featured_until && new Date(job.featured_until) > new Date()
-  );
-}
-
-function isDirectJob(job: JobWithCompany): boolean {
-  return Boolean(job.isEmployerJob && !isFeaturedJob(job));
-}
 
 function jobUrl(job: JobWithCompany): string {
   return `${SITE_URL}/job/${encodeURIComponent(job.slug)}`;
 }
 
-function badge(label: string, style: 'featured' | 'direct' | 'category' | 'new'): string {
-  const styles = {
-    featured: 'border: 1px solid #facc15; background: #fef9c3; color: #a16207;',
-    direct: 'border: 1px solid #fde68a; background: #fffbeb; color: #ca8a04;',
-    category: 'border: 1px solid #CFC8BC; background: #E5DFD5; color: #57534e;',
-    new: 'border: 1px solid #CFC8BC; background: #fff; color: #44403c;',
-  };
-
-  return `<span style="font-family: monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; padding: 2px 6px; margin-right: 4px; white-space: nowrap; ${styles[style]}">${escapeHtml(label)}</span>`;
-}
-
-function renderBadges(job: JobWithCompany, showCategory = true): string {
-  const badges: string[] = [];
-  if (isFeaturedJob(job)) badges.push(badge('Featured', 'featured'));
-  else if (isDirectJob(job)) badges.push(badge('Direct', 'direct'));
-  if (isNewThisWeek(job.scraped_at)) badges.push(badge('New', 'new'));
-  if (showCategory && job.category !== 'other') {
-    badges.push(badge(getCategoryInfo(job.category).name, 'category'));
-  }
-  if (!badges.length) return '';
-  return `<div style="margin-top: 6px; line-height: 1.8;">${badges.join('')}</div>`;
-}
-
-function renderJobCard(job: JobWithCompany, options: { highlighted?: boolean; showCategory?: boolean } = {}): string {
-  const { highlighted = false, showCategory = true } = options;
-  const initials = escapeHtml(getCompanyInitials(job.company.name));
-  const title = escapeHtml(job.title);
-  const company = escapeHtml(job.company.name);
-  const location = escapeHtml(formatJobLocation(job));
-  const url = jobUrl(job);
-  const oneLiner = jobOneLiner(job);
-  const posted = formatPostedLabel(job.scraped_at);
-  const avatarBg = job.isEmployerJob ? '#fef9c3' : '#E5DFD5';
-  const avatarBorder = job.isEmployerJob ? '#fde68a' : '#CFC8BC';
-  const avatarColor = job.isEmployerJob ? '#ca8a04' : '#a8a29e';
-  const leftBorder = highlighted ? 'border-left: 3px solid #facc15;' : '';
+function renderJob(job: JobWithCompany): string {
+  const meta = escapeHtml(digestRowMeta(job)).replace(
+    / · /g,
+    ' <span style="color: #CFC8BC;">·</span> ',
+  );
 
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 12px; border: 1px solid #CFC8BC; background: #EDE8DF; ${leftBorder}">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
       <tr>
-        <td style="padding: 14px; vertical-align: top; width: 48px;">
-          <div style="width: 40px; height: 40px; border: 1px solid ${avatarBorder}; background: ${avatarBg}; text-align: center; line-height: 40px; font-family: monospace; font-size: 11px; font-weight: bold; color: ${avatarColor};">
-            ${initials}
-          </div>
-        </td>
-        <td style="padding: 14px 14px 14px 0; vertical-align: top;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
-            <tr>
-              <td style="vertical-align: top;">
-                <a href="${url}" style="font-family: monospace; font-size: 14px; font-weight: bold; color: #111; text-decoration: none; line-height: 1.4; display: block;">
-                  ${title}
-                </a>
-              </td>
-              <td style="vertical-align: top; text-align: right; white-space: nowrap; padding-left: 8px;">
-                <span style="font-family: monospace; font-size: 10px; color: #a8a29e;">${escapeHtml(posted)}</span>
-              </td>
-            </tr>
-          </table>
-          <p style="font-family: monospace; font-size: 11px; color: #78716c; margin: 4px 0 0; line-height: 1.5;">
-            ${company} <span style="color: #CFC8BC;">//</span> ${location}
-          </p>
-          ${renderBadges(job, showCategory)}
+        <td style="padding: 12px 0; border-bottom: 1px solid #CFC8BC;">
+          <a href="${jobUrl(job)}" style="font-family: ${EMAIL_SANS}; font-size: 16px; font-weight: 600; line-height: 1.35; color: #1C1917; text-decoration: none;">
+            ${escapeHtml(job.title)}
+          </a>
           ${
-            oneLiner
-              ? `<p style="font-family: monospace; font-size: 11px; color: #57534e; margin: 8px 0 0; line-height: 1.5;">${escapeHtml(oneLiner)}</p>`
+            meta
+              ? `<p style="font-family: ${EMAIL_SANS}; font-size: 14px; line-height: 1.45; color: #57534E; margin: 3px 0 0;">${meta}</p>`
               : ''
           }
-          <p style="margin: 8px 0 0;">
-            <a href="${url}" style="font-family: monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #111; text-decoration: none; font-weight: bold;">
-              View role &rarr;
-            </a>
-          </p>
         </td>
       </tr>
     </table>
   `;
 }
 
-function renderStatsStrip(stats: DigestStats): string {
-  const topHiring = escapeHtml(stats.topCategoryHiring);
-
-  return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin: 20px 0 28px; border: 1px solid #CFC8BC;">
-      <tr>
-        <td style="padding: 12px 8px; text-align: center; border-right: 1px solid #CFC8BC; width: 33%;">
-          <p style="font-family: monospace; font-size: 18px; font-weight: bold; color: #111; margin: 0;">${stats.totalJobs}</p>
-          <p style="font-family: monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #a8a29e; margin: 4px 0 0;">Roles</p>
-        </td>
-        <td style="padding: 12px 8px; text-align: center; border-right: 1px solid #CFC8BC; width: 33%;">
-          <p style="font-family: monospace; font-size: 18px; font-weight: bold; color: #111; margin: 0;">${stats.stateCount}</p>
-          <p style="font-family: monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #a8a29e; margin: 4px 0 0;">States</p>
-        </td>
-        <td style="padding: 12px 8px; text-align: center; width: 34%;">
-          <p style="font-family: monospace; font-size: 11px; font-weight: bold; color: #111; margin: 0; line-height: 1.3;">${topHiring}</p>
-          <p style="font-family: monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #a8a29e; margin: 4px 0 0;">Top hiring</p>
-        </td>
-      </tr>
-    </table>
-  `;
+function joinHtml(parts: string[]): string {
+  if (parts.length <= 1) return parts[0] ?? '';
+  if (parts.length === 2) return `${parts[0]} and ${parts[1]}`;
+  return `${parts.slice(0, -1).join(', ')}, and ${parts[parts.length - 1]}`;
 }
 
-function renderHero(stats: DigestStats): string {
-  const weekLabel = new Date().toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
+function renderSummary(section: DigestSection): string {
+  const bits = section.states.map((state) => {
+    const href = `${SITE_URL}/jobs/${state.slug}`;
+    const name = `<a href="${href}" style="font-family: ${EMAIL_SANS}; font-weight: 600; color: #1C1917; text-decoration: underline;">${escapeHtml(state.name)}</a>`;
+    return `${state.count} in ${name}`;
   });
-
-  return `
-    <h1 style="font-family: monospace; font-size: 22px; font-weight: bold; margin: 0 0 4px; line-height: 1.3; color: #111;">
-      This week&apos;s open roles
-    </h1>
-    <p style="font-family: monospace; font-size: 12px; color: #78716c; margin: 0 0 0;">
-      ${weekLabel}${stats.totalJobs > 0 ? ` &mdash; ${stats.totalJobs} new this week` : ''}
-    </p>
-    ${renderStatsStrip(stats)}
-  `;
-}
-
-function pickFeaturedJobs(jobs: JobWithCompany[]): JobWithCompany[] {
-  return [...jobs]
-    .filter((job) => isFeaturedJob(job) || isDirectJob(job))
-    .sort((a, b) => {
-      const aScore = isFeaturedJob(a) ? 2 : isDirectJob(a) ? 1 : 0;
-      const bScore = isFeaturedJob(b) ? 2 : isDirectJob(b) ? 1 : 0;
-      if (aScore !== bScore) return bScore - aScore;
-      return new Date(b.scraped_at).getTime() - new Date(a.scraped_at).getTime();
-    })
-    .slice(0, MAX_FEATURED);
-}
-
-function groupJobsByCategory(jobs: JobWithCompany[]): Map<JobCategory, JobWithCompany[]> {
-  const grouped = new Map<JobCategory, JobWithCompany[]>();
-  for (const job of jobs) {
-    const list = grouped.get(job.category) ?? [];
-    list.push(job);
-    grouped.set(job.category, list);
+  let where = joinHtml(bits);
+  if (section.otherStateCount > 0) {
+    const noun = section.otherStateCount === 1 ? 'state' : 'states';
+    where = where ? `${where}, plus ${section.otherStateCount} other ${noun}` : `${section.otherStateCount} other ${noun}`;
   }
-  return grouped;
+  const noun = section.total === 1 ? 'role' : 'roles';
+  const text = where ? `${section.total} new ${noun}. ${where}.` : `${section.total} new ${noun}.`;
+  return `<p style="font-family: ${EMAIL_SANS}; font-size: 15px; line-height: 1.55; color: #57534E; margin: 0 0 8px;">${text}</p>`;
 }
 
-function renderFeaturedSection(jobs: JobWithCompany[]): string {
-  if (!jobs.length) return '';
-
-  const cards = jobs.map((job) => renderJobCard(job, { highlighted: true, showCategory: true })).join('');
-
+function renderSection(section: DigestSection): string {
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 28px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-top: 28px;">
       <tr>
         <td>
-          <p style="font-family: monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #ca8a04; margin: 0 0 12px; font-weight: bold;">
-            &#9733; Featured &amp; Direct
-          </p>
-          ${cards}
+          <h2 style="font-family: ${EMAIL_SANS}; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.3; color: #1C1917; margin: 0 0 4px;">
+            ${escapeHtml(section.label)}
+          </h2>
+          ${renderSummary(section)}
+          ${section.listed.map(renderJob).join('')}
         </td>
       </tr>
     </table>
-  `;
-}
-
-function renderCategorySections(
-  jobs: JobWithCompany[],
-  excludeIds: Set<string>
-): string {
-  const remaining = jobs.filter((job) => !excludeIds.has(job.id));
-  const grouped = groupJobsByCategory(remaining);
-  const sections: string[] = [];
-
-  for (const category of CATEGORY_ORDER) {
-    const categoryJobs = grouped.get(category);
-    if (!categoryJobs?.length) continue;
-
-    const info = getCategoryInfo(category);
-    const name = info.name.toUpperCase();
-    const slice = categoryJobs.slice(0, MAX_PER_CATEGORY);
-    const hidden = categoryJobs.length - slice.length;
-    const cards = slice.map((job) => renderJobCard(job, { showCategory: false })).join('');
-    const more = hidden
-      ? `<p style="margin: 4px 0 0;">
-          <a href="${SITE_URL}/jobs/role/${category}" style="font-family: monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #111; text-decoration: none; font-weight: bold;">
-            ${hidden} more in ${escapeHtml(info.name)} &rarr;
-          </a>
-        </p>`
-      : '';
-
-    sections.push(`
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 28px;">
-        <tr>
-          <td>
-            <p style="font-family: monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #78716c; margin: 0 0 12px; font-weight: bold; border-bottom: 1px solid #CFC8BC; padding-bottom: 8px;">
-              ${escapeHtml(name)} &middot; ${categoryJobs.length} role${categoryJobs.length === 1 ? '' : 's'}
-            </p>
-            ${cards}
-            ${more}
-          </td>
-        </tr>
-      </table>
-    `);
-  }
-
-  return sections.join('');
-}
-
-function renderDiscoveryLinks(stats: DigestStats): string {
-  const links = stats.topCategories.slice(0, 4).map((name) => {
-    const category = CATEGORY_ORDER.find(
-      (cat) => getCategoryInfo(cat).name === name
-    );
-    if (!category) return '';
-    const href = `${SITE_URL}/jobs/role/${category}`;
-    return `<a href="${href}" style="font-family: monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #57534e; text-decoration: none; margin-right: 12px;">${escapeHtml(name)}</a>`;
-  }).filter(Boolean).join('');
-
-  if (!links) return '';
-
-  return `
-    <p style="font-family: monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #a8a29e; margin: 16px 0 8px;">
-      Browse by role
-    </p>
-    <p style="margin: 0; line-height: 2;">
-      ${links}
-    </p>
   `;
 }
 
 export function buildWeeklyDigestHtml(jobs: JobWithCompany[], email: string): string {
-  const stats = computeDigestStats(jobs);
-  const featured = pickFeaturedJobs(jobs);
-  const featuredIds = new Set(featured.map((job) => job.id));
-  const unsub = unsubscribeUrl(email);
-
+  const model = buildDigestModel(jobs);
   const preheader = weeklyDigestPreheader(jobs);
+  const headerDate = new Date().toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+
+  const intro = model.intro
+    ? `<p style="font-family: ${EMAIL_SANS}; font-size: 16px; line-height: 1.6; color: #1C1917; margin: 0;">${escapeHtml(model.intro)}</p>`
+    : '';
+  const closer = model.closer
+    ? `<p style="font-family: ${EMAIL_SANS}; font-size: 15px; line-height: 1.55; color: #57534E; margin: 28px 0 0;">${escapeHtml(model.closer)}</p>`
+    : '';
 
   const content = `
-    ${emailPreheader(preheader)}
-    ${renderHero(stats)}
-    ${renderFeaturedSection(featured)}
-    ${renderCategorySections(jobs, featuredIds)}
-    ${emailPrimaryCta(`${SITE_URL}/jobs`, 'Browse all jobs &rarr;')}
-    ${renderDiscoveryLinks(stats)}
+    <h1 style="font-family: ${EMAIL_SANS}; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; color: #1C1917; margin: 0 0 8px;">
+      ${escapeHtml(model.heading)}
+    </h1>
+    ${intro}
+    ${model.sections.map(renderSection).join('')}
+    ${closer}
+    ${emailPrimaryCta(`${SITE_URL}/jobs`, model.browseLabel)}
   `;
 
-  return emailBodyOnly(content, unsub);
+  return wrapEmailShell({
+    preheader,
+    unsubscribeHref: unsubscribeUrl(email),
+    headerAside: headerDate,
+    content,
+  });
 }
 
 export { weeklyDigestPreheader, weeklyDigestSubject } from '../subjectLine';
 
-function plainJobLine(job: JobWithCompany): string {
-  return `- ${job.title} at ${job.company.name} (${formatJobLocation(job)})\n  ${jobUrl(job)}`;
-}
-
 export function weeklyDigestPlainText(jobs: JobWithCompany[], email: string): string {
-  const stats = computeDigestStats(jobs);
-  const featured = pickFeaturedJobs(jobs);
-  const featuredIds = new Set(featured.map((job) => job.id));
-  const lines = [
-    `This week's open roles — ${stats.totalJobs} new across ${stats.stateCount} states`,
-    '',
-  ];
+  const model = buildDigestModel(jobs);
+  const lines = [model.heading];
+  if (model.intro) lines.push('', model.intro);
+  lines.push('');
 
-  if (featured.length) {
-    lines.push('Featured & direct', ...featured.map(plainJobLine), '');
-  }
-
-  const remaining = jobs.filter((job) => !featuredIds.has(job.id));
-  const grouped = groupJobsByCategory(remaining);
-  for (const category of CATEGORY_ORDER) {
-    const categoryJobs = grouped.get(category);
-    if (!categoryJobs?.length) continue;
-    const name = getCategoryInfo(category).name;
-    const slice = categoryJobs.slice(0, MAX_PER_CATEGORY);
-    const hidden = categoryJobs.length - slice.length;
-    lines.push(
-      `${name} · ${categoryJobs.length} role${categoryJobs.length === 1 ? '' : 's'}`,
-      ...slice.map(plainJobLine),
-    );
-    if (hidden) {
-      lines.push(`${hidden} more in ${name}: ${SITE_URL}/jobs/role/${category}`);
+  for (const section of model.sections) {
+    lines.push(section.label, describeSection(section), '');
+    for (const job of section.listed) {
+      lines.push(job.title, digestRowMeta(job), jobUrl(job), '');
+    }
+    for (const state of section.states) {
+      lines.push(`${state.name}: ${SITE_URL}/jobs/${state.slug}`);
     }
     lines.push('');
   }
 
-  lines.push(`Browse all jobs: ${SITE_URL}/jobs`, '', `Unsubscribe: ${unsubscribeUrl(email)}`);
+  if (model.closer) lines.push(model.closer, '');
+  lines.push(`${model.browseLabel}: ${SITE_URL}/jobs`, '', `Unsubscribe: ${unsubscribeUrl(email)}`);
   return lines.join('\n');
 }
