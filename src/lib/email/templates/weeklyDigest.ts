@@ -89,7 +89,7 @@ function renderSection(section: DigestSection): string {
             ${escapeHtml(section.label)}
           </h2>
           ${renderSummary(section)}
-          ${section.listed.map(renderJob).join('')}
+          ${section.listed.map((job) => renderJob(job)).join('')}
         </td>
       </tr>
     </table>
