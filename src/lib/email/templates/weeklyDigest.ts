@@ -12,50 +12,45 @@ function jobUrl(job: JobWithCompany): string {
   return `${SITE_URL}/job/${encodeURIComponent(job.slug)}`;
 }
 
-function renderJob(job: JobWithCompany, featured = false): string {
+function renderJobItem(job: JobWithCompany, featured = false): string {
   const meta = escapeHtml(digestRowMeta(job, { markFeatured: !featured })).replace(
     / · /g,
-    ' <span style="color: #CFC8BC;">·</span> ',
+    ' <span style="color: #D6D3D1;">·</span> ',
   );
-  const rule = featured
-    ? `<td width="3" style="width: 3px; background: #FACC15; border-bottom: 1px solid #CFC8BC; font-size: 0; line-height: 0;">&nbsp;</td>`
-    : '';
 
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
-      <tr>
-        ${rule}
-        <td style="padding: 12px 0 12px ${featured ? '12px' : '0'}; border-bottom: 1px solid #CFC8BC;">
-          <a href="${jobUrl(job)}" style="font-family: ${EMAIL_SANS}; font-size: 16px; font-weight: 600; line-height: 1.35; color: #1C1917; text-decoration: none;">
-            ${escapeHtml(job.title)}
-          </a>
-          ${
-            meta
-              ? `<p style="font-family: ${EMAIL_SANS}; font-size: 14px; line-height: 1.45; color: #57534E; margin: 3px 0 0;">${meta}</p>`
-              : ''
-          }
-        </td>
-      </tr>
-    </table>
+    <li style="margin: 0 0 18px; padding-left: 6px; font-family: ${EMAIL_SANS}; color: #292524;">
+      <a href="${jobUrl(job)}" style="font-family: ${EMAIL_SANS}; font-size: 16px; font-weight: 600; line-height: 1.4; color: #1C1917; text-decoration: underline; text-underline-offset: 2px;">
+        ${escapeHtml(job.title)}
+      </a>
+      ${
+        meta
+          ? `<span style="display: block; font-family: ${EMAIL_SANS}; font-size: 14px; line-height: 1.5; color: #78716C; margin-top: 2px;">${meta}</span>`
+          : ''
+      }
+    </li>
+  `;
+}
+
+function renderJobList(jobs: JobWithCompany[], featured = false): string {
+  if (jobs.length === 0) return '';
+  return `
+    <ul style="margin: 14px 0 0; padding: 0 0 0 22px; list-style: disc;">
+      ${jobs.map((job) => renderJobItem(job, featured)).join('')}
+    </ul>
   `;
 }
 
 function renderFeatured(jobs: JobWithCompany[]): string {
   if (jobs.length === 0) return '';
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-top: 28px;">
-      <tr>
-        <td>
-          <h2 style="font-family: ${EMAIL_SANS}; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.3; color: #1C1917; margin: 0 0 4px;">
-            Featured listings
-          </h2>
-          <p style="font-family: ${EMAIL_SANS}; font-size: 15px; line-height: 1.55; color: #57534E; margin: 0 0 8px;">
-            Sponsored roles from operators hiring now.
-          </p>
-          ${jobs.map((job) => renderJob(job, true)).join('')}
-        </td>
-      </tr>
-    </table>
+    <h2 style="font-family: ${EMAIL_SANS}; font-size: 19px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; color: #1C1917; margin: 40px 0 0;">
+      Featured listings
+    </h2>
+    <p style="font-family: ${EMAIL_SANS}; font-size: 15px; line-height: 1.6; color: #78716C; margin: 8px 0 0;">
+      Sponsored roles from operators hiring now.
+    </p>
+    ${renderJobList(jobs, true)}
   `;
 }
 
@@ -68,7 +63,7 @@ function joinHtml(parts: string[]): string {
 function renderSummary(section: DigestSection): string {
   const bits = section.states.map((state) => {
     const href = `${SITE_URL}/jobs/${state.slug}`;
-    const name = `<a href="${href}" style="font-family: ${EMAIL_SANS}; font-weight: 600; color: #1C1917; text-decoration: underline;">${escapeHtml(state.name)}</a>`;
+    const name = `<a href="${href}" style="font-family: ${EMAIL_SANS}; font-weight: 600; color: #1C1917; text-decoration: underline; text-underline-offset: 2px;">${escapeHtml(state.name)}</a>`;
     return `${state.count} in ${name}`;
   });
   let where = joinHtml(bits);
@@ -78,22 +73,16 @@ function renderSummary(section: DigestSection): string {
   }
   const noun = section.total === 1 ? 'role' : 'roles';
   const text = where ? `${section.total} new ${noun}. ${where}.` : `${section.total} new ${noun}.`;
-  return `<p style="font-family: ${EMAIL_SANS}; font-size: 15px; line-height: 1.55; color: #57534E; margin: 0 0 8px;">${text}</p>`;
+  return `<p style="font-family: ${EMAIL_SANS}; font-size: 15px; line-height: 1.6; color: #78716C; margin: 8px 0 0;">${text}</p>`;
 }
 
 function renderSection(section: DigestSection): string {
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-top: 28px;">
-      <tr>
-        <td>
-          <h2 style="font-family: ${EMAIL_SANS}; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.3; color: #1C1917; margin: 0 0 4px;">
-            ${escapeHtml(section.label)}
-          </h2>
-          ${renderSummary(section)}
-          ${section.listed.map((job) => renderJob(job)).join('')}
-        </td>
-      </tr>
-    </table>
+    <h2 style="font-family: ${EMAIL_SANS}; font-size: 19px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; color: #1C1917; margin: 40px 0 0;">
+      ${escapeHtml(section.label)}
+    </h2>
+    ${renderSummary(section)}
+    ${renderJobList(section.listed)}
   `;
 }
 
@@ -105,25 +94,25 @@ export function buildWeeklyDigestHtml(
   const model = buildDigestModel(jobs, featured);
   const preheader = weeklyDigestPreheader(jobs);
   const headerDate = new Date().toLocaleDateString('en-US', {
-    month: 'short',
+    month: 'long',
     day: 'numeric',
+    year: 'numeric',
   });
 
   const intro = model.intro
-    ? `<p style="font-family: ${EMAIL_SANS}; font-size: 16px; line-height: 1.6; color: #1C1917; margin: 0;">${escapeHtml(model.intro)}</p>`
-    : '';
-  const closer = model.closer
-    ? `<p style="font-family: ${EMAIL_SANS}; font-size: 15px; line-height: 1.55; color: #57534E; margin: 28px 0 0;">${escapeHtml(model.closer)}</p>`
+    ? `<p style="font-family: ${EMAIL_SANS}; font-size: 18px; line-height: 1.55; color: #57534E; margin: 16px 0 0;">${escapeHtml(model.intro)}</p>`
     : '';
 
-  const content = `
-    <h1 style="font-family: ${EMAIL_SANS}; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; color: #1C1917; margin: 0 0 8px;">
+  const hero = `
+    <h1 style="font-family: ${EMAIL_SANS}; font-size: 34px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.08; color: #1C1917; margin: 24px 0 0;">
       ${escapeHtml(model.heading)}
     </h1>
     ${intro}
+  `;
+
+  const content = `
     ${renderFeatured(model.featured)}
     ${model.sections.map(renderSection).join('')}
-    ${closer}
     ${emailPrimaryCta(`${SITE_URL}/jobs`, model.browseLabel)}
   `;
 
@@ -131,6 +120,7 @@ export function buildWeeklyDigestHtml(
     preheader,
     unsubscribeHref: unsubscribeUrl(email),
     headerAside: headerDate,
+    hero,
     content,
   });
 }
@@ -165,7 +155,6 @@ export function weeklyDigestPlainText(
     lines.push('');
   }
 
-  if (model.closer) lines.push(model.closer, '');
   lines.push(
     `${model.browseLabel}: ${SITE_URL}/jobs`,
     '',

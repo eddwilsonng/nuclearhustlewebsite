@@ -9,10 +9,10 @@ export function buildWelcomeEmailHtml(email: string): string {
 
   const content = `
     ${emailPreheader(welcomeEmailPreheader())}
-    <h1 style="font-family: ${EMAIL_SANS}; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; color: #1C1917; margin: 0 0 12px;">
+    <h1 style="font-family: ${EMAIL_SANS}; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; color: #1C1917; margin: 0;">
       You&apos;re on the list.
     </h1>
-    <p style="font-family: ${EMAIL_SANS}; font-size: 16px; line-height: 1.5; color: #57534E; margin: 0;">
+    <p style="font-family: ${EMAIL_SANS}; font-size: 17px; line-height: 1.65; color: #292524; margin: 12px 0 0;">
       Every Monday we send the roles that went live that week, grouped by region.
     </p>
     ${emailPrimaryCta(`${SITE_URL}/jobs`, 'Browse open roles')}

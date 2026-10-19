@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   const bodyContent = buildWeeklyDigestHtml(jobs, email, featured);
 
   const previewBar = `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; color: #57534E; max-width: 600px; margin: 0 auto 12px; padding: 12px 14px; background: #fff; border: 1px solid #CFC8BC; line-height: 1.5;">
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; color: #57534E; max-width: 560px; margin: 0 auto 24px; padding: 12px 14px; background: #F5F5F4; border: 1px solid #E7E5E4; line-height: 1.5;">
       <strong style="color: #1C1917;">Preview</strong><br />
       ${jobs.length} job${jobs.length === 1 ? '' : 's'}<br />
       Subject: ${escapeHtml(subject)}<br />
@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
   `;
 
   const previewHtml = bodyContent.replace(
-    '<body style="margin: 0; padding: 0; background: #d8d2c8;">',
-    `<body style="margin: 0; padding: 24px 12px; background: #d8d2c8;">${previewBar}`,
+    '<body style="margin: 0; padding: 0; background: #FFFFFF;">',
+    `<body style="margin: 0; padding: 24px 12px; background: #FFFFFF;">${previewBar}`,
   );
 
   return new NextResponse(previewHtml, {
