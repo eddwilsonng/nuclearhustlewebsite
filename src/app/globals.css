@@ -150,6 +150,31 @@ body {
   .text-pretty {
     text-wrap: pretty;
   }
+
+  /* Soft left-to-right reveal. Mask is 3× the box: at 100% the window
+     sits in the transparent end, at 0% it sits in the opaque start. */
+  .headline-reveal {
+    -webkit-mask-image: linear-gradient(90deg, #000 40%, transparent 60%);
+    mask-image: linear-gradient(90deg, #000 40%, transparent 60%);
+    -webkit-mask-size: 300% 100%;
+    mask-size: 300% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: 0% 0;
+    mask-position: 0% 0;
+    animation: headline-reveal 2.4s cubic-bezier(0.33, 0, 0.2, 1) both;
+  }
+}
+
+@keyframes headline-reveal {
+  from {
+    -webkit-mask-position: 100% 0;
+    mask-position: 100% 0;
+  }
+  to {
+    -webkit-mask-position: 0% 0;
+    mask-position: 0% 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -160,5 +185,11 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .headline-reveal {
+    animation: none;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 }

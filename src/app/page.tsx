@@ -96,7 +96,7 @@ export default async function Home() {
       <section className="border-b border-rule">
         <div className="mx-auto max-w-6xl px-6 pt-14 pb-10 md:pt-20">
           <div className="max-w-3xl">
-            <h1 className="font-sans text-4xl leading-[1.05] font-bold tracking-tight text-ink md:text-6xl text-balance">
+            <h1 className="headline-reveal font-sans text-4xl leading-[1.05] font-bold tracking-tight text-ink md:text-6xl text-balance">
               Find your next nuclear job.
             </h1>
             <p className="mt-6 max-w-xl font-sans text-lg leading-relaxed text-secondary text-pretty">
