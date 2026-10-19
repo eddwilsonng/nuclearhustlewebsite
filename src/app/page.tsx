@@ -8,6 +8,7 @@ import {
 } from "@/lib/data/employer";
 import { getJobsByCompany } from "@/lib/data/static";
 import { JobAlertForm } from "@/components/JobAlertForm";
+import { HomeFaq } from "@/components/HomeFaq";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
@@ -206,6 +207,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <HomeFaq />
 
       <section className="py-24">
         <div className="mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-2 md:items-center">
