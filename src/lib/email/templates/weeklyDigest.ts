@@ -3,6 +3,7 @@ import { buildDigestModel, describeSection, digestRowMeta, type DigestSection } 
 import { EMAIL_SANS, emailPrimaryCta, wrapEmailShell } from '../emailShell';
 import { escapeHtml } from '../escapeHtml';
 import { weeklyDigestPreheader } from '../subjectLine';
+import { legalSenderLines } from '@/lib/legal';
 import { unsubscribeUrl } from '../unsubscribe';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.nuclearhustle.com';
@@ -165,6 +166,13 @@ export function weeklyDigestPlainText(
   }
 
   if (model.closer) lines.push(model.closer, '');
-  lines.push(`${model.browseLabel}: ${SITE_URL}/jobs`, '', `Unsubscribe: ${unsubscribeUrl(email)}`);
+  lines.push(
+    `${model.browseLabel}: ${SITE_URL}/jobs`,
+    '',
+    'This is an advertisement.',
+    `Unsubscribe: ${unsubscribeUrl(email)}`,
+    '',
+    ...legalSenderLines(),
+  );
   return lines.join('\n');
 }

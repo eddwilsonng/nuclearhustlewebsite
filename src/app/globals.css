@@ -11,6 +11,7 @@
   --control-border: #78716c;
   --signal: #facc15;
   --signal-hover: #fde047;
+  --signal-border: #d9ae0b;
   --focus: #1c1917;
   --inverse: #1c1917;
   --inverse-ink: #f5f2eb;
@@ -38,6 +39,7 @@
   --color-control: var(--control-border);
   --color-signal: var(--signal);
   --color-signal-hover: var(--signal-hover);
+  --color-signal-border: var(--signal-border);
   --color-focus: var(--focus);
   --color-inverse: var(--inverse);
   --color-inverse-ink: var(--inverse-ink);

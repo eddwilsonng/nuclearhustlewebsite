@@ -154,6 +154,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'This job does not accept form applications' }, { status: 400 });
     }
 
+    if (formData.get('acceptedTerms') !== 'on') {
+      return NextResponse.json(
+        { error: 'Accept the terms to send this application' },
+        { status: 400 },
+      );
+    }
+
     // Use the service-role client for storage + the application row. Applicants
     // are anonymous, so the user-scoped storage RLS policies don't apply to them.
     const { createAdminClient } = await import('@/lib/supabase/admin');

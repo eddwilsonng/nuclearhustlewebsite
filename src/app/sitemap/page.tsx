@@ -22,10 +22,13 @@ const STATIC_PAGES = [
   { href: '/contact', label: 'Contact' },
   { href: '/privacy', label: 'Privacy policy' },
   { href: '/terms', label: 'Terms of use' },
+  { href: '/dmca', label: 'Copyright notices' },
+  { href: '/accessibility', label: 'Accessibility' },
 ];
 
 const EMPLOYER_PAGES = [
   { href: '/signup/employer', label: 'Post a job' },
+  { href: '/pricing', label: 'Pricing' },
   { href: '/login', label: 'Employer login' },
 ];
 

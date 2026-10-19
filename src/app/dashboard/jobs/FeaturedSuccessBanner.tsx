@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FEATURED_DURATION_DAYS } from "@/lib/jobs/featuredOffer";
 
 export function FeaturedSuccessBanner() {
   const [dismissed, setDismissed] = useState(false);
@@ -13,7 +14,7 @@ export function FeaturedSuccessBanner() {
       className="mb-6 flex items-start justify-between gap-3 border border-success bg-success-surface px-4 py-3"
     >
       <p className="font-sans text-sm text-success">
-        This job is now featured. It stays at the top of the board for 30 days.
+        This job is now featured. For {FEATURED_DURATION_DAYS} days it stays at the top of the jobs board and on the homepage, and in every Monday digest sent during that time.
       </p>
       <button
         type="button"

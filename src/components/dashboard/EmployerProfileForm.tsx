@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { updateEmployerProfile, type ActionState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/Button";
+import { DeleteAccount } from "@/components/dashboard/DeleteAccount";
 import {
   FieldDescription,
   FieldGroup,
@@ -129,6 +130,7 @@ export function EmployerProfileForm({
             {isPending ? "Saving…" : "Save"}
           </Button>
         </form>
+        <DeleteAccount />
       </DashboardBody>
     </>
   );

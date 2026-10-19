@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { updateJobSeekerProfile, type ActionState } from "@/lib/auth/actions";
 import { ResumeUpload } from "@/components/dashboard/ResumeUpload";
+import { DeleteAccount } from "@/components/dashboard/DeleteAccount";
 import { US_STATES } from "@/lib/states";
 import { Button } from "@/components/ui/Button";
 import {
@@ -153,6 +154,7 @@ export function JobSeekerProfileForm({
             />
           </div>
         </div>
+        <DeleteAccount />
       </DashboardBody>
     </>
   );

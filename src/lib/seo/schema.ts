@@ -1,5 +1,6 @@
 import type { Job } from '@/lib/types';
 import { HOME_ENTITY_DESCRIPTION } from '@/lib/seo/homeFaq';
+import { LEGAL_EMAIL, legalPostalLines } from '@/lib/legal';
 
 const SITE_URL = 'https://www.nuclearhustle.com';
 
@@ -16,6 +17,15 @@ export function generateOrganizationSchema(): object {
       height: 512,
     },
     description: HOME_ENTITY_DESCRIPTION,
+    email: LEGAL_EMAIL,
+    ...(legalPostalLines().length > 0
+      ? {
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: legalPostalLines().join(', '),
+          },
+        }
+      : {}),
     sameAs: ['https://x.com/nuclearhustle'],
   };
 }

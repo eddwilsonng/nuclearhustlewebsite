@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio';
 import { BrowserContext, Page } from 'playwright';
 import { ScrapedJob, ScraperResult, CompanyConfig } from '../types';
 import { createContext, createPage, randomDelay, handleCookieConsent } from '../browser';
+import { assertAllowedByRobots, CRAWL_USER_AGENT } from '../robots';
 
 type CheerioRoot = ReturnType<typeof cheerio.load>;
 
@@ -18,13 +19,14 @@ export abstract class BaseScraper {
   abstract scrape(): Promise<ScraperResult>;
 
   protected async fetchHtml(url: string): Promise<CheerioRoot> {
+    await assertAllowedByRobots(url);
     let lastError: Error | null = null;
 
     for (let i = 0; i < this.maxRetries; i++) {
       try {
         const response = await axios.get(url, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'User-Agent': CRAWL_USER_AGENT,
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
           },
@@ -42,13 +44,14 @@ export abstract class BaseScraper {
   }
 
   protected async fetchJson<T>(url: string): Promise<T> {
+    await assertAllowedByRobots(url);
     let lastError: Error | null = null;
 
     for (let i = 0; i < this.maxRetries; i++) {
       try {
         const response = await axios.get<T>(url, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'User-Agent': CRAWL_USER_AGENT,
             'Accept': 'application/json',
           },
           timeout: 30000,
@@ -104,6 +107,7 @@ export abstract class BrowserBaseScraper extends BaseScraper {
 
   protected async navigateWithRetry(url: string, waitSelector?: string): Promise<void> {
     if (!this.page) throw new Error('Browser not initialized');
+    await assertAllowedByRobots(url);
 
     let lastError: Error | null = null;
     for (let i = 0; i < this.maxRetries; i++) {
@@ -143,6 +147,7 @@ export abstract class BrowserBaseScraper extends BaseScraper {
     if (!this.page) return null;
 
     try {
+      await assertAllowedByRobots(url);
       await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
       await this.page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
       await this.sleep(1500);
@@ -178,7 +183,8 @@ export abstract class BrowserBaseScraper extends BaseScraper {
 
       return null;
     } catch (error) {
-      console.log(`  Failed to fetch description for ${url}`);
+      const message = error instanceof Error ? error.message : 'unknown error';
+      console.log(`  Failed to fetch description for ${url}: ${message}`);
       return null;
     }
   }

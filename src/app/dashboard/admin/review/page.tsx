@@ -60,6 +60,11 @@ function DescriptionPreview({ sd }: { sd: StructuredDescription }) {
       value: asText(sd.location_details),
       reading: false,
     },
+    {
+      label: "Pay, eligibility, and equal opportunity",
+      value: asText(sd.notices),
+      reading: false,
+    },
   ].filter((f) => f.value.trim());
 
   return (
@@ -99,6 +104,7 @@ function EditableDescription({
     { key: "qualifications", label: "Qualifications" },
     { key: "desired", label: "Desired" },
     { key: "location_details", label: "Location / Working conditions" },
+    { key: "notices", label: "Pay, eligibility, and equal opportunity" },
   ];
 
   function setFit(raw: string) {

@@ -1,9 +1,11 @@
 import Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
+import {
+  FEATURED_DURATION_DAYS,
+  FEATURED_PRICE_CENTS,
+} from '@/lib/jobs/featuredOffer';
 
-/** Single source of truth for featured-listing price and duration. */
-export const FEATURED_PRICE_CENTS = 9900; // $99.00
-export const FEATURED_DURATION_DAYS = 30;
+export { FEATURED_DURATION_DAYS, FEATURED_PRICE_CENTS };
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -74,12 +76,17 @@ export async function createFeaturedCheckoutSession(
           unit_amount: FEATURED_PRICE_CENTS,
           product_data: {
             name: `Featured Job Listing (${FEATURED_DURATION_DAYS} days)`,
-            description: `Pin "${job.title}" to the top of the Nuclear Hustle board and homepage for ${FEATURED_DURATION_DAYS} days — in front of nuclear professionals who are actively job-hunting.`,
+            description: `Pin "${job.title}" to the top of the Nuclear Hustle board and homepage for ${FEATURED_DURATION_DAYS} days, with a Featured badge, and include it in every Monday digest sent during that time.`,
           },
         },
         quantity: 1,
       },
     ],
+    custom_text: {
+      submit: {
+        message: `Featured placement is a one-time $${FEATURED_PRICE_CENTS / 100} charge for ${FEATURED_DURATION_DAYS} days. Full refund if the listing never goes live as featured. Non-refundable once it does.`,
+      },
+    },
     metadata: {
       jobId: job.id,
       employerId: employerProfile.id,

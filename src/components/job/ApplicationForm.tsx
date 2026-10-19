@@ -113,6 +113,29 @@ export function ApplicationForm({
         />
       </FieldGroup>
 
+      <div className="flex items-start gap-3">
+        <input
+          id="acceptedTerms"
+          name="acceptedTerms"
+          type="checkbox"
+          required
+          className="mt-1 size-4 shrink-0 accent-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        />
+        <div className="font-sans text-sm leading-relaxed text-secondary">
+          <label htmlFor="acceptedTerms" className="text-ink">
+            I agree to the Terms of Service and to Nuclear Hustle sending this
+            application to {companyName}.
+          </label>{" "}
+          <a href="/terms" className="text-ink underline underline-offset-2">
+            Terms
+          </a>
+          {" · "}
+          <a href="/privacy" className="text-ink underline underline-offset-2">
+            Privacy
+          </a>
+        </div>
+      </div>
+
       <Button
         type="submit"
         variant="primary"

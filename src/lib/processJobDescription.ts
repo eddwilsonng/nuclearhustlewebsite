@@ -12,10 +12,11 @@ Take a raw scraped job description and do three things in one pass:
 3. Extract 3–6 concise skill/technology tags explicitly mentioned.
 
 Formatting rules:
-- STRIP all boilerplate: EEO, privacy/cookie, accessibility, visa, pay-transparency, benefits marketing
+- STRIP cookie walls, privacy-policy footers, "do not sell" links, and benefits-portal marketing
+- KEEP pay ranges, equal-opportunity / EEO taglines, visa or sponsorship statements, and accessibility statements. Copy them verbatim into structured_description.notices, one statement per line. Do not paraphrase or drop them.
 - FIX run-together text ("2026More than a career" → "More than a career")
 - CONSOLIDATE duplicate section headers
-- KEEP only job-relevant content
+- KEEP only job-relevant content, plus the notices field above
 - Edit "about" if it's vague corporate filler — make it specific to a job seeker
 
 Output ONLY valid JSON (no markdown, no explanation):
@@ -29,6 +30,7 @@ Output ONLY valid JSON (no markdown, no explanation):
     "qualifications": "Bullet points, one per line, each starting with '- '. Required only.",
     "desired": "Preferred/nice-to-have. Omit if none.",
     "location_details": "One line: shift, travel %, remote/onsite, physical requirements. Omit if not mentioned.",
+    "notices": "Verbatim pay range, EEO, visa, and accessibility statements. Omit if none.",
     "skills": ["TAG1", "TAG2"]
   }
 }

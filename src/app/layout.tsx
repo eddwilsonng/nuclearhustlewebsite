@@ -6,7 +6,6 @@ import { Footer } from "@/components/Footer";
 import { ConditionalFooter } from "@/components/ConditionalFooter";
 import { ConditionalHeader } from "@/components/ConditionalHeader";
 import { ConditionalClicky } from "@/components/ConditionalClicky";
-import { Clicky } from "@/components/Clicky";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/schema";
 
 const geistSans = Geist({
@@ -80,9 +79,7 @@ export default function RootLayout({
           <ConditionalFooter>
             <Footer />
           </ConditionalFooter>
-          <ConditionalClicky>
-            <Clicky />
-          </ConditionalClicky>
+          <ConditionalClicky />
         </div>
       </body>
     </html>

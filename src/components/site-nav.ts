@@ -16,6 +16,7 @@ export const FIND_WORK_NAV = [
 
 export const EMPLOYER_NAV = [
   { href: "/signup/employer", label: "Post a job", match: "exact" },
+  { href: "/pricing", label: "Pricing", match: "exact" },
   { href: "/contact", label: "Contact", match: "prefix" },
 ] as const satisfies readonly NavItem[];
 

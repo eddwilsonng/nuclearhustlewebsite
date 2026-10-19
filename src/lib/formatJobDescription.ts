@@ -8,7 +8,8 @@ const FORMAT_PROMPT = `You are a job description editor for Nuclear Hustle, a sp
 Your task: take a raw scraped job description (messy plain text) and output a clean, structured JSON object.
 
 Rules:
-- STRIP all boilerplate: EEO/equal opportunity statements, privacy/cookie notices, application deadline notices, accessibility statements, "Do Not Sell My Personal Information", visa sponsorship disclaimers, pay transparency statements, benefits marketing copy (e.g. "click here dombenefits.com")
+- STRIP cookie walls, privacy-policy footers, "do not sell" links, and benefits-portal marketing
+- KEEP pay ranges, equal-opportunity / EEO taglines, visa or sponsorship statements, and accessibility statements. Copy them verbatim into "notices", one statement per line. Do not paraphrase or drop them.
 - FIX run-together text where words are concatenated without spaces (e.g. "2026More than a career" → "More than a career")
 - CONSOLIDATE duplicate section headers (e.g. multiple "EXPERIENCE" or "SKILLS" sections that appear because the parser split mid-sentence)
 - KEEP only job-relevant content: role summary, responsibilities, qualifications, working conditions
@@ -19,7 +20,8 @@ Output ONLY valid JSON matching this exact shape (no markdown, no explanation):
   "responsibilities": "Bullet points, one per line, starting each with a dash (- ). Only real job duties.",
   "qualifications": "Bullet points, one per line, starting with a dash (- ). Required qualifications only.",
   "desired": "Bullet points, one per line, starting with a dash (- ). Preferred/nice-to-have qualifications. Omit if none.",
-  "location_details": "One line: shift pattern, travel %, remote/onsite, any physical requirements. Omit if not mentioned."
+  "location_details": "One line: shift pattern, travel %, remote/onsite, any physical requirements. Omit if not mentioned.",
+  "notices": "Verbatim pay range, EEO, visa, and accessibility statements from the source. Omit if none."
 }
 
 If a field has no content, omit it from the JSON entirely.`;

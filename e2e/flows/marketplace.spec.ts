@@ -69,6 +69,7 @@ test("employer can sign up", async ({ page }) => {
   await page.getByLabel("Password", { exact: true }).fill(TEST_PASSWORD);
   await page.getByLabel("Company name").fill(employer.company);
   await page.getByLabel("Website").fill("https://example.com");
+  await page.getByRole("checkbox", { name: /Terms of Service/ }).check();
   await page.getByRole("button", { name: "Create employer account" }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -155,6 +156,7 @@ test("guest can apply with a CV", async ({ page }) => {
   await form.getByLabel("Email", { exact: true }).fill(guestApplicant.email);
   await form.getByLabel(/Cover letter/).fill("Automated test application, please ignore.");
   await form.getByLabel(/CV \/ resume/).setInputFiles(testCv());
+  await form.getByRole("checkbox", { name: /Terms of Service/ }).check();
   await form.getByRole("button", { name: `Apply for ${jobTitle}` }).click();
 
   await expect(page.getByText(/Application sent\./)).toBeVisible();
@@ -227,6 +229,7 @@ test("job seeker can sign up from a job and return to it", async ({ page }) => {
   await page.getByLabel("Password", { exact: true }).fill(TEST_PASSWORD);
   await page.getByLabel(/City/).fill("Chicago");
   await page.getByLabel(/State/).selectOption("IL");
+  await page.getByRole("checkbox", { name: /Terms of Service/ }).check();
   await page.getByRole("button", { name: "Create account" }).click();
 
   await expect(page).toHaveURL(new RegExp(`/job/${jobSlug}$`));
@@ -273,6 +276,7 @@ test("signed-in job seeker applies with prefilled details", async ({ browser }) 
   await expect(form.getByLabel("Full name")).toHaveValue(seeker.name);
   await expect(form.getByLabel("Email", { exact: true })).toHaveValue(seeker.email);
   await form.getByLabel(/CV \/ resume/).setInputFiles(testCv());
+  await form.getByRole("checkbox", { name: /Terms of Service/ }).check();
   await form.getByRole("button", { name: `Apply for ${jobTitle}` }).click();
   await expect(page.getByText(/Application sent\./)).toBeVisible();
 });

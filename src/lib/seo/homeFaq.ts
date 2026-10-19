@@ -1,7 +1,12 @@
 // Visible homepage FAQ copy. FAQPage JSON-LD and the Organization
 // description both read from here so the quoted answer cannot drift.
-// Durations and price match JOB_DURATION_DAYS (60), FEATURED_DURATION_DAYS (30),
-// and FEATURED_PRICE_CENTS (9900).
+// Price and durations come from the listing constants.
+
+import { JOB_DURATION_DAYS } from "@/lib/jobs/expiry";
+import {
+  featuredPlacementSentence,
+  featuredPriceLabel,
+} from "@/lib/jobs/featuredOffer";
 
 export type HomeFaqItem = {
   question: string;
@@ -59,13 +64,11 @@ export const HOME_FAQ_GROUPS: HomeFaqGroup[] = [
     items: [
       {
         question: "How does posting a job work?",
-        answer:
-          "Create an employer account and publish a listing. It stays up for 60 days at no charge. Send applicants to your careers URL, or take applications by email with the CV attached. Featuring a listing pins it to the top of the board and the homepage for 30 days and costs $99.",
+        answer: `Create an employer account and publish a listing. It stays up for ${JOB_DURATION_DAYS} days at no charge. Send applicants to your careers URL, or take applications by email with the CV attached. Featuring a listing costs ${featuredPriceLabel()}. ${featuredPlacementSentence()}`,
       },
       {
         question: "What does a job posting cost?",
-        answer:
-          "Nothing. A listing stays live for 60 days. Featuring it — pinned to the top of the board and the homepage — is $99 for 30 days.",
+        answer: `Nothing. A listing stays live for ${JOB_DURATION_DAYS} days. Featuring it costs ${featuredPriceLabel()}. ${featuredPlacementSentence()}`,
       },
       {
         question: "Can applicants go to our own careers site?",
