@@ -142,10 +142,18 @@ export async function updatePassword(
   redirect("/dashboard");
 }
 
+function acceptedTerms(formData: FormData): boolean {
+  return formData.get("acceptedTerms") === "on";
+}
+
 export async function signUpJobSeeker(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  if (!acceptedTerms(formData)) {
+    return { error: "Accept the Terms of Service to create an account." };
+  }
+
   const rawData = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
@@ -218,6 +226,10 @@ export async function signUpEmployer(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  if (!acceptedTerms(formData)) {
+    return { error: "Accept the Terms of Service to create an account." };
+  }
+
   const rawData = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
@@ -309,6 +321,11 @@ export async function signUpEmployer(
 
 export async function signInWithGoogle(formData: FormData) {
   const role = formData.get("role") as string | null;
+  if (role && !acceptedTerms(formData)) {
+    const path = role === "employer" ? "/signup/employer" : "/signup/job-seeker";
+    redirect(`${path}?error=Accept the Terms of Service to create an account`);
+  }
+
   const supabase = await createClient();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -832,6 +849,9 @@ export async function createJobPosting(
   // If the employer opted to feature the listing during posting, send them
   // straight to Stripe checkout for the newly created job.
   if (formData.get("feature") === "on" && insertedJob) {
+    if (!acceptedTerms(formData)) {
+      return { error: "Accept the Terms of Service to feature this listing." };
+    }
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const result = await createFeaturedCheckoutSession({
       jobId: insertedJob.id,
@@ -1053,4 +1073,59 @@ export async function getApplicationCvUrl(
   }
 
   return { url: signed.signedUrl };
+}
+
+export async function deleteOwnAccount(): Promise<ActionState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "Not authenticated" };
+  if (isAdmin(user.email)) {
+    return { error: "This admin account can't be deleted from the profile page." };
+  }
+
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const admin = createAdminClient();
+
+  if (user.email) {
+    await admin
+      .from("job_alert_subscribers")
+      .update({ unsubscribed_at: new Date().toISOString() })
+      .eq("email", user.email.toLowerCase());
+  }
+
+  const { data: employer } = await admin
+    .from("employer_profiles")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (employer) {
+    const { data: applications } = await admin
+      .from("job_applications")
+      .select("cv_path")
+      .eq("employer_id", employer.id);
+    const paths = (applications ?? [])
+      .map((row) => row.cv_path)
+      .filter((path): path is string => Boolean(path));
+    if (paths.length > 0) {
+      await admin.storage.from("resumes").remove(paths);
+    }
+  }
+
+  const { data: resumeFiles } = await admin.storage.from("resumes").list(user.id);
+  const ownPaths = (resumeFiles ?? [])
+    .filter((file) => file.name)
+    .map((file) => `${user.id}/${file.name}`);
+  if (ownPaths.length > 0) {
+    await admin.storage.from("resumes").remove(ownPaths);
+  }
+
+  const { error } = await admin.auth.admin.deleteUser(user.id);
+  if (error) return { error: error.message };
+
+  await supabase.auth.signOut();
+  redirect("/");
 }

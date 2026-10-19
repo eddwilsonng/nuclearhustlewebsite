@@ -1,3 +1,4 @@
+import { legalSenderLines } from '@/lib/legal';
 import { EMAIL_SANS, emailBodyOnly, emailPreheader, emailPrimaryCta } from '../emailShell';
 import { unsubscribeUrl } from '../unsubscribe';
 
@@ -36,6 +37,9 @@ export function welcomeEmailPlainText(email: string): string {
     '',
     `Browse open roles: ${SITE_URL}/jobs`,
     '',
+    'This is an advertisement.',
     `Unsubscribe: ${unsubscribeUrl(email)}`,
+    '',
+    ...legalSenderLines(),
   ].join('\n');
 }

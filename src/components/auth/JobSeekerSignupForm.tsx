@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { signUpJobSeeker, signInWithGoogle, type ActionState } from "@/lib/auth/actions";
 import { US_STATES } from "@/lib/states";
 import { Button } from "@/components/ui/Button";
@@ -10,6 +10,7 @@ import {
   Input,
   Select,
 } from "@/components/ui/Field";
+import { TermsAcceptance } from "@/components/legal/TermsAcceptance";
 import { AuthDivider, AuthError, GoogleAuthButton } from "./AuthShared";
 import { PasswordField } from "./PasswordField";
 
@@ -18,17 +19,22 @@ export function JobSeekerSignupForm({ redirect }: { redirect?: string }) {
     signUpJobSeeker,
     {},
   );
+  const [accepted, setAccepted] = useState(false);
 
   return (
     <div className="space-y-5">
+      <TermsAcceptance id="seeker-terms" checked={accepted} onChange={setAccepted} />
+
       <form action={signInWithGoogle}>
-        <GoogleAuthButton role="job_seeker" />
+        <input type="hidden" name="acceptedTerms" value={accepted ? "on" : ""} />
+        <GoogleAuthButton role="job_seeker" disabled={!accepted} />
       </form>
 
       <AuthDivider />
 
       <form action={formAction} className="space-y-5">
         {redirect && <input type="hidden" name="redirect" value={redirect} />}
+        <input type="hidden" name="acceptedTerms" value={accepted ? "on" : ""} />
         {state.error && <AuthError>{state.error}</AuthError>}
 
         <FieldGroup>
@@ -88,7 +94,7 @@ export function JobSeekerSignupForm({ redirect }: { redirect?: string }) {
           </FieldGroup>
         </div>
 
-        <Button type="submit" variant="primary" fullWidth disabled={isPending}>
+        <Button type="submit" variant="primary" fullWidth disabled={isPending || !accepted}>
           {isPending ? "Creating account…" : "Create account"}
         </Button>
       </form>

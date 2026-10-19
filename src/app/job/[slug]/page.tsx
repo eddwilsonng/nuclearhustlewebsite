@@ -415,6 +415,11 @@ export default async function JobPage({ params }: PageProps) {
                   label: "What they offer",
                   value: structuredText(job.structured_description.what_we_offer),
                 },
+                {
+                  key: "notices",
+                  label: "Pay, eligibility, and equal opportunity",
+                  value: structuredText(job.structured_description.notices),
+                },
               ]
                 .filter(({ value }) => value)
                 .map(({ key, label, value }) => (

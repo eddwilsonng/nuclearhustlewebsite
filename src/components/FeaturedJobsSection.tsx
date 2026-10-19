@@ -19,7 +19,7 @@ export async function FeaturedJobsSection({ postHref = '/signup/employer' }: { p
             No featured listings yet
           </p>
           <p className="mx-auto mb-6 max-w-sm font-sans text-sm text-secondary">
-            Get your role in front of thousands of nuclear professionals. Featured listings appear at the top of the board.
+            Featured listings sit at the top of the board and on the homepage.
           </p>
           <LinkButton href={postHref} variant="primary">
             Post a featured job

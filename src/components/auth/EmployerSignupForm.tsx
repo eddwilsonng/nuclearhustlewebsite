@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { signUpEmployer, signInWithGoogle, type ActionState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/Button";
 import {
@@ -9,6 +9,7 @@ import {
   Input,
   Textarea,
 } from "@/components/ui/Field";
+import { TermsAcceptance } from "@/components/legal/TermsAcceptance";
 import { AuthDivider, AuthError, GoogleAuthButton } from "./AuthShared";
 import { PasswordField } from "./PasswordField";
 
@@ -17,17 +18,22 @@ export function EmployerSignupForm({ redirect }: { redirect?: string }) {
     signUpEmployer,
     {},
   );
+  const [accepted, setAccepted] = useState(false);
 
   return (
     <div className="space-y-5">
+      <TermsAcceptance id="employer-terms" checked={accepted} onChange={setAccepted} />
+
       <form action={signInWithGoogle}>
-        <GoogleAuthButton role="employer" />
+        <input type="hidden" name="acceptedTerms" value={accepted ? "on" : ""} />
+        <GoogleAuthButton role="employer" disabled={!accepted} />
       </form>
 
       <AuthDivider />
 
       <form action={formAction} className="space-y-5">
         {redirect && <input type="hidden" name="redirect" value={redirect} />}
+        <input type="hidden" name="acceptedTerms" value={accepted ? "on" : ""} />
         {state.error && <AuthError>{state.error}</AuthError>}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -101,7 +107,7 @@ export function EmployerSignupForm({ redirect }: { redirect?: string }) {
           />
         </FieldGroup>
 
-        <Button type="submit" variant="primary" fullWidth disabled={isPending}>
+        <Button type="submit" variant="primary" fullWidth disabled={isPending || !accepted}>
           {isPending ? "Creating account…" : "Create employer account"}
         </Button>
       </form>

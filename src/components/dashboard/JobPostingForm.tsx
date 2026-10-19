@@ -17,6 +17,10 @@ import {
 } from "@/components/dashboard/DashboardChrome";
 import { cn } from "@/lib/cn";
 import { categorizeJob } from "@/lib/categorize";
+import {
+  FEATURED_DURATION_DAYS,
+  featuredPriceLabel,
+} from "@/lib/jobs/featuredOffer";
 import { US_STATES } from "@/lib/states";
 import {
   ABOUT_MAX_LENGTH,
@@ -572,14 +576,36 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             </span>
             <span>
               <span className="block font-sans text-sm font-semibold text-ink">
-                Feature this listing — $99
+                Feature this listing — {featuredPriceLabel()}
               </span>
               <span className="mt-1 block font-sans text-sm text-secondary">
-                Pin it to the top of the board and homepage for 30 days. Checkout
-                after posting. Skip to publish for free.
+                Pin it to the top of the board and homepage for {FEATURED_DURATION_DAYS}{" "}
+                days, with a Featured badge, and include it in every Monday digest
+                sent during that time. Checkout after posting. Skip to publish for
+                free.
               </span>
             </span>
           </button>
+          {feature ? (
+            <div className="mt-4 flex items-start gap-3">
+              <input
+                id="feature-terms"
+                name="acceptedTerms"
+                type="checkbox"
+                required
+                className="mt-1 size-4 shrink-0 accent-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              />
+              <div className="font-sans text-sm leading-relaxed text-secondary">
+                <label htmlFor="feature-terms" className="text-ink">
+                  I agree to the Terms of Service for this {featuredPriceLabel()} featured listing.
+                  The fee is refunded only if the listing never goes live as featured.
+                </label>{" "}
+                <a href="/terms" className="text-ink underline underline-offset-2">
+                  Terms
+                </a>
+              </div>
+            </div>
+          ) : null}
         </section>
       )}
 

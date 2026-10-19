@@ -1,4 +1,5 @@
 import { escapeHtml } from './escapeHtml';
+import { legalSenderLines } from '@/lib/legal';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.nuclearhustle.com';
 
@@ -36,17 +37,19 @@ export function emailFooter(unsubscribeHref: string, footerNote?: string): strin
   const note =
     footerNote ??
     'You&apos;re receiving this because you signed up for Nuclear Hustle job alerts.';
+  const sender = legalSenderLines().map((line) => escapeHtml(line)).join('<br>');
 
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-top: 32px;">
       <tr>
         <td style="padding-top: 16px; border-top: 1px solid #CFC8BC;">
           <p style="font-family: ${EMAIL_SANS}; font-size: 12px; color: #57534E; margin: 0; line-height: 1.6;">
+            This is an advertisement.
             ${note}
             <a href="${unsubscribeHref}" style="color: #57534E;">Unsubscribe</a>
           </p>
-          <p style="font-family: ${EMAIL_SANS}; font-size: 12px; color: #57534E; margin: 8px 0 0;">
-            <a href="${SITE_URL}" style="color: #57534E; text-decoration: none;">nuclearhustle.com</a>
+          <p style="font-family: ${EMAIL_SANS}; font-size: 12px; color: #57534E; margin: 8px 0 0; line-height: 1.6;">
+            ${sender}
           </p>
         </td>
       </tr>

@@ -1,149 +1,225 @@
-import { Metadata } from 'next';
+import { Metadata } from "next";
+import {
+  LegalDocument,
+  LegalEmailLink,
+  LegalList,
+  LegalSection,
+  OperatorBlock,
+} from "@/components/legal/LegalDocument";
+import { LEGAL_GOVERNING_LAW, LEGAL_VENUE } from "@/lib/legal";
+import {
+  FEATURED_DURATION_DAYS,
+  featuredPlacementSentence,
+  featuredPriceLabel,
+} from "@/lib/jobs/featuredOffer";
 
 export const metadata: Metadata = {
-  title: 'Terms of Service — Nuclear Hustle',
-  description: 'Nuclear Hustle terms of service. Rules and conditions governing use of the platform by job seekers and employers.',
-  alternates: { canonical: '/terms' },
+  title: "Terms of Service — Nuclear Hustle",
+  description:
+    "Terms for using Nuclear Hustle as a visitor, job seeker, or employer, including featured listings and aggregated jobs.",
+  alternates: { canonical: "/terms" },
 };
+
+const featuredPrice = featuredPriceLabel();
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-canvas">
+    <LegalDocument title="Terms of Service" updated="October 2026">
+      <LegalSection title="1. Who you are contracting with">
+        <OperatorBlock />
+        <p>
+          These terms are a contract between you and that operator. They apply
+          to visitors, job seekers, and employers. If you do not agree, do not
+          use the site. Creating an account, applying through our form, or
+          paying for a featured listing requires you to confirm that you agree.
+        </p>
+      </LegalSection>
 
-      {/* Hero */}
-      <section className="py-20 md:py-28 border-b border-rule">
-        <div className="max-w-4xl mx-auto px-6">
-          <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-4">Legal</p>
-          <h1 className="font-sans text-3xl md:text-4xl font-bold text-ink leading-tight">
-            Terms of Service
-          </h1>
-          <p className="mt-6 text-secondary text-sm font-mono">
-            Last updated: June 2026
-          </p>
-        </div>
-      </section>
+      <LegalSection title="2. What this site is">
+        <p>
+          Nuclear Hustle is a job board. It is not an employment agency, a
+          recruiter, or an employer. We do not charge job seekers. We do not
+          guarantee a job, an interview, or a hire, and we are not a party to
+          any employment agreement.
+        </p>
+        <p>
+          A featured listing is advertising space on the board. The fee is not
+          a placement fee and does not buy a candidate.
+        </p>
+      </LegalSection>
 
-      {/* Content */}
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="space-y-12">
+      <LegalSection title="3. Using the site">
+        <p>Use the site for lawful purposes. You must not:</p>
+        <LegalList
+          items={[
+            "Post a false, misleading, or fraudulent listing or profile.",
+            "Scrape or copy the board without permission.",
+            "Attempt to access another account or our systems without authorisation.",
+            "Send unsolicited mail through the platform.",
+            "Break employment, privacy, or advertising law that applies to you.",
+          ]}
+        />
+        <p>
+          Listings can be wrong, stale, or posted by someone who is not the
+          employer. Check the employer before you send a CV or pay a fee.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">1. Acceptance of terms</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                By accessing or using nuclearhustle.com ("the platform"), you agree to be bound by these Terms of Service. If you do not agree, please do not use the platform. These terms apply to all visitors, job seekers, and employers.
-              </p>
-            </div>
+      <LegalSection title="4. Accounts">
+        <p>
+          You are responsible for your login. Email <LegalEmailLink /> if you
+          think someone else is using the account. We can suspend or close an
+          account that breaks these terms.
+        </p>
+        <p>
+          You can delete your account from the profile page. That removes the
+          profile and, for an employer, the listings on the board. It does not
+          pull back an application an employer has already received.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">2. Use of the platform</h2>
-              <p className="text-secondary text-sm leading-relaxed mb-3">You agree to use the platform only for lawful purposes. You must not:</p>
-              <ul className="space-y-2 text-sm text-secondary">
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Post false, misleading, or fraudulent job listings or profile information</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Scrape or copy content from the platform without permission</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Attempt to gain unauthorised access to other accounts or systems</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Use the platform to send unsolicited communications</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Violate any applicable laws or regulations</li>
-              </ul>
-            </div>
+      <LegalSection title="5. Employers">
+        <p>If you post a job, you agree that:</p>
+        <LegalList
+          items={[
+            "The listing is genuine, accurate, and complies with employment law that applies to it, including equal opportunity rules and any pay-range disclosure the job's location requires.",
+            "You will not contact a candidate except about a role they applied to or asked to hear about.",
+            "You will take the listing down when the role is filled or cancelled.",
+            "You have the right to give us the text, logo, and other material you upload.",
+          ]}
+        />
+        <p>
+          You keep ownership of that material. You grant us a non-exclusive
+          licence to host, store, reproduce, display, format, and promote it,
+          including by editing a listing for length and clarity, for as long as
+          it is on the board and in emails we have already sent. Deleting the
+          listing ends the licence for new use. Backups and mail already sent
+          follow the retention periods in the privacy policy.
+        </p>
+        <p>
+          You will indemnify us against claims arising from your listing, your
+          hiring decisions, or your use of candidate information, including a
+          claim that the listing was fraudulent, discriminatory, or missing a
+          disclosure the law required you to publish.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">3. Accounts</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                You are responsible for maintaining the security of your account credentials. You must notify us immediately at{' '}
-                <a href="mailto:nuclearhustle@gmail.com" className="text-ink underline hover:text-ink transition-colors">
-                  nuclearhustle@gmail.com
-                </a>{' '}
-                if you suspect unauthorised access to your account. We reserve the right to suspend or terminate accounts that violate these terms.
-              </p>
-            </div>
+      <LegalSection title="6. Job seekers">
+        <p>
+          Give accurate information in your profile and applications. Sending
+          an application through our form authorises us to store it and email
+          it to that employer, as described in the privacy policy.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">4. Employer responsibilities</h2>
-              <p className="text-secondary text-sm leading-relaxed mb-3">Employers who post jobs on the platform agree to:</p>
-              <ul className="space-y-2 text-sm text-secondary">
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Ensure all job listings are genuine, accurate, and legally compliant</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Only contact candidates for roles they have applied to or expressed interest in</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Comply with all applicable employment and equal opportunity laws</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Remove listings promptly once a role is filled</li>
-              </ul>
-            </div>
+      <LegalSection title="7. Aggregated listings">
+        <p>
+          Some listings are copied from public employer career sites and other
+          public sources, then edited for length. For those listings:
+        </p>
+        <LegalList
+          items={[
+            "They are provided as is. They may be incomplete, out of date, or closed.",
+            "The employer's pay range, equal-opportunity statement, visa note, and accessibility statement stay on the listing when the source included them.",
+            "You apply on the employer's site. We do not control that process.",
+            "The listing remains the employer's intellectual property. We display it to send candidates to the source.",
+          ]}
+        />
+        <p>
+          Employers can ask us to correct or remove a listing by emailing{" "}
+          <LegalEmailLink />. We also accept copyright notices at{" "}
+          <a href="/dmca" className="text-ink underline underline-offset-2">
+            the DMCA page
+          </a>
+          .
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">5. Job seeker responsibilities</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                Job seekers agree to provide accurate information in their profiles and applications. You understand that Nuclear Hustle does not guarantee employment and acts only as a platform connecting candidates with employers. We are not party to any employment agreement between you and an employer.
-              </p>
-            </div>
+      <LegalSection title="8. Featured listings">
+        <p>
+          Featuring a listing costs {featuredPrice}, charged once through
+          Stripe, and lasts {FEATURED_DURATION_DAYS} days from the time the
+          listing is marked featured. {featuredPlacementSentence()} It is not a
+          subscription.
+        </p>
+        <p>
+          If we take payment and the listing never goes live as featured, we
+          refund the full amount. Once it is featured, the fee is not
+          refundable, including if you fill the role or take the listing down
+          during the {FEATURED_DURATION_DAYS} days.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">6. Intellectual property</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                All content on the platform — including design, code, copy, and data — is owned by Nuclear Hustle or its licensors. You may not reproduce, distribute, or create derivative works without our express written permission. Job listings posted by employers remain the intellectual property of the respective employers.
-              </p>
-            </div>
+      <LegalSection title="9. Our material">
+        <p>
+          The site design, code, and our own writing belong to us or our
+          licensors. You may not copy them or build a product from them without
+          written permission. Employer listings and aggregated listings are not
+          our property. See sections 5 and 7.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">7. Disclaimer of warranties</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                The platform is provided "as is" without warranties of any kind. We do not guarantee the accuracy of job listings, the suitability of candidates, or uninterrupted access to the platform. Use is at your own risk.
-              </p>
-            </div>
+      <LegalSection title="10. Disclaimer">
+        <p>
+          The site is provided as is. We do not warrant that listings are
+          accurate, that candidates are suitable, or that the site will be
+          uninterrupted. US government reactor data is shown with its public
+          source. It can lag the plant.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">8. Limitation of liability</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                To the fullest extent permitted by law, Nuclear Hustle shall not be liable for any indirect, incidental, or consequential damages arising from your use of the platform, including loss of data, lost profits, or damages resulting from interactions between job seekers and employers.
-              </p>
-            </div>
+      <LegalSection title="11. Liability">
+        <p>
+          To the extent the law allows, we are not liable for indirect,
+          incidental, special, or consequential damages, including lost profits,
+          lost data, or a dispute between a candidate and an employer.
+        </p>
+        <p>
+          Our total liability arising out of the site in any 12-month period is
+          limited to the amount you paid us in that period, or $100 if you paid
+          nothing. This limit does not apply to liability that cannot legally
+          be limited, including fraud, or death or personal injury caused by
+          negligence where the law forbids that limit.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">9. Aggregated job listings</h2>
-              <p className="text-secondary text-sm leading-relaxed mb-3">
-                In addition to jobs posted directly by employers, the platform aggregates job listings from publicly available employer career sites and other public sources. For these aggregated listings:
-              </p>
-              <ul className="space-y-2 text-sm text-secondary">
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>They are provided &ldquo;as is&rdquo; and may be incomplete, out of date, or no longer open</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Applications are completed on the employer&apos;s own site; we are not involved in and do not control that process</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Each listing remains the intellectual property of the employer that published it, and we display it to direct interested candidates to the source</li>
-              </ul>
-              <p className="text-secondary text-sm leading-relaxed mt-4">
-                If you are an employer and want a listing removed or corrected, email us at{' '}
-                <a href="mailto:nuclearhustle@gmail.com" className="text-ink underline hover:text-ink transition-colors">
-                  nuclearhustle@gmail.com
-                </a>{' '}
-                and we will action it promptly.
-              </p>
-            </div>
+      <LegalSection title="12. Copyright complaints">
+        <p>
+          If you believe material on the site infringes a copyright you own,
+          send a notice as described on the{" "}
+          <a href="/dmca" className="text-ink underline underline-offset-2">
+            DMCA page
+          </a>
+          . We will remove or disable material that a complete notice identifies.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">10. Governing law</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                These terms are governed by the laws of the United States. Any disputes arising from use of the platform shall be resolved in the applicable federal or state courts.
-              </p>
-            </div>
+      <LegalSection title="13. Governing law">
+        <p>
+          These terms are governed by the laws of {LEGAL_GOVERNING_LAW}.
+          Disputes are heard in {LEGAL_VENUE}, except where the law of the
+          place you live gives you a right to sue there that cannot be waived.
+        </p>
+        <p>
+          Employment and advertising laws that apply to a job posting still
+          apply to the employer who made it. These terms do not move that duty
+          onto us.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">11. Changes to these terms</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                We may update these terms at any time. Continued use of the platform after changes are posted constitutes acceptance. We will notify registered users of material changes by email.
-              </p>
-            </div>
+      <LegalSection title="14. Changes">
+        <p>
+          We will post changes on this page and email registered users about a
+          material change. The new terms apply from the date at the top. If you
+          do not agree, stop using the site and delete your account.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">12. Contact</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                Questions about these terms? Contact us at{' '}
-                <a href="mailto:nuclearhustle@gmail.com" className="text-ink underline hover:text-ink transition-colors">
-                  nuclearhustle@gmail.com
-                </a>.
-              </p>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-    </div>
+      <LegalSection title="15. Contact">
+        <p>
+          Questions about these terms: <LegalEmailLink />.
+        </p>
+      </LegalSection>
+    </LegalDocument>
   );
 }

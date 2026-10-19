@@ -142,6 +142,8 @@ export interface StructuredDescription {
   location_details?: string;
   what_we_offer?: string;
   skills?: string[];
+  /** Pay range, EEO tagline, visa, and accessibility lines kept from the source ad. */
+  notices?: string;
   /** Candidate-facing editorial overlay. Omit when we cannot ground 2+ bullets. */
   fit?: JobFit;
 }

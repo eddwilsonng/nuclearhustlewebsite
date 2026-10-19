@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getActiveStates } from '@/lib/data/static';
+import { legalOperatorName, legalPostalLines } from '@/lib/legal';
 
 const YEAR = new Date().getFullYear();
 
@@ -93,6 +94,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/pricing" className={linkClass}>
+                  Pricing
+                </Link>
+              </li>
+              <li>
                 <Link href="/signup/employer" className={linkClass}>
                   Create employer account
                 </Link>
@@ -178,6 +184,16 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/dmca" className={linkClass}>
+                  Copyright notices
+                </Link>
+              </li>
+              <li>
+                <Link href="/accessibility" className={linkClass}>
+                  Accessibility
+                </Link>
+              </li>
+              <li>
                 <Link href="/sitemap" className={linkClass}>
                   Sitemap
                 </Link>
@@ -189,11 +205,18 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col items-start justify-between gap-3 border-t border-rule pt-6 sm:flex-row sm:items-center">
           <p className="font-mono text-xs uppercase tracking-widest text-secondary">
-            © {YEAR} Nuclear Hustle. All rights reserved.
+            © {YEAR} {legalOperatorName()}. All rights reserved.
           </p>
-          <p className="font-sans text-sm text-secondary">
-            Reactor data from the U.S. NRC. Job listings aggregated from public employer career sites.
-          </p>
+          <div className="flex flex-col items-start gap-1 sm:items-end">
+            {legalPostalLines().length > 0 ? (
+              <p className="font-sans text-sm text-secondary">
+                {legalPostalLines().join(", ")}
+              </p>
+            ) : null}
+            <p className="font-sans text-sm text-secondary">
+              Reactor data from the U.S. NRC. Job listings aggregated from public employer career sites.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

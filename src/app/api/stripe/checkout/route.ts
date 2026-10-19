@@ -4,10 +4,17 @@ import { createFeaturedCheckoutSession } from '@/lib/stripe/featured';
 
 export async function POST(request: NextRequest) {
   try {
-    const { jobId } = await request.json();
+    const { jobId, acceptedTerms } = await request.json();
 
     if (!jobId) {
       return NextResponse.json({ error: 'Missing jobId' }, { status: 400 });
+    }
+
+    if (acceptedTerms !== true) {
+      return NextResponse.json(
+        { error: 'Accept the Terms of Service to feature this listing' },
+        { status: 400 },
+      );
     }
 
     const supabase = await createClient();

@@ -11,6 +11,7 @@ You will receive a formatted job description and job metadata. Your job is to:
 3. Clean up any remaining concatenated text or formatting issues in any field
 4. Flag if the content is too thin (under 3 bullet points in responsibilities) or seems like a non-nuclear role that slipped through scraping
 5. Extract 3–6 concise skill/technology tags explicitly mentioned in the description
+6. If the source includes a pay range, equal-opportunity statement, visa or sponsorship statement, or accessibility statement, copy it verbatim into notices. Never delete those lines.
 
 Output ONLY valid JSON (no markdown, no explanation):
 {
@@ -20,6 +21,7 @@ Output ONLY valid JSON (no markdown, no explanation):
     "qualifications": "...",
     "desired": "...",
     "location_details": "...",
+    "notices": "Verbatim pay range, EEO, visa, and accessibility statements. Omit if none.",
     "skills": ["TAG1", "TAG2", "TAG3"]
   },
   "review_notes": "One sentence: what you changed and/or any flags for the human reviewer.",

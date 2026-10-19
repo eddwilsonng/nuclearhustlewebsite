@@ -6,9 +6,12 @@ const pages = [
   { path: '/jobs', priority: '0.9', changefreq: 'daily', listsJobs: true },
   { path: '/companies', priority: '0.9', changefreq: 'daily', listsJobs: true },
   { path: '/about', priority: '0.5', changefreq: 'monthly', listsJobs: false },
+  { path: '/pricing', priority: '0.6', changefreq: 'monthly', listsJobs: false },
   { path: '/contact', priority: '0.5', changefreq: 'monthly', listsJobs: false },
   { path: '/privacy', priority: '0.3', changefreq: 'monthly', listsJobs: false },
   { path: '/terms', priority: '0.3', changefreq: 'monthly', listsJobs: false },
+  { path: '/dmca', priority: '0.2', changefreq: 'yearly', listsJobs: false },
+  { path: '/accessibility', priority: '0.2', changefreq: 'yearly', listsJobs: false },
 ];
 
 export async function GET() {

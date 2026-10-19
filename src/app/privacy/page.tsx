@@ -1,141 +1,168 @@
-import { Metadata } from 'next';
+import { Metadata } from "next";
+import { AnalyticsPreference } from "@/components/AnalyticsPreference";
+import {
+  LegalDocument,
+  LegalEmailLink,
+  LegalList,
+  LegalSection,
+  OperatorBlock,
+} from "@/components/legal/LegalDocument";
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — Nuclear Hustle',
-  description: 'Nuclear Hustle privacy policy. How we collect, use, and protect your personal data.',
-  alternates: { canonical: '/privacy' },
+  title: "Privacy Policy — Nuclear Hustle",
+  description:
+    "How Nuclear Hustle collects, uses, and shares personal information for accounts, job alerts, and applications.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-canvas">
+    <LegalDocument title="Privacy Policy" updated="October 2026">
+      <LegalSection title="1. Who we are">
+        <OperatorBlock />
+        <p>
+          This policy covers nuclearhustle.com, a job board for the US nuclear
+          energy industry. Questions about your information go to <LegalEmailLink />.
+          We reply within 30 days.
+        </p>
+      </LegalSection>
 
-      {/* Hero */}
-      <section className="py-20 md:py-28 border-b border-rule">
-        <div className="max-w-4xl mx-auto px-6">
-          <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-4">Legal</p>
-          <h1 className="font-sans text-3xl md:text-4xl font-bold text-ink leading-tight">
-            Privacy Policy
-          </h1>
-          <p className="mt-6 text-secondary text-sm font-mono">
-            Last updated: June 2026
-          </p>
-        </div>
-      </section>
+      <LegalSection title="2. Information we collect">
+        <p>You give us this information when you use the site:</p>
+        <LegalList
+          items={[
+            "Account: name, email address, and a password handled by our authentication provider. Job seekers can also save a city and state.",
+            "Job alerts: the email address you type into an alert form. No account is required.",
+            "Applications: your name, email, optional cover letter, and CV. We store them and email them to the employer for that job. The download link in that email expires after 24 hours. The file stays in private storage.",
+            "Employer accounts: your name, work email, company name, website, description, logo, job listings, and the address where applications should be sent.",
+            "Payments: Stripe collects the card and billing details for a featured listing. We receive the payment status, amount, and email. We do not store card numbers.",
+            "Messages you send us.",
+          ]}
+        />
+        <p>
+          We also store the IP address of an application or alert request for
+          about an hour, so one address cannot flood the form. Those rows are
+          deleted on the next write after an hour.
+        </p>
+        <p>
+          If you allow analytics, Clicky receives pages visited, browser type,
+          approximate location, IP address, and the referring URL. If you
+          reject analytics, we do not load Clicky.
+        </p>
+        <p>
+          We send job-ad text to Anthropic to clean listings for the board. We
+          do not send accounts, CVs, or applications to Anthropic.
+        </p>
+      </LegalSection>
 
-      {/* Content */}
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="prose prose-gray max-w-none space-y-12">
+      <LegalSection title="3. How we use it">
+        <LegalList
+          items={[
+            "To run the board, your account, and the application you submit.",
+            "To send that application to the employer you applied to.",
+            "To send account and application email, which you cannot opt out of while the account or application exists.",
+            "To send job alerts and the Monday digest if you subscribed. Those are advertisements. Every one has an unsubscribe link, and we honour one-click unsubscribe.",
+            "To take payment for a featured listing.",
+            "To limit abuse and to fix the product.",
+          ]}
+        />
+        <p>
+          Job alerts and analytics run on your consent. An account, an
+          application you submit, and a featured listing you buy run on the
+          contract with you. Short-lived IP logs run on our interest in keeping
+          the forms usable.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">1. Who we are</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                Nuclear Hustle ("we", "us", "our") operates nuclearhustle.com, a job board for the US nuclear energy industry. We are committed to protecting your personal information and your right to privacy.
-              </p>
-              <p className="text-secondary text-sm leading-relaxed mt-3">
-                If you have any questions about this policy, please contact us at{' '}
-                <a href="mailto:nuclearhustle@gmail.com" className="text-ink underline hover:text-ink transition-colors">
-                  nuclearhustle@gmail.com
-                </a>.
-              </p>
-            </div>
+      <LegalSection title="4. Who else receives it">
+        <p>We do not sell personal information. We use these companies to run the site:</p>
+        <LegalList
+          items={[
+            "Supabase — database, authentication, and private storage for CVs.",
+            "Resend — delivery of account, application, and marketing email, plus bounce and complaint events.",
+            "Stripe — card payments for featured listings.",
+            "Vercel — hosting. Request logs can include IP addresses.",
+            "Clicky — analytics, and only after you allow it.",
+            "Anthropic — job-ad text used to format a listing. Not candidate files.",
+          ]}
+        />
+        <p>
+          They process that information to provide the service. Where we have
+          signed a data-processing agreement, they are bound by it. Do not read
+          this list as a claim that every vendor is under a signed processing
+          contract.
+        </p>
+        <p>
+          The employer you apply to receives your name, email, cover letter,
+          and CV. We do not offer a searchable candidate database, and we do
+          not show your profile or resume to employers unless you apply.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">2. Information we collect</h2>
-              <p className="text-secondary text-sm leading-relaxed mb-3">We collect information you provide directly to us, including:</p>
-              <ul className="space-y-2 text-sm text-secondary">
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Name and email address when you create an account</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Email address when you subscribe to job alerts (no account required)</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Profile information such as location, work history, and resume (job seekers)</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Company name, website, and job listings (employers)</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Communications you send to us</li>
-              </ul>
-              <p className="text-secondary text-sm leading-relaxed mt-4">We also collect usage data automatically through our privacy-focused analytics provider (Clicky), including pages visited, browser type, approximate location, IP address, and referring URLs.</p>
-            </div>
+      <LegalSection title="5. How long we keep it">
+        <LegalList
+          items={[
+            "Account and profile: until you delete the account, or until we delete it after you email us.",
+            "Applications and CVs: until you email us to delete them. We delete our copy within 30 days of that request. An employer who already downloaded the file keeps theirs.",
+            "Alert subscribers: until you unsubscribe. We then keep the email and the unsubscribe time so a later signup does not silently ignore the opt-out. Signing up again turns alerts back on.",
+            "Email delivery events: while we need them to track bounces and complaints. Email us if you want yours deleted.",
+            "Rate-limit IP rows: about an hour.",
+          ]}
+        />
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">3. How we use your information</h2>
-              <ul className="space-y-2 text-sm text-secondary">
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>To provide and maintain the platform</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>To match job seekers with relevant opportunities</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>To process employer job postings</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>To send transactional emails (account confirmations, application notifications)</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>To send job alert emails and our weekly digest of new roles</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>To improve and personalise the user experience</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>To comply with legal obligations</li>
-              </ul>
-              <p className="text-secondary text-sm leading-relaxed mt-4">
-                Job alerts and the weekly digest are marketing communications. You can unsubscribe at any time using the one-click link included in every such email, or by contacting us — we honour one-click unsubscribe (RFC 8058). Transactional emails tied to your account or applications are not marketing and cannot be opted out of while your account is active.
-              </p>
-            </div>
+      <LegalSection title="6. Cookies and analytics">
+        <p>
+          Essential cookies keep you signed in. Clicky, an analytics service,
+          may set a cookie or similar identifier, and only after you choose
+          Allow analytics on the banner. Reject leaves those cookies unset.
+          We do not use advertising cookies.
+        </p>
+        <p>
+          You can change that choice here. Clearing site data for
+          nuclearhustle.com also forgets it, and the banner shows again.
+        </p>
+        <AnalyticsPreference />
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">4. Sharing your information</h2>
-              <p className="text-secondary text-sm leading-relaxed mb-3">
-                We do not sell your personal data. We share information only with trusted third-party service providers, solely to operate the platform:
-              </p>
-              <ul className="space-y-2 text-sm text-secondary">
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span><span><strong className="text-ink font-normal">Supabase</strong> — database, authentication, and resume storage</span></li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span><span><strong className="text-ink font-normal">Resend</strong> — sending transactional and marketing email, and recording delivery, bounce, and complaint events</span></li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span><span><strong className="text-ink font-normal">Clicky</strong> — privacy-focused website analytics</span></li>
-              </ul>
-              <p className="text-secondary text-sm leading-relaxed mt-4">
-                These providers are contractually obligated to protect your data and may only process it on our instructions.
-              </p>
-              <p className="text-secondary text-sm leading-relaxed mt-3">
-                Job seeker profile information (name, resume, location) may be visible to verified employer accounts if you choose to make your profile discoverable.
-              </p>
-            </div>
+      <LegalSection title="7. Your requests">
+        <p>You can ask us to:</p>
+        <LegalList
+          items={[
+            "Tell you what we hold about you.",
+            "Correct it.",
+            "Delete it. Signed-in users can also delete the account from the profile page.",
+            "Stop job alerts, with the unsubscribe link or by email.",
+            "Stop analytics, with the control on this page.",
+          ]}
+        />
+        <p>
+          Email <LegalEmailLink />. We respond within 30 days. We do not sell
+          personal information. If a US state privacy law applies to a request,
+          we will honour the rights that law gives you, including a request not
+          to sell or share.
+        </p>
+        <p>
+          Withdrawing consent for alerts or analytics does not delete an
+          account or an application you already sent.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">5. Data retention</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                We retain your personal data for as long as your account is active. You can request deletion of your account and associated data at any time by contacting us at{' '}
-                <a href="mailto:nuclearhustle@gmail.com" className="text-ink underline hover:text-ink transition-colors">
-                  nuclearhustle@gmail.com
-                </a>.
-              </p>
-            </div>
+      <LegalSection title="8. Children">
+        <p>
+          The board is for people seeking work. We do not knowingly collect
+          personal information from anyone under 16. If you believe we have,
+          email us and we will delete it.
+        </p>
+      </LegalSection>
 
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">6. Cookies & analytics</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                We use essential cookies to manage authentication sessions. We also use Clicky, a privacy-focused analytics service, to understand how the platform is used; it may set cookies or use similar technologies to count unique visitors and measure page views. We do not use third-party advertising cookies and we do not sell analytics data.
-              </p>
-              <p className="text-secondary text-sm leading-relaxed mt-3">
-                You can disable cookies in your browser settings, though this may affect your ability to log in. To opt out of analytics specifically, you can enable your browser&apos;s &ldquo;Do Not Track&rdquo; setting or use an ad/tracker blocker.
-              </p>
-            </div>
-
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">7. Your rights</h2>
-              <p className="text-secondary text-sm leading-relaxed mb-3">You have the right to:</p>
-              <ul className="space-y-2 text-sm text-secondary">
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Access the personal data we hold about you</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Request correction of inaccurate data</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Request deletion of your data</li>
-                <li className="flex gap-3"><span className="font-mono text-ink flex-shrink-0">—</span>Withdraw consent at any time</li>
-              </ul>
-              <p className="text-secondary text-sm leading-relaxed mt-4">
-                To exercise these rights, contact us at{' '}
-                <a href="mailto:nuclearhustle@gmail.com" className="text-ink underline hover:text-ink transition-colors">
-                  nuclearhustle@gmail.com
-                </a>.
-              </p>
-            </div>
-
-            <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-ink mb-4">8. Changes to this policy</h2>
-              <p className="text-secondary text-sm leading-relaxed">
-                We may update this policy from time to time. We will notify registered users of material changes by email. Continued use of the platform after changes constitutes acceptance of the updated policy.
-              </p>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-    </div>
+      <LegalSection title="9. Changes">
+        <p>
+          We will update this page when the policy changes, and we will email
+          registered users about a material change. The date at the top is the
+          latest version.
+        </p>
+      </LegalSection>
+    </LegalDocument>
   );
 }

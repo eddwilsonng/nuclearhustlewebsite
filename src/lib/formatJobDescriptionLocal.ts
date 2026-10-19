@@ -64,7 +64,7 @@ const MARKETING =
   /join (our|the) team|more than a career|make a difference|friendly work environment|who we are|total rewards|powered by passion|thanks for your interest|you'll find a friendly|build an exciting|build the future of nuclear|we're creating healthier|cultivating a workplace|11:59|job posting expire|submit your application|important application/i;
 
 const ABOUT_SKIP =
-  /benefits offered for this position|\.pdf\b|total compensation and benefits|equal opportunity employer|nyse:\s*so\b|net-zero greenhouse|facebook\.com\/southernnuclear|in one or two sentences, provide a brief overview/i;
+  /benefits offered for this position|\.pdf\b|total compensation and benefits|nyse:\s*so\b|net-zero greenhouse|facebook\.com\/southernnuclear|in one or two sentences, provide a brief overview/i;
 
 const STRIP: RegExp[] = [
   /Important Application Submission Information[\s\S]*?(?=(?:Position Summary|Position Description|Job Summary|Primary Purpose|Job Title:|PMC ))/i,
@@ -79,17 +79,9 @@ const STRIP: RegExp[] = [
   /As the largest private-sector power producer[\s\S]*?tomorrow\.\s*/gi,
   /At Talen Energy[\s\S]*?(?:drive meaningful change by:|In this role[,:]?)/i,
   /Relocation Assistance Provided[\s\S]*$/i,
-  /We are an [Ee]qual [Oo]pportunity[\s\S]*$/g,
-  /Equal Opportunity Employer[\s\S]*$/g,
-  /Duke Energy is an [Ee]qual[\s\S]*$/gi,
-  /TerraPower is an [Ee]qual [Oo]pportunity Employer\.[\s\S]*?local law\.\s*/gi,
-  /As a result, the company.s activities[\s\S]*?human health benefits\.?"?\s*/gi,
-  /Oklo is an [Ee]qual[\s\S]*$/gi,
-  /Constellation is proud to be an[\s\S]*$/gi,
   /Privacy(?: Policy)?[\s\S]*$/i,
   /This site is protected by[\s\S]*$/i,
   /Do [Nn]ot [Ss]ell[\s\S]*$/i,
-  /Pay Transparency[\s\S]*$/i,
   /Click here[\s\S]*?benefits[\s\S]*$/i,
   /A summary of the benefits offered[\s\S]*?(?=Job Identification|$)/i,
   /Southern Company invests in the well-being[\s\S]*?hiring process\./gi,
@@ -270,7 +262,7 @@ function splitIntoItems(text: string): string[] {
   const items: string[] = [];
 
   for (const line of lines) {
-    let cleaned = line
+    const cleaned = line
       .replace(/^[-–—*•●]\s*/, '')
       .replace(/^\d+[.)]\s*/, '')
       .replace(/you.ll do more than contribute[\s\S]*?by:\s*/i, '')
@@ -279,7 +271,7 @@ function splitIntoItems(text: string): string[] {
     if (/^job requirements:/i.test(cleaned)) continue;
     if (/\(\s*i\.e\.?\s*$/i.test(cleaned)) continue;
     if (/\b(and|or|the|of|including|with)\s*$/i.test(cleaned)) continue;
-    if (/privacy|cookie|do not sell|terms of use|equal opportunity|eeo|§§|@@/i.test(cleaned)) continue;
+    if (/privacy|cookie|do not sell|terms of use|§§|@@/i.test(cleaned)) continue;
     if (/job posting end date|if you have what it takes|exciting employment opportunities/i.test(cleaned)) continue;
     if (MARKETING.test(cleaned) || ABOUT_SKIP.test(cleaned)) continue;
     items.push(cleaned.replace(/\s+/g, ' '));
@@ -320,6 +312,30 @@ function extractSkills(text: string): string[] {
   return found;
 }
 
+const NOTICE_RE =
+  /\b(equal opportunity|equal employment|eeo\b|pay transparency|salary range|compensation range|pay range|\$\s?\d|visa sponsorship|visa sponsored|work authorization|reasonable accommodation|qualified applicants will receive)\b/i;
+
+/** Pull legally relevant ad lines out of the body so formatting does not drop them. */
+export function extractLegalNotices(text: string): { notices?: string; body: string } {
+  const chunks = text
+    .split(/\n+|(?<=[.])\s+(?=[A-Z])/)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean);
+
+  const notices: string[] = [];
+  const kept: string[] = [];
+  for (const chunk of chunks) {
+    if (NOTICE_RE.test(chunk) && chunk.length < 900) notices.push(chunk);
+    else kept.push(chunk);
+  }
+
+  const unique = [...new Set(notices)];
+  return {
+    notices: unique.length > 0 ? unique.join("\n") : undefined,
+    body: kept.join("\n"),
+  };
+}
+
 /**
  * Deterministic ATS dump → structured_description. No API.
  * Good enough to match the job-detail layout of Haiku-formatted listings.
@@ -332,7 +348,8 @@ export function formatJobDescriptionLocal(
     return {};
   }
 
-  const cleaned = stripBoilerplate(normalizeAtsText(rawDescription));
+  const { notices, body } = extractLegalNotices(rawDescription);
+  const cleaned = stripBoilerplate(normalizeAtsText(body));
   const broken = insertSectionBreaks(cleaned);
 
   const buckets: Record<Field, string[]> = {
@@ -403,6 +420,7 @@ export function formatJobDescriptionLocal(
   if (qualifications) sd.qualifications = qualifications;
   if (desired) sd.desired = desired;
   if (location_details) sd.location_details = location_details;
+  if (notices) sd.notices = notices;
 
   const skills = extractSkills(`${jobTitle || ''} ${cleaned}`);
   if (skills.length) sd.skills = skills;

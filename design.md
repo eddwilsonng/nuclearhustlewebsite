@@ -53,6 +53,7 @@ All UI colour must use semantic tokens from `src/app/globals.css`.
 | Interactive border | `--control-border` | `#78716C` |
 | Primary action | `--signal` | `#FACC15` |
 | Primary action hover | `--signal-hover` | `#FDE047` |
+| Primary action edge | `--signal-border` | `#D9AE0B` |
 | Focus | `--focus` | `#1C1917` |
 | Inverse surface | `--inverse` | `#1C1917` |
 | Inverse text | `--inverse-ink` | `#F5F2EB` |
