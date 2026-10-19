@@ -145,6 +145,211 @@
     "category": "administrative"
   },
   {
+    "slug": "armed-nuclear-security-officer-middletown-pennsylva-4225",
+    "state": "pennsylvania",
+    "category": "security"
+  },
+  {
+    "slug": "nuclear-equipment-operator-delta-pennsylvania-3190",
+    "state": "pennsylvania",
+    "category": "operations"
+  },
+  {
+    "slug": "nuclear-chemistry-technician-pottstown-pennsylvan-5086",
+    "state": "pennsylvania",
+    "category": "health-physics"
+  },
+  {
+    "slug": "summer-2027-reactor-engineering-internship-byron-i-byron-illinois-5111",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-reactor-morris-illinois-3199",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-electrical-designic-middletown-pennsylva-3201",
+    "state": "pennsylvania",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-mechanical-morris-illinois-3276",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "electrical-design-engineer-byron-illinois-34",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-electrical-pottstown-pennsylvan-21",
+    "state": "pennsylvania",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-sr-structuralcivil-braceville-illinois-58",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "mechanical-engineer-byron-illinois-3204",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "site-supply-chain-manager-ontario-new-york-5119",
+    "state": "new-york",
+    "category": "administrative"
+  },
+  {
+    "slug": "engineer-structural-kennett-square-penns-3207",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "records-analyst-byron-illinois-cordo-5120",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "security-officer-trainee-delta-pennsylvania-5130",
+    "state": "pennsylvania",
+    "category": "security"
+  },
+  {
+    "slug": "sr-mgr-department-recovery-clinton-illinois-5133",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-mt-instructor-marseilles-illinois-5139",
+    "state": "illinois",
+    "category": "training"
+  },
+  {
+    "slug": "auxiliary-operator-trainee-lusby-maryland-3211",
+    "state": "maryland",
+    "category": "operations"
+  },
+  {
+    "slug": "engineer-sr-regulatory-kennett-square-penns-2809",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "lead-maintenance-tech-nuclear-lusby-maryland-4231",
+    "state": "maryland",
+    "category": "maintenance"
+  },
+  {
+    "slug": "manager-valve-services-warrenville-illinois-5149",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "procurement-engineer-supply-multiple-levels-lusby-maryland-5150",
+    "state": "maryland",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-operational-technology-systems-clinton-illinois-war-3233",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "supervisor-rad-protection-delta-pennsylvania-5154",
+    "state": "pennsylvania",
+    "category": "health-physics"
+  },
+  {
+    "slug": "manager-dry-cask-storage-kennett-square-penns-5156",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-rad-pro-technical-spclst-cordova-illinois-5160",
+    "state": "illinois",
+    "category": "other"
+  },
+  {
+    "slug": "senior-reactor-operator-delta-pennsylvania-142",
+    "state": "pennsylvania",
+    "category": "operations"
+  },
+  {
+    "slug": "2027-summer-cmg-regional-sales-intern-remote-sacramento-californi-5166",
+    "state": "california",
+    "category": "other"
+  },
+  {
+    "slug": "sr-turbine-equip-specialist-epu-projects-marseilles-illinois-152",
+    "state": "illinois",
+    "category": "maintenance"
+  },
+  {
+    "slug": "sr-operations-specialist-lusby-maryland-2590",
+    "state": "maryland",
+    "category": "operations"
+  },
+  {
+    "slug": "sr-radwaste-shipper-cordova-illinois-5169",
+    "state": "illinois",
+    "category": "health-physics"
+  },
+  {
+    "slug": "manager-turbine-support-warrenville-illinois-168",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "executive-administrative-coordinator-clinton-illinois-5173",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "auxiliary-fuel-handler-cordova-illinois-5186",
+    "state": "illinois",
+    "category": "other"
+  },
+  {
+    "slug": "cycle-planner-cordova-illinois-5187",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "cycle-planner-marseilles-illinois-3257",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "2027-summer-corporate-strategy-intern-baltimore-md-baltimore-maryland-5201",
+    "state": "maryland",
+    "category": "other"
+  },
+  {
+    "slug": "electrical-engineer-marseilles-illinois-64",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "ic-electrical-engineer-byron-illinois-36",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "summer-2027-engineering-internship-braceville-il-warrenville-illinois-5260",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "summer-2027-engineering-internship-morris-il-kennett-square-penns-5266",
+    "state": "pennsylvania",
+    "category": "engineering"
+  },
+  {
     "slug": "armed-nuclear-security-officer-clinton-illinois-3189",
     "state": "illinois",
     "category": "security"
@@ -1687,6 +1892,21 @@
   {
     "slug": "senior-rpo-technician-newport-mi-873",
     "state": "michigan",
+    "category": "maintenance"
+  },
+  {
+    "slug": "etc-itsecurity-eunice-new-mexico-3358",
+    "state": "new-mexico",
+    "category": "other"
+  },
+  {
+    "slug": "facility-security-officer-fso-eunice-new-mexico-4329",
+    "state": "new-mexico",
+    "category": "security"
+  },
+  {
+    "slug": "radiation-waste-technician-eunice-new-mexico-5438",
+    "state": "new-mexico",
     "category": "maintenance"
   },
   {

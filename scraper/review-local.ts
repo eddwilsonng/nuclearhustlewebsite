@@ -18,6 +18,7 @@ import {
 } from '../src/lib/formatJobDescriptionLocal';
 import { applyGeneratedFit } from '../src/lib/jobs/generateFit';
 import { resolveJobLocation } from '../src/lib/jobs/location';
+import { extractState, normalizeStateSlug } from '../src/lib/states';
 
 const JOBS_PATH = path.join(__dirname, '..', 'src', 'data', 'jobs.json');
 const COMPANIES_PATH = path.join(__dirname, '..', 'src', 'data', 'companies.json');
@@ -46,34 +47,78 @@ const MIXED = new Set([
   'aps',
   'pge',
   'talen',
+  'nextera',
 ]);
 
 const REJECT_RE =
-  /\b(hydro|bess|solar|natural gas|transmission|lineman|line worker|right of way|hvac|retail|advocacy|trading|credit risk|customer solutions|pipeline|fossil|coal |wind farm|keowee|meter reader|lake services)\b/i;
+  /\b(hydro|bess|solar|natural gas|transmission|lineman|line worker|right of way|hvac|retail|advocacy|trading|credit risk|customer solutions|pipeline|fossil|coal |wind farm|keowee|meter reader|lake services|renewables|janitorial|hv technician|sheldon station|gas sales|transportation analyst|hr generalist|hr business partner|talent acquisition)\b/i;
 
 const STRONG_RE =
   /\b(nuclear|reactor|radiolog|radiation|health physics|sro\b|i&c|i & c|instrumentation and control|criticality|radwaste|fuel handling|neutronic|dosimetr|rp tech|licensed operator|refueling|spent fuel|nde |outage|pwr\b|bwr\b|smr\b)\b/i;
 
+// Bare "I&C" shows up on gas-plant maintenance. These are the signals that
+// still mean nuclear when the role is not at a plant site.
+const NUCLEAR_STRONG_RE =
+  /\b(nuclear|reactor|radiolog|radiation|health physics|sro\b|instrumentation and control|criticality|radwaste|fuel handling|neutronic|dosimetr|rp tech|licensed operator|refueling|spent fuel|nde |outage|pwr\b|bwr\b|smr\b)\b/i;
+
 interface Plant {
   name: string;
   city: string;
+  state?: string;
   units?: { nrcName?: string }[];
 }
 
-const plants = (plantsData as { plants: Plant[] }).plants;
-const siteNeedles = [
-  ...new Set(
-    plants.flatMap((p) =>
-      [p.name, p.city, ...(p.units || []).map((u) => u.nrcName || '')]
-        .filter(Boolean)
-        .map((s) => s.toLowerCase())
-    )
-  ),
-].filter((s) => s.length > 3);
+// NRC short name "Summer" is V.C. Summer. Substring "summer" matches every
+// "Summer 2027" internship. Keep "v.c. summer" / Jenkinsville instead.
+const AMBIGUOUS_SITE = new Set(['summer']);
 
-function atSite(text: string): boolean {
-  const t = text.toLowerCase();
-  return siteNeedles.some((n) => t.includes(n));
+type SiteNeedle = { text: string; state: string | null };
+
+const plants = (plantsData as { plants: Plant[] }).plants;
+const siteNeedles: SiteNeedle[] = [];
+const seenNeedles = new Set<string>();
+for (const plant of plants) {
+  const state = normalizeStateSlug(plant.state);
+  const bits = [plant.name, plant.city, ...(plant.units || []).map((u) => u.nrcName || '')];
+  for (const bit of bits) {
+    const text = bit.toLowerCase().trim();
+    if (text.length <= 3 || AMBIGUOUS_SITE.has(text)) continue;
+    const key = `${text}|${state ?? ''}`;
+    if (seenNeedles.has(key)) continue;
+    seenNeedles.add(key);
+    siteNeedles.push({ text, state });
+  }
+}
+
+// Towns career sites use that are not the NRC city name.
+for (const alias of [
+  { text: 'oswego', state: 'new-york' },
+  { text: 'pottstown', state: 'pennsylvania' },
+  { text: 'braceville', state: 'illinois' },
+]) {
+  siteNeedles.push(alias);
+}
+
+function escapeRe(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function needleHits(needle: string, text: string): boolean {
+  return new RegExp(`(?:^|[^a-z0-9])${escapeRe(needle)}(?:[^a-z0-9]|$)`, 'i').test(text);
+}
+
+function atSite(title: string, location?: string): boolean {
+  const loc = location || '';
+  const locState = extractState(loc);
+  const hay = `${title} ${loc}`.toLowerCase();
+  return siteNeedles.some((n) => {
+    if (!needleHits(n.text, hay)) return false;
+    if (!n.state || !locState) return true;
+    // City matched inside the location line — require the same state.
+    // Stops "Clover, VA" hitting Catawba (Clover, SC).
+    if (!needleHits(n.text, loc.toLowerCase())) return true;
+    return locState === n.state;
+  });
 }
 
 type Verdict = 'publish' | 'reject' | 'flag';
@@ -91,6 +136,15 @@ function decide(job: {
     return { verdict: 'reject', reason: 'Talent-pool / general application, not a listing' };
   }
 
+  if (
+    /,\s*(SE|FR|ES|DE|UK|CZ|BE|PL|NL|JP|KR)\s*$/i.test(job.location || '') ||
+    /\b(sweden|västerås|vasteras|france|spain|germany|united kingdom|czech republic|belgium)\b/i.test(
+      job.location || '',
+    )
+  ) {
+    return { verdict: 'flag', reason: 'Outside the US' };
+  }
+
   if (REJECT_RE.test(hay) && !STRONG_RE.test(title)) {
     return { verdict: 'reject', reason: 'Non-nuclear signal in title/location' };
   }
@@ -102,10 +156,19 @@ function decide(job: {
     if (isMixedFleetFalsePositive(job)) {
       return { verdict: 'reject', reason: 'Mixed-fleet PMC/generation role, not a nuclear plant listing' };
     }
+    const bareIc = /\bi\s*&?\s*c\b/i.test(title) && !NUCLEAR_STRONG_RE.test(title);
+    if (bareIc && MIXED.has(job.company_id) && !atSite(title, job.location)) {
+      const desc = job.description || '';
+      const gas = /\b(gas turbine|combined cycle|wind farm|solar farm|renewable)\b/i.test(desc);
+      const nuclear = /\bnuclear\b/i.test(desc);
+      if (gas && !nuclear) {
+        return { verdict: 'reject', reason: 'I&C title on a non-nuclear generation role' };
+      }
+    }
     return { verdict: 'publish', reason: 'Nuclear signal in title' };
   }
 
-  if (atSite(`${title} ${job.location || ''}`)) {
+  if (atSite(title, job.location)) {
     return { verdict: 'publish', reason: 'Role at a named nuclear site' };
   }
 
@@ -116,7 +179,11 @@ function decide(job: {
 
   // Pure / vendor companies (Westinghouse, Oklo, TerraPower, …): keep for a look
   // unless the title is obviously unrelated.
-  if (/\b(sharepoint|accounts payable|workday systems|insurance and enterprise)\b/i.test(title)) {
+  if (
+    /\b(sharepoint|accounts payable|workday systems|insurance and enterprise|finance|financial|accountant|accounting|auditor|payroll|recruiter)\b/i.test(
+      title,
+    )
+  ) {
     return { verdict: 'reject', reason: 'Corporate/back-office, not a nuclear role' };
   }
 
@@ -159,6 +226,13 @@ async function main() {
   for (const job of data.jobs) {
     if (job.status !== 'pending_review') continue;
     if (manual && !manual[job.id]) continue;
+    if (!manual) {
+      const resolved = resolveJobLocation(job);
+      if (resolved) {
+        job.location = resolved.location;
+        if (resolved.state) job.state = resolved.state;
+      }
+    }
     const { verdict, reason } = manual
       ? { verdict: manual[job.id].verdict, reason: `Manual review: ${manual[job.id].reason}` }
       : decide(job);

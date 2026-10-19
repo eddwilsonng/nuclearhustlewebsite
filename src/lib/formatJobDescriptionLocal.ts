@@ -8,6 +8,8 @@ type Field =
   | 'location_details';
 
 const SECTION_MAP: { match: string; field: Field }[] = [
+  { match: 'Duties & Responsibilities', field: 'responsibilities' },
+  { match: 'Duties and Responsibilities', field: 'responsibilities' },
   { match: 'Specific responsibilities may include', field: 'responsibilities' },
   { match: 'Required Education and Experience', field: 'qualifications' },
   { match: 'Principal Accountabilities', field: 'responsibilities' },
@@ -20,6 +22,9 @@ const SECTION_MAP: { match: string; field: Field }[] = [
   { match: 'Educational Requirements', field: 'qualifications' },
   { match: 'Knowledge, Skills and Abilities', field: 'qualifications' },
   { match: 'Bonus Qualifications', field: 'desired' },
+  { match: 'Primary Duties and Accountabilities', field: 'responsibilities' },
+  { match: 'Job Duties/Responsibilities', field: 'responsibilities' },
+  { match: 'Job Summary/Purpose', field: 'about' },
   { match: 'Job Duties / Responsibilities', field: 'responsibilities' },
   { match: 'Primary Purpose of Position', field: 'about' },
   { match: 'Primary Purpose of the Role', field: 'about' },
@@ -71,7 +76,15 @@ const STRIP: RegExp[] = [
   /please submit your application by[^.]*\./gi,
   /More than a career[\s\S]*?competitive pay and benefits\.?/gi,
   /Consider joining the Duke Energy team[\s\S]*?pay and benefits\.?/gi,
-  /\*?Depending upon the desired qualifications of the successful applicant[\s\S]*?job hierarchy\*?\.?/gi,
+  /\*?Depending upon the (?:desired )?qualifications of the successful (?:applicant|candidate)[\s\S]*?job hierarchy\*?\.?\s*/gi,
+  /If you have what it takes to become part of the Vistra family[\s\S]*?apply online\.?\s*/gi,
+  /(?:PS )?Job Title:\s*.{3,140}?\s+Work Place Flexibility:\s*\w+\s+Legal Entity:\s*\S+(?:\s+\S+){0,8}/gi,
+  /Work Place Flexibility:\s*\w+\s+Legal Entity:\s*\S+(?:\s+\S+){0,6}/gi,
+  /Posting End Date:\s*\d{1,2}\/\d{1,2}\/\d{2,4}\s*/gi,
+  /Accessibility:\s*Entergy provides reasonable accommodations[\s\S]*?regarding your request\.\s*/gi,
+  /Additional Responsibilities:\s*As a provider of essential services[\s\S]*?(?=Know Your Rights|Equal Opportunity|Equal Employment|$)/gi,
+  /Know Your Rights:\s*Workplace Discrimination is Illegal[\s\S]*$/gi,
+  /However, employees who have access to the compensation information[\s\S]*?(?:41 CFR[\s\S]*?\.\s*|$)/gi,
   /Who We Are[\s\S]*?(?=Primary Purpose|Job Summary|Position Summary|This position)/i,
   /Total Rewards[\s\S]*?(?=Primary Purpose|Job Summary|Expected salary|This position)/i,
   /Thanks for your interest in Oklo!?\s*/i,
@@ -93,6 +106,8 @@ const STRIP: RegExp[] = [
 
 const UNIQUE_HEADERS = new Set(
   [
+    'Duties & Responsibilities',
+    'Duties and Responsibilities',
     'Specific responsibilities may include',
     'Bonus Qualifications',
     'Primary Duties and Accountabilities',
@@ -106,6 +121,9 @@ const UNIQUE_HEADERS = new Set(
     'Job Requirements',
     'Educational Requirements',
     'Knowledge, Skills and Abilities',
+    'Primary Duties and Accountabilities',
+    'Job Duties/Responsibilities',
+    'Job Summary/Purpose',
     'Job Duties / Responsibilities',
     'Primary Purpose of Position',
     'Primary Purpose of the Role',
@@ -138,7 +156,7 @@ const UNIQUE_HEADERS = new Set(
 );
 
 const ACTION_SPLIT =
-  /\b(Ability|Analyze|Apply|Assist|Assure|Build|Collaborate|Communicate|Complete|Conduct|Contribute|Coordinate|Create|Deliver|Demonstrate|Design|Develop|Direct|Drive|Ensure|Establish|Evaluate|Execute|Facilitate|Identify|Implement|Lead|Maintain|Manage|Monitor|Operate|Oversee|Participate|Perform|Plan|Prepare|Provide|Review|Support|Verify|Work)\b/;
+  /\b(Ability|Analyze|Apply|Assist|Assure|Build|Collaborate|Communicate|Complete|Conduct|Contribute|Coordinate|Create|Deliver|Demonstrate|Design|Develop|Direct|Drive|Ensure|Establish|Evaluate|Execute|Facilitate|Identify|Implement|Lead|Maintain|Manage|Monitor|Operate|Oversee|Participate|Perform|Plan|Prepare|Provide|Review|Support|Verify|Work)(?:s|es|ed|ing)?\b/;
 
 const SKILL_PATTERNS: [RegExp, string][] = [
   [/\bSRO\b/, 'SRO'],
@@ -205,6 +223,34 @@ function stripBoilerplate(text: string): string {
   return t.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
 }
 
+/** Constellation repeats the whole posting after the first quals block. */
+function dropDuplicatedPosting(text: string): string {
+  const markers = [
+    'primary purpose of position',
+    'primary duties and accountabilities',
+    'job duties/responsibilities',
+    'job summary/purpose',
+  ];
+  const qualMarkers = [
+    'minimum qualifications',
+    'minimum requirements',
+    'required qualifications',
+    'basic qualifications',
+  ];
+  const lower = text.toLowerCase();
+  let cut = text.length;
+  for (const marker of markers) {
+    const first = lower.indexOf(marker);
+    if (first < 0) continue;
+    const second = lower.indexOf(marker, first + marker.length);
+    if (second > first && second < cut) cut = second;
+  }
+  if (cut === text.length) return text.trim();
+  const before = lower.slice(0, cut);
+  if (!qualMarkers.some((q) => before.includes(q))) return text.trim();
+  return text.slice(0, cut).trim();
+}
+
 function insertSectionBreaks(text: string): string {
   let t = text;
   const tokens: string[] = [];
@@ -215,7 +261,7 @@ function insertSectionBreaks(text: string): string {
     // Do not treat "A summary of the benefits" as a section header — only
     // "Summary:" / "Summary We have openings" / "Summary of Job Duties".
     const re = unique
-      ? new RegExp(`\\b${escapeRe(match)}(?=\\s*:|\\s+[A-Z]|$)\\s*:?`, 'gi')
+      ? new RegExp(`\\b${escapeRe(match)}(?=\\s*[:–—-]|\\s+[A-Z]|$)\\s*[:–—-]?`, 'gi')
       : new RegExp(
           `(^|[.!?])\\s*${escapeRe(match)}(?=\\s*:|\\s+[A-Z]|$)\\s*:?`,
           'gi',
@@ -250,13 +296,22 @@ function splitIntoItems(text: string): string[] {
   // Career sites often flatten bullets into one line and drop the period:
   // "responsibility Plan, organize, and monitor"
   remaining = remaining.replace(
-    new RegExp(`(?<=[a-z)])\\s+(?=(?:${DUTY_VERB})(?:s|es|ed|ing)?\\b)`, 'g'),
+    new RegExp(
+      `(?<=[a-z)])\\s+(?=(?:${DUTY_VERB})(?:s|es|ed|ing)?\\s+(?:to|the|a|an|in|for|with|all|our|their|new|any)\\b)`,
+      'g',
+    ),
     '\n',
   );
   remaining = remaining.replace(
-    /(?<=[a-z.])\s+(?=(?:Education|Experience|Knowledge(?:,| and Skills)|KEY)\b)/g,
+    /(?<=[a-z.])\s+(?=(?:Education|Experience)\s*:|(?:Knowledge(?:,| and Skills)|KEY)\b)/g,
     '\n',
   );
+  remaining = remaining.replace(/\s+(?=\d+\.\s+)/g, '\n');
+  remaining = remaining.replace(
+    /(?<=[a-z/)])\s+(?=(?:Ability to|Excellent|Associates degree|High School Diploma|And one of the following|Valid Driver)\b)/g,
+    '\n',
+  );
+  remaining = remaining.replace(/\s+(?=OR\s+[A-Z])/g, '\n');
 
   const lines = remaining.split('\n').map((l) => l.trim()).filter(Boolean);
   const items: string[] = [];
@@ -265,6 +320,7 @@ function splitIntoItems(text: string): string[] {
     const cleaned = line
       .replace(/^[-–—*•●]\s*/, '')
       .replace(/^\d+[.)]\s*/, '')
+      .replace(/^and accountabilities\s+/i, '')
       .replace(/you.ll do more than contribute[\s\S]*?by:\s*/i, '')
       .trim();
     if (cleaned.length < 20) continue;
@@ -272,7 +328,12 @@ function splitIntoItems(text: string): string[] {
     if (/\(\s*i\.e\.?\s*$/i.test(cleaned)) continue;
     if (/\b(and|or|the|of|including|with)\s*$/i.test(cleaned)) continue;
     if (/privacy|cookie|do not sell|terms of use|§§|@@/i.test(cleaned)) continue;
+    if (/\b(equal employment opportunit|this policy applies to all terms|expressly prohibits any form|complies with applicable state and local laws governing non-discrimination|improper interference with the ability)\b/i.test(cleaned)) continue;
     if (/job posting end date|if you have what it takes|exciting employment opportunities/i.test(cleaned)) continue;
+    if (/^depending upon the (?:desired )?qualifications of the successful/i.test(cleaned)) continue;
+    if (/work place flexibility:|reasonable accommodation|\baccessibility:/i.test(cleaned)) continue;
+    if (/^(\[\[|ps )?job title:/i.test(cleaned)) continue;
+    if (/additional responsibilities:|know your rights|compensation information of other employees|absolutely not tolerated|41 CFR/i.test(cleaned)) continue;
     if (MARKETING.test(cleaned) || ABOUT_SKIP.test(cleaned)) continue;
     items.push(cleaned.replace(/\s+/g, ' '));
   }
@@ -280,8 +341,20 @@ function splitIntoItems(text: string): string[] {
   return items;
 }
 
+function dedupeItems(items: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const item of items) {
+    const key = item.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().slice(0, 160);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out;
+}
+
 function toBullets(items: string[], cap: number): string {
-  return items.slice(0, cap).map((i) => `- ${i}`).join('\n');
+  return dedupeItems(items).slice(0, cap).map((i) => `- ${i}`).join('\n');
 }
 
 function sentences(text: string, max: number, maxChars: number): string {
@@ -349,7 +422,7 @@ export function formatJobDescriptionLocal(
   }
 
   const { notices, body } = extractLegalNotices(rawDescription);
-  const cleaned = stripBoilerplate(normalizeAtsText(body));
+  const cleaned = dropDuplicatedPosting(stripBoilerplate(normalizeAtsText(body)));
   const broken = insertSectionBreaks(cleaned);
 
   const buckets: Record<Field, string[]> = {
@@ -379,10 +452,20 @@ export function formatJobDescriptionLocal(
     }
   }
 
+  const aboutJoined = buckets.about.join(' ');
+  const typicalSplit = aboutJoined.split(/\btypical examples of the duties are:\s*/i);
+  if (typicalSplit.length > 1) {
+    buckets.about = [typicalSplit[0]];
+    buckets.responsibilities.unshift(typicalSplit.slice(1).join(' '));
+  }
+
   const aboutSource = [...buckets.about, ...preamble].join(' ');
   let about = sentences(aboutSource, 3, 420);
   about = about
     .replace(/^(of\s+)?(position\s+)?duties:\s*/i, '')
+    .replace(/^job description\s+/i, '')
+    .replace(/^[\s\S]{0,240}?(?:job summary\/purpose|description of organization:)\s*/i, '')
+    .replace(/[•●·∙]\s*/g, '')
     .replace(/^of\s+position\s+duties\s+/i, '')
     .trim();
 
@@ -391,9 +474,26 @@ export function formatJobDescriptionLocal(
     else if (buckets.about.length) buckets.responsibilities.push(buckets.about.join(' '));
   }
 
-  const respItems = splitIntoItems(buckets.responsibilities.join(' ')).filter(
+  let respItems = splitIntoItems(buckets.responsibilities.join(' ')).filter(
     (i) => ACTION_SPLIT.test(i) || i.length > 40,
   );
+  if (!respItems.length && buckets.about.length) {
+    respItems = splitIntoItems(buckets.about.join(' ')).filter(
+      (i) => ACTION_SPLIT.test(i) || i.length > 40,
+    );
+  }
+  const qualFromDuties: string[] = [];
+  respItems = respItems
+    .map((i) => i.replace(/^job description\s+/i, ''))
+    .filter((i) => {
+      if (/education, experience, & skills required/i.test(i)) return false;
+      if (/^(high school diploma|bachelor(?:'|’)s degree|juris doctor)\b/i.test(i)) {
+        qualFromDuties.push(i);
+        return false;
+      }
+      return true;
+    });
+  if (qualFromDuties.length) buckets.qualifications.push(qualFromDuties.join(' '));
   const responsibilities = toBullets(respItems, 10);
   const qualifications = toBullets(splitIntoItems(buckets.qualifications.join(' ')), 8);
   const desired = toBullets(splitIntoItems(buckets.desired.join(' ')), 6);
@@ -430,7 +530,7 @@ export function formatJobDescriptionLocal(
 
 function extractLocationLine(text: string): string | undefined {
   const m = text.match(
-    /\b(Hybrid[^.]*\.|Onsite[^.]*\.|On-site[^.]*\.|This (?:position|role) is (?:hybrid|remote|onsite)[^.]*\.|Must live within[^.]*\.|\d+%\s*travel[^.]*\.)/i,
+    /\b(Hybrid[^.]*\.|Onsite(?!\s+walk)[^.]*\.|On-site(?!\s+walk)[^.]*\.|This (?:position|role) is (?:hybrid|remote|onsite)[^.]*\.|Must live within[^.]*\.|\d+%\s*travel[^.]*\.)/i,
   );
   return m?.[0]?.trim();
 }
@@ -444,7 +544,7 @@ export function isMixedFleetFalsePositive(job: {
 }): boolean {
   const MIXED = new Set([
     'duke', 'dominion', 'entergy', 'constellation', 'ameren', 'dte',
-    'aep', 'pseg', 'xcel', 'aps', 'pge', 'talen',
+    'aep', 'pseg', 'xcel', 'aps', 'pge', 'talen', 'nextera',
   ]);
   if (!MIXED.has(job.company_id)) return false;
 

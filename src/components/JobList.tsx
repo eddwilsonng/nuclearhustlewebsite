@@ -7,6 +7,7 @@ import { JobCategory, getCategoryInfo } from "@/lib/categorize";
 import { FilterSidebar } from "./FilterSidebar";
 import { PaginatedJobResults } from "./PaginatedJobResults";
 import { JobAlertForm } from "./JobAlertForm";
+import { compareFeaturedThenNewest } from "@/lib/jobs/sort";
 
 interface JobListProps {
   jobs: JobListItem[];
@@ -67,17 +68,7 @@ export function JobList({ jobs, companies, initialPage = 1 }: JobListProps) {
       );
     }
 
-    return result.sort((a, b) => {
-      const aFeatured =
-        a.is_featured && a.featured_until && new Date(a.featured_until) > new Date()
-          ? 1
-          : 0;
-      const bFeatured =
-        b.is_featured && b.featured_until && new Date(b.featured_until) > new Date()
-          ? 1
-          : 0;
-      return bFeatured - aFeatured;
-    });
+    return [...result].sort(compareFeaturedThenNewest);
   }, [jobs, selectedCompany, selectedCategory, searchQuery]);
 
   const resetKey = `${selectedCompany ?? ""}|${selectedCategory ?? ""}|${searchQuery}`;

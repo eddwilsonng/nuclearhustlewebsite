@@ -25,6 +25,7 @@ import {
   filterByEngineeringDiscipline,
 } from './static';
 import { getJobBySlug } from './jobs-full';
+import { compareFeaturedThenNewest, isLiveFeatured } from '@/lib/jobs/sort';
 
 const EMPLOYER_JOB_SELECT = `
   *,
@@ -83,8 +84,8 @@ function liveFilter() {
   return `expires_at.is.null,expires_at.gt.${new Date().toISOString()}`;
 }
 
-function byNewest(a: JobWithCompany, b: JobWithCompany) {
-  return new Date(b.scraped_at).getTime() - new Date(a.scraped_at).getTime();
+function byFeaturedThenNewest(a: JobWithCompany, b: JobWithCompany) {
+  return compareFeaturedThenNewest(a, b);
 }
 
 export const getEmployerJobs = cache(async (): Promise<JobWithCompany[]> => {
@@ -138,9 +139,7 @@ export async function getEmployerJobBySlug(slug: string): Promise<JobWithCompany
 
 export async function getFeaturedJobs(): Promise<JobWithCompany[]> {
   const now = new Date().toISOString();
-  return (await getEmployerJobs()).filter(
-    (job) => job.is_featured && !!job.featured_until && job.featured_until > now
-  );
+  return (await getEmployerJobs()).filter((job) => isLiveFeatured(job, new Date(now)));
 }
 
 export async function getAnyJobBySlug(slug: string): Promise<JobWithCompany | undefined> {
@@ -178,7 +177,7 @@ export async function getAllJobs(filters?: {
     );
   }
 
-  return [...scrapedJobs, ...employerJobs].sort(byNewest);
+  return [...scrapedJobs, ...employerJobs].sort(byFeaturedThenNewest);
 }
 
 export async function getAllJobsForList(): Promise<JobListItem[]> {
@@ -187,12 +186,12 @@ export async function getAllJobsForList(): Promise<JobListItem[]> {
 
 export async function getAllJobsByState(stateSlug: string): Promise<JobWithCompany[]> {
   const employerJobs = (await getEmployerJobs()).filter((j) => j.state === stateSlug);
-  return [...getJobsByState(stateSlug), ...employerJobs].sort(byNewest);
+  return [...getJobsByState(stateSlug), ...employerJobs].sort(byFeaturedThenNewest);
 }
 
 export async function getAllJobsByCategory(category: JobCategory): Promise<JobWithCompany[]> {
   const employerJobs = (await getEmployerJobs()).filter((j) => j.category === category);
-  return [...getJobsByCategory(category), ...employerJobs].sort(byNewest);
+  return [...getJobsByCategory(category), ...employerJobs].sort(byFeaturedThenNewest);
 }
 
 export async function getAllJobsByStateAndCategory(
@@ -202,17 +201,17 @@ export async function getAllJobsByStateAndCategory(
   const employerJobs = (await getEmployerJobs()).filter(
     (j) => j.state === stateSlug && j.category === category
   );
-  return [...getJobsByStateAndCategory(stateSlug, category), ...employerJobs].sort(byNewest);
+  return [...getJobsByStateAndCategory(stateSlug, category), ...employerJobs].sort(byFeaturedThenNewest);
 }
 
 export async function getAllJobsByEngineeringDiscipline(slug: string): Promise<JobWithCompany[]> {
   const employerJobs = filterByEngineeringDiscipline(await getEmployerJobs(), slug);
-  return [...getJobsByEngineeringDiscipline(slug), ...employerJobs].sort(byNewest);
+  return [...getJobsByEngineeringDiscipline(slug), ...employerJobs].sort(byFeaturedThenNewest);
 }
 
 export async function getAllJobsByCompany(companyId: string): Promise<JobWithCompany[]> {
   const employerJobs = (await getEmployerJobs()).filter((j) => j.company_id === companyId);
-  return [...getJobsByCompany(companyId), ...employerJobs].sort(byNewest);
+  return [...getJobsByCompany(companyId), ...employerJobs].sort(byFeaturedThenNewest);
 }
 
 export async function getAllPublicJobSlugs(): Promise<string[]> {

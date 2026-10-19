@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
 import { formatSalary } from "@/lib/salary";
 import { getPostedLabel } from "@/lib/jobs/dates";
+import { isLiveFeatured } from "@/lib/jobs/sort";
+import { Badge } from "@/components/ui/Badge";
 import { createClient } from "@/lib/supabase/server";
 import type { JobListItem } from "@/lib/types";
 import type { Metadata } from "next";
@@ -336,10 +338,7 @@ function RolesTable({ jobs, total }: { jobs: JobListItem[]; total: string }) {
         {jobs.map((job) => {
           const salary = formatSalary(job.salary);
           const field = CATEGORY_LABELS[job.category] ?? job.category;
-          const featured =
-            job.is_featured &&
-            job.featured_until &&
-            new Date(job.featured_until) > new Date();
+          const featured = isLiveFeatured(job);
           return (
             <li key={job.id}>
               <Link
@@ -352,8 +351,11 @@ function RolesTable({ jobs, total }: { jobs: JobListItem[]; total: string }) {
                   <span className="block truncate font-sans text-sm font-semibold tracking-tight text-ink">
                     {job.title}
                   </span>
-                  <span className="block truncate font-sans text-xs text-secondary">
-                    {job.company.name}
+                  <span className="mt-1 flex min-w-0 items-center gap-2">
+                    {featured && <Badge tone="featured">Featured</Badge>}
+                    <span className="truncate font-sans text-xs text-secondary">
+                      {job.company.name}
+                    </span>
                   </span>
                 </span>
                 <span className="truncate font-sans text-sm text-secondary">

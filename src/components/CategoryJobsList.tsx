@@ -6,6 +6,7 @@ import { toJobListItem } from '@/lib/jobUtils';
 import { getStateBySlug } from '@/lib/states';
 import { cn } from '@/lib/cn';
 import { PaginatedJobResults } from './PaginatedJobResults';
+import { compareFeaturedThenNewest, isLiveFeatured } from '@/lib/jobs/sort';
 import { JobAlertForm } from './JobAlertForm';
 
 type SortOption = 'recent' | 'featured' | 'alphabetical';
@@ -47,20 +48,19 @@ export function CategoryJobsList({
   );
 
   const sortedJobs = useMemo(() => {
+    const now = new Date();
     const copy = [...filteredJobs];
     switch (sortBy) {
-      case 'featured':
-        return copy.sort((a, b) => {
-          const aFeatured = a.is_featured && a.featured_until && new Date(a.featured_until) > new Date() ? 1 : 0;
-          const bFeatured = b.is_featured && b.featured_until && new Date(b.featured_until) > new Date() ? 1 : 0;
-          if (aFeatured !== bFeatured) return bFeatured - aFeatured;
-          return new Date(b.scraped_at || 0).getTime() - new Date(a.scraped_at || 0).getTime();
-        });
       case 'alphabetical':
-        return copy.sort((a, b) => a.title.localeCompare(b.title));
+        return copy.sort((a, b) => {
+          const featured = Number(isLiveFeatured(b, now)) - Number(isLiveFeatured(a, now));
+          if (featured !== 0) return featured;
+          return a.title.localeCompare(b.title);
+        });
+      case 'featured':
       case 'recent':
       default:
-        return copy.sort((a, b) => new Date(b.scraped_at || 0).getTime() - new Date(a.scraped_at || 0).getTime());
+        return copy.sort((a, b) => compareFeaturedThenNewest(a, b, now));
     }
   }, [filteredJobs, sortBy]);
 

@@ -5,7 +5,7 @@ const PLANTS = (plantsData as { plants: { name: string; city: string; state: str
   .plants;
 
 const PLACEHOLDER =
-  /see posting|various .+ locations?|location not specified|not specified|^remote$/i;
+  /see posting|various .+ locations?|location not specified|not specified|^remote$|^en,\s*us$/i;
 
 export function isPlaceholderLocation(location?: string | null): boolean {
   const t = location?.trim();
@@ -17,6 +17,7 @@ export function isPlaceholderLocation(location?: string | null): boolean {
 export function locationFromCareersUrl(url?: string): string | undefined {
   if (!url) return undefined;
   const decoded = decodeURIComponent(url);
+  if (/dayforcehcm\.com\/en-US\/stp\//i.test(decoded)) return "Bay City, TX";
   if (/hancocks?-?(?:'|\&apos;)?s?-?bridge/i.test(decoded)) {
     return "Hancock's Bridge, NJ";
   }
@@ -24,7 +25,7 @@ export function locationFromCareersUrl(url?: string): string | undefined {
   if (/\/job\/Salem-/i.test(decoded)) return "Salem, NJ";
   if (/\/job\/Newark-/i.test(decoded)) return "Newark, NJ";
   try {
-    const path = new URL(url).pathname;
+    const path = new URL(url).pathname.replace(/^\/[a-z]{2}-[a-z]{2}(?=\/)/i, "");
     const m = path.match(/\/([a-z0-9-]+)-([a-z]{2})(?:\/|$)/i);
     if (!m) return undefined;
     const city = m[1]
