@@ -26,7 +26,7 @@ test("homepage has one main and a hidden skip link", async ({ page }) => {
 test("homepage search submits to /jobs", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("Search jobs").fill("operator");
-  await page.getByRole("button", { name: "Search jobs" }).click();
+  await page.getByRole("button", { name: /Search .+ roles/ }).click();
   await expect(page).toHaveURL(/\/jobs\?q=operator/);
   await expect(page.getByLabel("Search")).toHaveValue("operator");
 });

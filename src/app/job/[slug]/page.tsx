@@ -334,7 +334,7 @@ export default async function JobPage({ params }: PageProps) {
 
           <BrowseTitle>{job.title}</BrowseTitle>
 
-          <p className="font-sans text-base text-inverse-ink/80">
+          <p className="font-sans text-base text-secondary">
             <BrowseMetaLink href={`/companies/${job.company.id}`}>
               {job.company.name}
             </BrowseMetaLink>
@@ -343,7 +343,7 @@ export default async function JobPage({ params }: PageProps) {
             {salaryLabel && (
               <>
                 <span aria-hidden="true"> · </span>
-                <span className="font-semibold text-inverse-ink">{salaryLabel}</span>
+                <span className="font-semibold text-ink">{salaryLabel}</span>
               </>
             )}
           </p>

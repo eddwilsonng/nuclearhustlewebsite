@@ -48,6 +48,17 @@ const nextConfig: NextConfig = {
     qualities: [75, 80],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
+  async redirects() {
+    return [
+      { source: "/home-v2", destination: "/", statusCode: 301 },
+      { source: "/jobs-v2", destination: "/jobs", statusCode: 301 },
+      {
+        source: "/jobs-v2/role/:category",
+        destination: "/jobs/role/:category",
+        statusCode: 301,
+      },
+    ];
+  },
   async headers() {
     return [
       {
