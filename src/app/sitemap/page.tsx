@@ -16,6 +16,7 @@ const STATIC_PAGES = [
   { href: '/jobs', label: 'All nuclear jobs' },
   { href: '/companies', label: 'Browse employers' },
   { href: '/outages', label: 'Nuclear outage schedule' },
+  { href: '/this-week', label: "This week's picks" },
   { href: '/nuclear-salary', label: 'Nuclear salary guide' },
   { href: '/nuclear-skills', label: 'Nuclear skills report' },
   { href: '/about', label: 'About' },
