@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Script from "next/script";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { createClient } from "@/lib/supabase/server";
 import { JOB_DURATION_DAYS } from "@/lib/jobs/expiry";
@@ -90,13 +89,11 @@ export default async function PricingPage() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <Script
-        id="pricing-breadcrumb-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
-      <Script
-        id="pricing-offer-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(offers) }}
       />

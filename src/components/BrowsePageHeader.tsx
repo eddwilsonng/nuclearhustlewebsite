@@ -19,7 +19,7 @@ export function BrowseBreadcrumb({ children }: { children: React.ReactNode }) {
   return (
     <nav
       aria-label="Breadcrumb"
-      className="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted"
+      className="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-widest text-secondary"
     >
       {children}
     </nav>

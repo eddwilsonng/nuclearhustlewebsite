@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
-import Script from 'next/script';
 import { Suspense } from 'react';
 import {
   getAllJobsByEngineeringDiscipline,
@@ -123,8 +122,7 @@ export default async function DisciplinePage({ params, searchParams }: PageProps
 
   return (
     <div className="min-h-screen bg-canvas">
-      <Script
-        id="discipline-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
       />

@@ -25,7 +25,6 @@ import {
 import { Sidebar, SidebarSection, SidebarNavList, SidebarCTA } from '@/components/sidebar/Sidebar';
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
-import Script from 'next/script';
 import { generateBreadcrumbSchema } from '@/lib/seo/schema';
 
 interface PageProps {
@@ -94,8 +93,7 @@ export default async function StatePage({ params, searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <Script
-        id="breadcrumb-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
       />

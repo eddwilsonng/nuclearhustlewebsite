@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
-import Script from 'next/script';
 import { Suspense } from 'react';
 import { getActiveStateCategoryCombos, toJobListItem } from '@/lib/data/static';
 import {
@@ -121,13 +120,11 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
 
   return (
     <div className="min-h-screen bg-canvas">
-      <Script
-        id="state-category-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
       />
-      <Script
-        id="breadcrumb-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
       />

@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import Script from 'next/script';
 import { Suspense } from 'react';
 import {
   getAllJobsByCategory,
@@ -127,13 +126,11 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
   return (
     <div className="min-h-screen bg-canvas">
-      <Script
-        id="category-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
       />
-      <Script
-        id="breadcrumb-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
       />

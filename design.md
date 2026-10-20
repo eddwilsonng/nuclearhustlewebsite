@@ -181,6 +181,17 @@ Main content order:
 
 Missing facts are omitted, never guessed.
 
+### Section index
+
+- Numbered in-page navigation (`01 Pay by role`) for long data pages such as
+  the salary guide. Component: `SectionIndex`.
+- Sticks under the site header and marks the section being read with
+  `aria-current="location"` and an ink underline, never yellow.
+- Narrow screens scroll the strip sideways behind an edge fade. The page itself
+  never scrolls horizontally.
+- `[data-section-index]` adds `scroll-padding-top` so anchor jumps and focus
+  clear both sticky bars.
+
 ### Navigation and overlays
 
 - Use Base UI for Dialog, Drawer, Popover, Menu, and Combobox behaviour.

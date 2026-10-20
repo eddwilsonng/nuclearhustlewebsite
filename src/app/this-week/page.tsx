@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import Script from 'next/script';
 import { getPublishedWeek } from '@/lib/weekly/store';
 import { toJobListItem } from '@/lib/data/static';
 import { jobOneLiner } from '@/lib/jobs/oneLiner';
@@ -68,8 +67,7 @@ export default async function ThisWeekPage() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <Script
-        id="breadcrumb-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
       />

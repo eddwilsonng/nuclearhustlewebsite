@@ -80,6 +80,12 @@ body {
   outline-color: var(--inverse-ink) !important;
 }
 
+/* Pages with a sticky SectionIndex: anchor jumps and focus clear the site
+   header plus the index bar. */
+html:has([data-section-index]) {
+  scroll-padding-top: 7.5rem;
+}
+
 @layer base {
   :where(button, input, select, textarea) {
     font: inherit;

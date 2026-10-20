@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Script from "next/script";
 import { HOME_FAQ_GROUPS, HOME_FAQS } from "@/lib/seo/homeFaq";
 import { generateFaqSchema } from "@/lib/seo/schema";
 
@@ -11,8 +10,7 @@ export function HomeFaq() {
       className="border-b border-rule py-16"
       aria-labelledby="home-faq-heading"
     >
-      <Script
-        id="home-faq-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
