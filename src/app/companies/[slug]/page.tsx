@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getCompanies, getPlantsByCompany, toJobListItem } from '@/lib/data/static';
 import { getAllCompanies, getAnyCompanyById, getAllJobsByCompany } from '@/lib/data/employer';
+import { companyLogoSrc } from '@/lib/companies/logos';
+import { CompanyMark } from '@/components/CompanyMark';
 import { JobCard } from '@/components/JobCard';
 import { Sidebar, SidebarSection, SidebarNavList } from '@/components/sidebar/Sidebar';
 import {
@@ -39,8 +41,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url, type: 'website', siteName: 'Nuclear Hustle' },
-    twitter: { card: 'summary_large_image', title, description },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
+      siteName: 'Nuclear Hustle',
+      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: title }],
+    },
+    twitter: { card: 'summary_large_image', title, description, images: ['/opengraph-image'] },
   };
 }
 
@@ -52,6 +61,7 @@ export default async function CompanyPage({ params }: PageProps) {
 
   const plants = getPlantsByCompany(slug);
   const jobs = await getAllJobsByCompany(slug);
+  const logo = companyLogoSrc(company);
   const otherCompanies = (await getAllCompanies()).filter((c) => c.id !== slug).slice(0, 6);
 
   const plantsByRegion = plants.reduce((acc, plant) => {
@@ -70,13 +80,25 @@ export default async function CompanyPage({ params }: PageProps) {
           <span aria-hidden="true">/</span>
           <BrowseBreadcrumbCurrent>{company.name}</BrowseBreadcrumbCurrent>
         </BrowseBreadcrumb>
-        <BrowseLabel>Company</BrowseLabel>
-        <BrowseTitle>{company.name}</BrowseTitle>
-        <BrowseMeta>
-          <strong>{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
-          <span className="text-muted mx-2" aria-hidden="true">/</span>
-          <strong>{plants.length}</strong> nuclear plant{plants.length !== 1 ? 's' : ''}
-        </BrowseMeta>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+          {logo ? (
+            <CompanyMark
+              src={logo}
+              width={220}
+              height={56}
+              className="h-12 w-auto max-w-48 object-contain object-left"
+            />
+          ) : null}
+          <div className="min-w-0">
+            <BrowseLabel>Company</BrowseLabel>
+            <BrowseTitle>{company.name}</BrowseTitle>
+            <BrowseMeta>
+              <strong>{jobs.length}</strong> open position{jobs.length !== 1 ? 's' : ''}
+              <span className="text-muted mx-2" aria-hidden="true">/</span>
+              <strong>{plants.length}</strong> nuclear plant{plants.length !== 1 ? 's' : ''}
+            </BrowseMeta>
+          </div>
+        </div>
       </BrowsePageHeader>
 
       <div className="max-w-6xl mx-auto px-6 py-8">

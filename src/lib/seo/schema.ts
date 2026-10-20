@@ -79,6 +79,30 @@ export function generateBreadcrumbSchema(
   };
 }
 
+export function generateDatasetSchema(input: {
+  name: string;
+  description: string;
+  temporalCoverage: string;
+  dateModified: string;
+  isBasedOn: string;
+}): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Dataset',
+    name: input.name,
+    description: input.description,
+    url: 'https://www.nuclearhustle.com/outages',
+    temporalCoverage: input.temporalCoverage,
+    dateModified: input.dateModified,
+    isBasedOn: input.isBasedOn,
+    creator: {
+      '@type': 'Organization',
+      name: 'Nuclear Hustle',
+      url: 'https://www.nuclearhustle.com',
+    },
+  };
+}
+
 export function generateJobPostingSchema(
   job: Job,
   company: { name: string; id: string }

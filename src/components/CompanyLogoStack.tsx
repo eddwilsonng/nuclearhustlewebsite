@@ -22,11 +22,11 @@ const OPERATORS = [
     fit: "contain",
   },
   {
-    id: "tva",
-    src: "/company-logos/tva.png",
-    fit: "cover",
+    id: "entergy",
+    src: "/company-logos/entergy.png",
+    fit: "contain",
   },
-] as const;
+] as readonly { id: string; src: string; fit: 'contain' | 'cover' }[];
 
 export function CompanyLogoStack() {
   return (

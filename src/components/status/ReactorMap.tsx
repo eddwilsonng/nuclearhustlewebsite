@@ -3,7 +3,7 @@
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { PlantWithStatus } from '@/app/status/page';
+import type { PlantWithStatus } from '@/app/outages/page';
 import { plantMarkerFill } from '@/lib/plants/statusUi';
 
 const STATE_SLUGS: Record<string, string> = {
@@ -18,8 +18,8 @@ const STATE_SLUGS: Record<string, string> = {
 
 const GEO_URL = '/us-states.json';
 
-function markerColor(status: PlantWithStatus['status'], avgPower: number | null) {
-  return plantMarkerFill(status, avgPower);
+function markerColor(status: PlantWithStatus['status']) {
+  return plantMarkerFill(status);
 }
 
 function markerRadius(unitCount: number) {
@@ -27,13 +27,13 @@ function markerRadius(unitCount: number) {
 }
 
 function plantLabel(plant: PlantWithStatus) {
-  const power =
-    plant.avgPower !== null ? `${plant.avgPower}% power` : 'power unknown';
+  const average =
+    plant.avgPower !== null ? ` ${plant.avgPower}% average output.` : '';
   const jobs =
     plant.jobCount > 0
-      ? `, ${plant.jobCount} job${plant.jobCount === 1 ? '' : 's'} in ${plant.state}`
-      : ', no current openings';
-  return `${plant.name}, ${plant.city}, ${plant.state}. ${power}${jobs}`;
+      ? ` ${plant.jobCount} job${plant.jobCount === 1 ? '' : 's'} in ${plant.state}.`
+      : ' No current openings.';
+  return `${plant.name}, ${plant.city}, ${plant.state}. ${plant.rollupLabel}.${average}${jobs}`;
 }
 
 interface TooltipState {
@@ -59,8 +59,7 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
 
   return (
     <div
-      className="relative w-full select-none border-b border-rule bg-canvas"
-      style={{ minHeight: 480 }}
+      className="relative w-full select-none bg-canvas"
       role="region"
       aria-label="Map of commercial US nuclear plants"
     >
@@ -97,7 +96,7 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
         </Geographies>
 
         {plants.map((plant) => {
-          const fill = markerColor(plant.status, plant.avgPower);
+          const fill = markerColor(plant.status);
           const r = markerRadius(plant.units.length);
           const hasJobs = plant.jobCount > 0;
           return (
@@ -164,6 +163,7 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
             </span>
             {tooltip.plant.operator}
           </p>
+          <p className="mb-2 font-sans text-sm text-ink">{tooltip.plant.rollupLabel}</p>
           <div className="mb-2 space-y-0.5 border-t border-rule pt-1.5">
             {tooltip.plant.units.map((unit) => {
               const pwr = unit.power;
@@ -176,7 +176,7 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
                 >
                   <span className="text-secondary">{label}</span>
                   <span className="font-semibold text-ink">
-                    {pwr !== null ? `${pwr}%` : '—'}
+                    {pwr !== null ? `${pwr}%` : 'n/a'}
                   </span>
                 </div>
               );
@@ -186,7 +186,7 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
             {tooltip.plant.jobCount > 0 ? (
               <p className="font-mono text-xs font-bold uppercase tracking-widest text-ink">
                 {tooltip.plant.jobCount} job
-                {tooltip.plant.jobCount === 1 ? '' : 's'} in {tooltip.plant.state} — view
+                {tooltip.plant.jobCount === 1 ? '' : 's'} in {tooltip.plant.state}
               </p>
             ) : (
               <p className="font-mono text-xs uppercase tracking-widest text-secondary">
@@ -197,8 +197,8 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
         </div>
       )}
 
-      <div className="absolute bottom-3 left-4 border border-rule bg-canvas px-3 py-2">
-        <ul className="flex flex-wrap items-center gap-5 font-mono text-xs uppercase tracking-widest text-secondary">
+      <div className="m-3 border border-rule bg-canvas px-3 py-2 sm:absolute sm:bottom-3 sm:left-4 sm:m-0">
+        <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-xs uppercase tracking-widest text-secondary">
           <li className="flex items-center gap-1.5">
             <span className="inline-block size-2.5 rounded-full bg-success" aria-hidden="true" />
             Full
@@ -219,7 +219,7 @@ export default function ReactorMap({ plants }: ReactorMapProps) {
             <span className="inline-block size-2.5 rounded-full bg-rule" aria-hidden="true" />
             No data
           </li>
-          <li className="flex items-center gap-1.5 border-l border-rule pl-5">
+          <li className="flex items-center gap-1.5 sm:border-l sm:border-rule sm:pl-5">
             <span
               className="inline-block size-2.5 rounded-full border-2 border-signal"
               aria-hidden="true"

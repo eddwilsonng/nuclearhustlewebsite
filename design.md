@@ -192,6 +192,28 @@ Missing facts are omitted, never guessed.
 - `[data-section-index]` adds `scroll-padding-top` so anchor jumps and focus
   clear both sticky bars.
 
+### Data tracks
+
+- Small inline bars for operational data on `/outages`
+  (`components/outages/OutageTracks.tsx`, `FleetSnapshot.tsx`).
+- Always decorative (`aria-hidden`): the same fact is printed as text beside
+  the bar. Never the only carrier of a number or status.
+- Outage progress: ink fill on a `surface` track that ends at the usual
+  length; a run past it continues in `danger` beyond an ink tick.
+- Forecast window: `ink/20` band for the window, ink tick for the likely
+  start, faint `rule` guides at 30 and 60 days. Yellow band only for a unit
+  already coasting down.
+- Fleet strip: one cell per unit, grouped by status, same colours as the
+  reactor map markers, with a text legend carrying every count.
+
+### Data row with a stretched link
+
+- For list rows whose whole surface opens one destination (plant rows on
+  `/outages`): the title link gets `after:absolute after:inset-0`, and any
+  second link in the row is a sibling raised with `relative z-10`.
+- Never nest one link inside another. A second action uses the secondary
+  treatment, not yellow, so a long list does not become a column of yellow.
+
 ### Navigation and overlays
 
 - Use Base UI for Dialog, Drawer, Popover, Menu, and Combobox behaviour.

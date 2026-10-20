@@ -1,11 +1,12 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   getAllJobsForList,
   getAllCompanies,
   getAllActiveStates,
   getAllActiveCategories,
 } from "@/lib/data/employer";
+import { companyLogoSrc } from "@/lib/companies/logos";
+import { CompanyMark } from "@/components/CompanyMark";
 import { getJobsByCompany } from "@/lib/data/static";
 import { JobAlertForm } from "@/components/JobAlertForm";
 import { HomeFaq } from "@/components/HomeFaq";
@@ -178,10 +179,10 @@ export default async function Home() {
               ))}
             </ol>
             <Link
-              href="/status"
+              href="/outages"
               className="mt-4 inline-block font-mono text-xs uppercase tracking-widest text-secondary hover:text-ink"
             >
-              View the full fleet map →
+              View the outage schedule →
             </Link>
           </div>
 
@@ -251,18 +252,30 @@ export default async function Home() {
 }
 
 const WALL_OPERATORS = [
-  { id: "constellation", name: "Constellation", src: "/company-logos/constellation.png" },
-  { id: "duke", name: "Duke Energy", src: "/company-logos/duke.png" },
-  { id: "dominion", name: "Dominion", src: "/company-logos/dominion.png" },
-  { id: "nextera", name: "NextEra", src: "/company-logos/nextera.png" },
-  { id: "tva", name: "TVA", src: "/company-logos/tva.png" },
+  { id: "constellation", name: "Constellation" },
+  { id: "duke", name: "Duke Energy" },
+  { id: "dominion", name: "Dominion" },
+  { id: "entergy", name: "Entergy" },
+  { id: "nextera", name: "NextEra" },
+  { id: "tva", name: "TVA" },
 ] as const;
 
 function OperatorWall() {
-  const operators = WALL_OPERATORS.map((op) => ({
-    ...op,
-    jobCount: getJobsByCompany(op.id).length,
-  }));
+  const operators = WALL_OPERATORS.flatMap((op) => {
+    const jobCount = getJobsByCompany(op.id).length;
+    const src = companyLogoSrc({ id: op.id });
+    if (jobCount === 0 || !src) return [];
+    return [{ ...op, jobCount, src }];
+  });
+
+  if (operators.length === 0) return null;
+
+  const columns =
+    operators.length >= 6
+      ? "lg:grid-cols-6"
+      : operators.length === 4
+        ? "lg:grid-cols-4"
+        : "lg:grid-cols-5";
 
   return (
     <section className="border-b border-rule bg-surface">
@@ -279,29 +292,28 @@ function OperatorWall() {
           </Link>
         </div>
 
-        <ul className="grid grid-cols-2 gap-px border border-rule bg-rule sm:grid-cols-3 lg:grid-cols-5">
+        <ul
+          className={`grid grid-cols-2 gap-px border border-rule bg-rule sm:grid-cols-3 ${columns}`}
+        >
           {operators.map((op) => (
             <li key={op.id}>
               <Link
                 href={`/companies/${op.id}`}
                 className="group flex h-full min-h-[6rem] flex-col items-center justify-center gap-2 bg-surface px-4 py-5 transition-colors duration-150 hover:bg-canvas"
               >
-                <Image
+                <CompanyMark
                   src={op.src}
-                  alt=""
-                  width={120}
-                  height={32}
-                  className="h-8 w-auto object-contain opacity-85 grayscale transition duration-150 group-hover:opacity-100 group-hover:grayscale-0"
+                  width={160}
+                  height={40}
+                  className="h-8 w-auto max-w-36 object-contain opacity-85 grayscale transition duration-150 group-hover:opacity-100 group-hover:grayscale-0"
                 />
                 <span className="font-sans text-sm font-semibold text-ink">
                   {op.name}
                 </span>
-                {op.jobCount > 0 && (
-                  <span className="font-mono text-xs text-secondary">
-                    <span className="tabular-nums text-ink">{op.jobCount}</span>{" "}
-                    open
-                  </span>
-                )}
+                <span className="font-mono text-xs text-secondary">
+                  <span className="tabular-nums text-ink">{op.jobCount}</span>{" "}
+                  open
+                </span>
               </Link>
             </li>
           ))}

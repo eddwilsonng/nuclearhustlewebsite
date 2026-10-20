@@ -50,12 +50,12 @@ test("job detail exposes Apply and Save", async ({ page }) => {
 });
 
 test("fleet map skip link reaches the reactor list", async ({ page }) => {
-  await page.goto("/status");
+  await page.goto("/outages");
   await page.getByRole("link", { name: "Skip map, view reactor list" }).click();
   await expect(page.locator("#all-reactors")).toBeInViewport();
 });
 
-for (const path of ["/", "/jobs", "/login", "/about", "/status"] as const) {
+for (const path of ["/", "/jobs", "/login", "/about", "/outages"] as const) {
   test(`axe serious+ on ${path}`, async ({ page }) => {
     await page.goto(path);
     const results = await new AxeBuilder({ page })

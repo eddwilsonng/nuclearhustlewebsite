@@ -2,10 +2,20 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import plantsData from '@/data/plants.json';
-import { getNrcStatus, getPlantStatus } from '@/lib/nrc';
 import { getJobsWithCompany, getCompanyById } from '@/lib/data/static';
 import { US_STATES } from '@/lib/states';
 import { JobCard } from '@/components/JobCard';
+import { getFleetReadings, unitsForPlant } from '@/lib/outages/fleet';
+import {
+  confidenceLabel,
+  cycleMonths,
+  formatLongDate,
+  formatWindow,
+  outageTypeLabel,
+} from '@/lib/outages/format';
+import { getOutageSchedule, getPlantOutageHistory } from '@/lib/outages/schedule';
+import { calendarDays } from '@/lib/outages/dates';
+import { highestUnitState, plantRollupLabel } from '@/lib/outages/unitState';
 import {
   plantStatusBarClass,
   plantStatusDotClass,
@@ -28,14 +38,29 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const unitCount = plant.units.length;
   const stateInfo = US_STATES.find(s => s.code === plant.state);
   const stateName = stateInfo?.name ?? plant.state;
+  const title = `${plant.name} nuclear plant: outages, status and jobs | Nuclear Hustle`;
+  const description = `${plant.name} is a ${unitCount}-unit nuclear power plant in ${plant.city}, ${stateName}, operated by ${plant.operator}. Refueling outages, reactor status, and open nuclear jobs at ${plant.name}.`;
+  const url = `/plants/${slug}`;
 
   return {
-    title: `${plant.name} Nuclear Power Plant — Jobs & Status`,
-    description: `${plant.name} is a ${unitCount}-unit nuclear power plant in ${plant.city}, ${stateName}, operated by ${plant.operator}. Browse open nuclear jobs at ${plant.name}.`,
-    alternates: { canonical: `/plants/${slug}` },
+    title,
+    description,
+    alternates: { canonical: url },
     openGraph: {
-      title: `${plant.name} Nuclear Power Plant`,
-      description: `${unitCount} reactor${unitCount > 1 ? 's' : ''} · ${plant.city}, ${stateName} · Operated by ${plant.operator}`,
+      title,
+      description,
+      url,
+      type: 'website',
+      siteName: 'Nuclear Hustle',
+      locale: 'en_US',
+      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      site: '@nuclearhustle',
+      title,
+      description,
+      images: ['/opengraph-image'],
     },
   };
 }
@@ -45,20 +70,22 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
   const plant = plantsData.plants.find(p => p.id === slug);
   if (!plant) notFound();
 
-  const { status: nrcStatus, reportDate } = await getNrcStatus();
+  const readings = await getFleetReadings();
+  const reportDate = readings.reportDate;
 
-  const units = plant.units.map(u => ({
-    nrcName: u.nrcName,
-    power: u.nrcName in nrcStatus ? nrcStatus[u.nrcName] : null,
-  }));
+  const isRestarting = (plant as { restarting?: boolean }).restarting === true;
+  const units = unitsForPlant(plant.units, readings, isRestarting);
 
   const knownUnits = units.filter(u => u.power !== null);
   const avgPower = knownUnits.length > 0
     ? Math.round(knownUnits.reduce((s, u) => s + u.power!, 0) / knownUnits.length)
     : null;
 
-  const isRestarting = (plant as { restarting?: boolean }).restarting === true;
-  const status = isRestarting ? 'restarting' : getPlantStatus(avgPower);
+  const status = highestUnitState(units.map(u => u.state));
+  const rollupLabel = plantRollupLabel(units);
+  const schedule = await getOutageSchedule();
+  const plantUnits = schedule?.units.filter((unit) => unit.plantSlug === plant.id) ?? [];
+  const history = await getPlantOutageHistory(plantUnits.map((unit) => unit.unitId));
 
   const stateInfo = US_STATES.find(s => s.code === plant.state);
   const companyId = OPERATOR_TO_COMPANY[plant.operator];
@@ -73,7 +100,6 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
     .filter(p => p.state === plant.state && p.id !== plant.id)
     .slice(0, 5);
 
-  const statusLabel = plantStatusLabel(status);
   const statusColor = plantStatusTextClass(status);
   const dotColor = plantStatusDotClass(status);
 
@@ -83,7 +109,7 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
       {/* Breadcrumb */}
       <div className="border-b border-rule">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-2 font-mono text-xs text-secondary">
-          <Link href="/status" className="hover:text-ink transition-colors">Fleet Status</Link>
+          <Link href="/outages" className="hover:text-ink transition-colors">Outage schedule</Link>
           <span className="text-rule">/</span>
           <Link href="/plants" className="hover:text-ink transition-colors">All Plants</Link>
           <span className="text-rule">/</span>
@@ -113,9 +139,9 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
             <div className="shrink-0 flex items-center gap-3 px-5 py-4 border border-rule bg-canvas">
               <div className={`w-2.5 h-2.5 rounded-full ${dotColor}`} />
               <div>
-                <p className={`font-mono text-sm font-bold ${statusColor}`}>{statusLabel}</p>
+                <p className={`font-mono text-sm font-bold ${statusColor}`}>{rollupLabel}</p>
                 {avgPower !== null && (
-                  <p className="font-mono text-xs text-secondary">{avgPower}% avg output</p>
+                  <p className="font-mono text-xs text-secondary">{avgPower}% average output</p>
                 )}
                 {reportDate && (
                   <p className="font-mono text-xs text-secondary mt-0.5">
@@ -141,8 +167,7 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
                 {units.map(unit => {
                   const match = unit.nrcName.match(/\s(\d+)$/);
                   const label = match ? `Unit ${match[1]}` : unit.nrcName;
-                  const uStatus = getPlantStatus(unit.power);
-                  const uColor = plantStatusTextClass(uStatus);
+                  const uColor = plantStatusTextClass(unit.state);
 
                   return (
                     <div key={unit.nrcName} className="flex items-center justify-between px-5 py-4">
@@ -155,13 +180,13 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
                         <div className="hidden sm:block w-32">
                           <div className="h-1 bg-rule overflow-hidden">
                             <div
-                              className={`h-full transition-all ${plantStatusBarClass(uStatus)}`}
+                              className={`h-full transition-all ${plantStatusBarClass(unit.state)}`}
                               style={{ width: `${unit.power ?? 0}%` }}
                             />
                           </div>
                         </div>
                         <p className={`font-sans text-lg font-semibold w-16 text-right ${uColor}`}>
-                          {unit.power !== null ? `${unit.power}%` : '—'}
+                          {unit.power !== null ? `${unit.power}%` : 'n/a'}
                         </p>
                       </div>
                     </div>
@@ -172,6 +197,84 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
                 <p className="font-sans text-sm text-secondary mt-3">
                   This plant is returning to commercial operation and may not appear in the current NRC operating feed.
                 </p>
+              )}
+            </section>
+
+            <section id="outages" className="scroll-mt-4">
+              <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-4">Outages</p>
+              {plantUnits.length === 0 ? (
+                <p className="font-sans text-sm text-secondary">Outage history is not loaded for this plant yet.</p>
+              ) : (
+                <div className="flex flex-col gap-8">
+                  {plantUnits.map((unit) => {
+                    const rows = history.get(unit.unitId) ?? [];
+                    return (
+                      <div key={unit.unitId} className="border border-rule">
+                        <div className="flex flex-col gap-2 border-b border-rule px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                          <p className="font-sans text-base font-semibold text-ink">{unit.unitLabel}</p>
+                          <p className={`font-mono text-xs font-bold ${plantStatusTextClass(unit.state)}`}>
+                            {plantStatusLabel(unit.state)}
+                            {unit.current?.type === 'refueling' && unit.current.dayOfOutage
+                              ? ` · Day ${unit.current.dayOfOutage}${
+                                  unit.current.expectedReturn
+                                    ? ` of ~${calendarDays(unit.current.startDate, unit.current.expectedReturn)}`
+                                    : ''
+                                }`
+                              : ''}
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-1 divide-y divide-rule sm:grid-cols-2 sm:divide-y-0 sm:divide-x">
+                          <div className="px-5 py-4">
+                            <p className="font-mono text-xs uppercase tracking-widest text-secondary">Last refueling</p>
+                            <p className="mt-1 font-sans text-sm text-ink">
+                              {unit.lastRefueling
+                                ? `${formatLongDate(unit.lastRefueling.startDate)}${unit.lastRefueling.endDate ? ` to ${formatLongDate(unit.lastRefueling.endDate)}` : ''}${unit.lastRefueling.durationDays ? `, ${unit.lastRefueling.durationDays} days` : ''}`
+                                : 'None on record'}
+                            </p>
+                          </div>
+                          <div className="px-5 py-4">
+                            <p className="font-mono text-xs uppercase tracking-widest text-secondary">Next window</p>
+                            <p className="mt-1 font-sans text-sm text-ink">
+                              {unit.current?.type === 'refueling'
+                                ? 'In outage now'
+                                : unit.forecast?.dueNow
+                                  ? 'Due now'
+                                  : unit.forecast
+                                    ? formatWindow(unit.forecast.windowStart, unit.forecast.windowEnd)
+                                    : 'No forecast'}
+                            </p>
+                            <p className="mt-1 font-mono text-xs text-secondary">
+                              {unit.cycleDays ? `${cycleMonths(unit.cycleDays)} month cycle` : 'Default 18 month cycle'}
+                              {unit.forecast ? ` · ~${unit.forecast.durationDays} days · ${confidenceLabel(unit.forecast.confidence)}` : ''}
+                            </p>
+                          </div>
+                        </div>
+                        {rows.length > 0 && (
+                          <table className="w-full border-t border-rule text-left">
+                            <caption className="sr-only">Last outages for {unit.unitLabel}</caption>
+                            <thead>
+                              <tr className="border-b border-rule">
+                                {['Type', 'Started', 'Ended', 'Days'].map((label) => (
+                                  <th key={label} className="px-5 py-2 font-mono text-xs uppercase tracking-widest text-secondary">{label}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {rows.map((row) => (
+                                <tr key={`${row.startDate}-${row.type}`} className="border-b border-rule last:border-b-0">
+                                  <td className="px-5 py-2 font-sans text-sm text-ink">{outageTypeLabel(row.type)}</td>
+                                  <td className="px-5 py-2 font-mono text-xs text-ink">{formatLongDate(row.startDate)}</td>
+                                  <td className="px-5 py-2 font-mono text-xs text-ink">{row.endDate ? formatLongDate(row.endDate) : 'Ongoing'}</td>
+                                  <td className="px-5 py-2 font-mono text-xs text-ink">{row.durationDays ?? 'n/a'}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </section>
 
@@ -237,9 +340,10 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
                 </div>
                 <div className="px-5 py-3">
                   <p className="font-mono text-xs tracking-widest uppercase text-secondary mb-0.5">Current Output</p>
-                  <p className={`font-mono text-sm font-bold ${statusColor}`}>
-                    {avgPower !== null ? `${avgPower}%` : '—'} · {statusLabel}
-                  </p>
+                  <p className={`font-mono text-sm font-bold ${statusColor}`}>{rollupLabel}</p>
+                  {avgPower !== null && (
+                    <p className="font-mono text-xs text-secondary mt-0.5">{avgPower}% average output</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -296,10 +400,10 @@ export default async function PlantPage({ params }: { params: Promise<{ slug: st
             {/* Links */}
             <div className="flex flex-col gap-2">
               <Link
-                href="/status"
+                href="/outages"
                 className="font-mono text-xs tracking-widest uppercase px-4 py-3 border border-rule text-secondary hover:bg-surface transition-colors text-center"
               >
-                ← Fleet Status
+                ← Outage schedule
               </Link>
               {stateInfo && (
                 <Link

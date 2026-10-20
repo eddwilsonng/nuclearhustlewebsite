@@ -33,7 +33,21 @@ const securityHeaders = [
   },
 ];
 
+// Next streams async generateMetadata into <body> for any UA not listed here, so
+// a slow Supabase lookup (employer jobs) can leave the canonical outside <head>.
+// Setting this replaces Next's default list — the first line is that default
+// (next/dist/shared/lib/router/utils/html-bots.js); the rest adds Googlebot and
+// AI crawlers that read raw HTML.
+const htmlLimitedBots = new RegExp(
+  [
+    "[\\w-]+-Google|Google-[\\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight",
+    "Googlebot|GPTBot|OAI-SearchBot|ChatGPT-User|ClaudeBot|Claude-User|Claude-SearchBot|PerplexityBot|Perplexity-User|CCBot|Amazonbot|Bytespider",
+  ].join("|"),
+  "i",
+);
+
 const nextConfig: NextConfig = {
+  htmlLimitedBots,
   experimental: {
     optimizePackageImports: [
       "@supabase/supabase-js",
@@ -50,6 +64,7 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      { source: "/status", destination: "/outages", statusCode: 301 },
       { source: "/home-v2", destination: "/", statusCode: 301 },
       { source: "/jobs-v2", destination: "/jobs", statusCode: 301 },
       {

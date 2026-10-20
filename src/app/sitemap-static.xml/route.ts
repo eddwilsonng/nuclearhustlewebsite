@@ -5,6 +5,7 @@ const pages = [
   { path: '', priority: '1.0', changefreq: 'daily', listsJobs: true },
   { path: '/jobs', priority: '0.9', changefreq: 'daily', listsJobs: true },
   { path: '/companies', priority: '0.9', changefreq: 'daily', listsJobs: true },
+  { path: '/outages', priority: '0.8', changefreq: 'daily', listsJobs: false },
   { path: '/about', priority: '0.5', changefreq: 'monthly', listsJobs: false },
   { path: '/pricing', priority: '0.6', changefreq: 'monthly', listsJobs: false },
   { path: '/contact', priority: '0.5', changefreq: 'monthly', listsJobs: false },

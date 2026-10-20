@@ -1,4 +1,5 @@
 import { unstable_cache } from 'next/cache';
+import { NRC_POWER_STATUS_URL, NRC_USER_AGENT } from '@/lib/outages/config';
 
 export interface UnitStatus {
   nrcName: string;
@@ -10,10 +11,13 @@ export const getNrcStatus = unstable_cache(
     let status: Record<string, number> = {};
     let reportDate = '';
     try {
-      const res = await fetch(
-        'https://www.nrc.gov/reading-rm/doc-collections/event-status/reactor-status/PowerReactorStatusForLast365Days.txt',
-        { cache: 'no-store' }
-      );
+      const res = await fetch(NRC_POWER_STATUS_URL, {
+        cache: 'no-store',
+        headers: {
+          Accept: 'text/plain',
+          'User-Agent': NRC_USER_AGENT,
+        },
+      });
       if (!res.ok) return { status, reportDate };
 
       const text = await res.text();
@@ -48,10 +52,3 @@ export const getNrcStatus = unstable_cache(
   ['nrc-power-status'],
   { revalidate: 3600 }
 );
-
-export function getPlantStatus(avgPower: number | null): 'full' | 'reduced' | 'offline' | 'unknown' {
-  if (avgPower === null) return 'unknown';
-  if (avgPower === 0) return 'offline';
-  if (avgPower >= 95) return 'full';
-  return 'reduced';
-}

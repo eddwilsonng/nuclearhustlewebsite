@@ -100,8 +100,8 @@ export default function PlantsPage() {
 
         <p className="font-mono text-xs text-secondary mt-10">
           Data sourced from the US Nuclear Regulatory Commission.{' '}
-          <Link href="/status" className="underline underline-offset-2 hover:text-ink">
-            View live fleet status →
+          <Link href="/outages" className="underline underline-offset-2 hover:text-ink">
+            View the outage schedule →
           </Link>
         </p>
       </div>

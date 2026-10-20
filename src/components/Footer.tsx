@@ -91,8 +91,8 @@ export function Footer() {
                 </li>
               ))}
               <li>
-                <Link href="/status" className={linkClass}>
-                  US reactor fleet map
+                <Link href="/outages" className={linkClass}>
+                  Nuclear outage schedule
                 </Link>
               </li>
             </ul>
@@ -173,8 +173,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/status" className={linkClass}>
-                  Fleet status
+                <Link href="/outages" className={linkClass}>
+                  Nuclear outage schedule
                 </Link>
               </li>
               <li>

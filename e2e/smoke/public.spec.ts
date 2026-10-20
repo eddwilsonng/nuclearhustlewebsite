@@ -12,7 +12,7 @@ const KEY_PAGES = [
   "/jobs/role/engineering",
   "/companies",
   "/plants",
-  "/status",
+  "/outages",
   "/salary",
   "/nuclear-salary",
   "/nuclear-skills",

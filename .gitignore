@@ -44,6 +44,9 @@ yarn-error.log*
 # scraper status
 .scrape-status.json
 
+# NRC downloads (local backfill cache)
+.cache/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

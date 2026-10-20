@@ -1,9 +1,6 @@
-export type PlantStatus =
-  | "full"
-  | "reduced"
-  | "offline"
-  | "unknown"
-  | "restarting";
+import type { UnitState } from "@/lib/outages/unitState";
+
+export type PlantStatus = UnitState;
 
 export function plantStatusLabel(status: PlantStatus): string {
   switch (status) {
@@ -11,8 +8,18 @@ export function plantStatusLabel(status: PlantStatus): string {
       return "Full power";
     case "reduced":
       return "Reduced";
+    case "coastdown":
+      return "Coasting down";
     case "offline":
       return "Offline";
+    case "unplanned":
+      return "Offline (unplanned)";
+    case "maintenance":
+      return "Offline for maintenance";
+    case "refueling_outage":
+      return "Refueling outage";
+    case "extended_shutdown":
+      return "Extended shutdown";
     case "restarting":
       return "Restarting";
     default:
@@ -25,8 +32,13 @@ export function plantStatusDotClass(status: PlantStatus): string {
     case "full":
       return "bg-success";
     case "reduced":
+    case "coastdown":
       return "bg-signal";
     case "offline":
+    case "unplanned":
+    case "maintenance":
+    case "refueling_outage":
+    case "extended_shutdown":
       return "bg-danger";
     case "restarting":
       return "bg-ink";
@@ -40,8 +52,13 @@ export function plantStatusTextClass(status: PlantStatus): string {
     case "full":
       return "text-success";
     case "reduced":
+    case "coastdown":
       return "text-secondary";
     case "offline":
+    case "unplanned":
+    case "maintenance":
+    case "refueling_outage":
+    case "extended_shutdown":
       return "text-danger";
     case "restarting":
       return "text-ink";
@@ -55,8 +72,13 @@ export function plantStatusBarClass(status: PlantStatus): string {
     case "full":
       return "bg-success";
     case "reduced":
+    case "coastdown":
       return "bg-signal";
     case "offline":
+    case "unplanned":
+    case "maintenance":
+    case "refueling_outage":
+    case "extended_shutdown":
       return "bg-danger";
     case "restarting":
       return "bg-ink";
@@ -72,8 +94,13 @@ export function plantStatusBadgeTone(
     case "full":
       return "success";
     case "reduced":
+    case "coastdown":
       return "featured";
     case "offline":
+    case "unplanned":
+    case "maintenance":
+    case "refueling_outage":
+    case "extended_shutdown":
       return "danger";
     default:
       return "neutral";
@@ -87,13 +114,22 @@ export function unitPowerChipClass(power: number | null): string {
   return "border-rule bg-surface text-secondary";
 }
 
-export function plantMarkerFill(
-  status: PlantStatus,
-  avgPower: number | null,
-): string {
-  if (status === "restarting") return "var(--ink)";
-  if (status === "unknown" || avgPower === null) return "var(--rule)";
-  if (avgPower === 0) return "var(--danger)";
-  if (avgPower >= 95) return "var(--success)";
-  return "var(--signal)";
+export function plantMarkerFill(status: PlantStatus): string {
+  switch (status) {
+    case "full":
+      return "var(--success)";
+    case "reduced":
+    case "coastdown":
+      return "var(--signal)";
+    case "offline":
+    case "unplanned":
+    case "maintenance":
+    case "refueling_outage":
+    case "extended_shutdown":
+      return "var(--danger)";
+    case "restarting":
+      return "var(--ink)";
+    default:
+      return "var(--rule)";
+  }
 }

@@ -12,6 +12,7 @@ export const FIND_WORK_NAV = [
   { href: "/jobs", label: "Search nuclear jobs", match: "exact", current: false },
   { href: "/signup/job-seeker", label: "Build a profile", match: "exact" },
   { href: "/plants", label: "Browse plants", match: "prefix" },
+  { href: "/outages", label: "Outage schedule", match: "prefix" },
 ] as const satisfies readonly NavItem[];
 
 export const EMPLOYER_NAV = [
@@ -41,7 +42,6 @@ export const JOBS_NAV_GROUPS = [
     { href: "/jobs/south-carolina", label: "South Carolina", match: "prefix" },
     { href: "/jobs/arizona", label: "Arizona", match: "prefix" },
   ],
-  [{ href: "/status", label: "Fleet map", match: "prefix" }],
 ] as const satisfies readonly (readonly NavItem[])[];
 
 export function isNavItemActive(pathname: string, item: NavItem) {

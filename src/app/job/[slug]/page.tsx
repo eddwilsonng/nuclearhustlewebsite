@@ -23,6 +23,8 @@ import { FlagJobButton } from "@/components/job/FlagJobButton";
 import { ShareJobButton } from "@/components/job/ShareJobButton";
 import { groupSkills } from "@/lib/skills/taxonomy";
 import { fitMetaDescription, hasUsableFit } from "@/lib/jobs/fit";
+import { formatDigestLocation } from "@/lib/email/digestModel";
+import type { JobWithCompany } from "@/lib/types";
 import { getPostedLabel } from "@/lib/jobs/dates";
 import { getJobFacts, structuredText } from "@/lib/jobs/facts";
 import { createClient } from "@/lib/supabase/server";
@@ -46,6 +48,29 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+// Role + location keeps multi-site postings distinct. Drop the brand, then the
+// company, to stay near SERP width — never slice: a cut title collides with its
+// siblings and shows a literal "…".
+const TITLE_BUDGET = 60;
+
+function jobPageTitle(job: JobWithCompany): string {
+  const role = job.title.trim();
+  const location = formatDigestLocation(job)
+    .replace(/,?\s*USA$/i, "")
+    .replace(/…$/, "")
+    .trim();
+  const city = location.split(",")[0].trim().toLowerCase();
+  const where =
+    location && !role.toLowerCase().includes(city)
+      ? `${role} in ${location}`
+      : role;
+  const candidates = [
+    `${where} — ${job.company.name} | Nuclear Hustle`,
+    `${where} — ${job.company.name}`,
+  ];
+  return candidates.find((c) => c.length <= TITLE_BUDGET) ?? where;
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -54,11 +79,7 @@ export async function generateMetadata({
 
   if (!job) return { title: "Job Not Found | Nuclear Hustle" };
 
-  const titleCore = `${job.title} — ${job.company.name}`;
-  const title =
-    titleCore.length <= 50
-      ? `${titleCore} | Nuclear Hustle`
-      : `${titleCore.slice(0, 47)}…`;
+  const title = jobPageTitle(job);
   const description = fitMetaDescription(
     job.title,
     job.company.name,

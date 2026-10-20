@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/weekly-digest",
       "schedule": "0 13 * * 1"
+    },
+    {
+      "path": "/api/cron/nrc-status",
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/nrc-status",
+      "schedule": "0 19 * * *"
     }
   ]
 }
