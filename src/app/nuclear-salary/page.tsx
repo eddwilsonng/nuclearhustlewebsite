@@ -17,11 +17,33 @@ import { getListingSalarySnapshot } from '@/lib/salaryGuide';
 import { generateFaqSchema } from '@/lib/seo/schema';
 import { US_STATES } from '@/lib/states';
 
+const SALARY_TITLE =
+  'Nuclear Salary Report 2026: What Nuclear Jobs Actually Pay | Nuclear Hustle';
+const SALARY_DESCRIPTION =
+  'Real salary data from BLS OES 2025. Nuclear engineer median $134k, ranging $93k–$196k (10th–90th pct). Pay by role, state breakdown, and 5-year trend.';
+const SALARY_PATH = '/nuclear-salary';
+const SALARY_IMAGE = '/nuclear-salary/opengraph-image';
+
 export const metadata: Metadata = {
-  title: 'Nuclear Salary Report 2026: What Nuclear Jobs Actually Pay | Nuclear Hustle',
-  description:
-    'Real salary data from BLS OES 2025. Nuclear engineer median $134k, ranging $93k–$196k (10th–90th pct). Pay by role, state breakdown, and 5-year trend.',
-  alternates: { canonical: '/nuclear-salary' },
+  title: SALARY_TITLE,
+  description: SALARY_DESCRIPTION,
+  alternates: { canonical: SALARY_PATH },
+  openGraph: {
+    title: SALARY_TITLE,
+    description: SALARY_DESCRIPTION,
+    url: SALARY_PATH,
+    type: 'website',
+    siteName: 'Nuclear Hustle',
+    locale: 'en_US',
+    images: [{ url: SALARY_IMAGE, width: 1200, height: 630, alt: SALARY_TITLE }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@nuclearhustle',
+    title: SALARY_TITLE,
+    description: SALARY_DESCRIPTION,
+    images: [SALARY_IMAGE],
+  },
 };
 
 // BLS May 2025 OES data — sourced directly from BLS API (series OEUN*)
