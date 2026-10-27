@@ -75,21 +75,23 @@ export default async function Home() {
   return (
     <div>
       <div className="border-b border-rule bg-surface">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-baseline gap-x-3 gap-y-0.5 px-6 py-2.5 font-mono text-xs text-secondary md:gap-x-6 md:py-2">
-          <span className="whitespace-nowrap">
-            <span className="tabular-nums text-ink">{jobCount}</span>
-            <span className="md:hidden"> roles</span>
-            <span className="hidden md:inline"> open roles</span>
-          </span>
-          <span className="whitespace-nowrap">
-            <span className="tabular-nums text-ink">{companies.length}</span>{" "}
-            operators
-          </span>
-          <span className="whitespace-nowrap">
-            <span className="tabular-nums text-ink">{activeStates.length}</span>{" "}
-            states
-          </span>
-          <span className="whitespace-nowrap md:ml-auto">
+        <div className="mx-auto max-w-6xl px-6 py-2.5 font-mono text-xs text-secondary md:flex md:flex-wrap md:items-baseline md:gap-x-6 md:py-2">
+          <div className="flex items-baseline justify-between gap-x-3 md:contents">
+            <span className="whitespace-nowrap">
+              <span className="tabular-nums text-ink">{jobCount}</span>
+              <span className="md:hidden"> roles</span>
+              <span className="hidden md:inline"> open roles</span>
+            </span>
+            <span className="whitespace-nowrap">
+              <span className="tabular-nums text-ink">{companies.length}</span>{" "}
+              operators
+            </span>
+            <span className="whitespace-nowrap">
+              <span className="tabular-nums text-ink">{activeStates.length}</span>{" "}
+              states
+            </span>
+          </div>
+          <span className="mt-1 block whitespace-nowrap text-right md:mt-0 md:ml-auto md:inline md:text-left">
             Updated <span className="text-ink">{updated}</span>
           </span>
         </div>
