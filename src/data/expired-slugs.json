@@ -115,11 +115,6 @@
     "category": "other"
   },
   {
-    "slug": "nuc-project-construction-facilities-coord-digital-glen-allen-va-23060-3702",
-    "state": "virginia",
-    "category": "administrative"
-  },
-  {
     "slug": "generation-project-manager-naps-mineral-va-3703",
     "state": "virginia",
     "category": "administrative"
@@ -142,6 +137,66 @@
   {
     "slug": "site-procurement-specialist-nuclear-russellville-arkansa-546",
     "state": "arkansas",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-ops-training-instructor-lusby-maryland-6",
+    "state": "maryland",
+    "category": "training"
+  },
+  {
+    "slug": "sr-operations-instructor-ops-instructor-byron-illinois-2565",
+    "state": "illinois",
+    "category": "training"
+  },
+  {
+    "slug": "operations-instructor-lusby-maryland-5087",
+    "state": "maryland",
+    "category": "training"
+  },
+  {
+    "slug": "supv-fuel-handling-cordova-illinois-5830",
+    "state": "illinois",
+    "category": "operations"
+  },
+  {
+    "slug": "auxiliary-operator-trainee-ontario-new-york-91",
+    "state": "new-york",
+    "category": "operations"
+  },
+  {
+    "slug": "dry-cask-storage-specialist-braceville-illinois-3215",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "maintenance-planner-electrical-marseilles-illinois-5142",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "electrical-engineer-supply-clinton-illinois-5153",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "supervisor-security-training-cordova-illinois-5849",
+    "state": "illinois",
+    "category": "training"
+  },
+  {
+    "slug": "work-week-manager-oswego-new-york-3259",
+    "state": "new-york",
+    "category": "administrative"
+  },
+  {
+    "slug": "work-week-manager-marseilles-illinois-5192",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "senior-financial-analystfinancial-analyst-braceville-illinois-3271",
+    "state": "illinois",
     "category": "administrative"
   },
   {
@@ -270,11 +325,6 @@
     "category": "administrative"
   },
   {
-    "slug": "sr-rad-pro-technical-spclst-cordova-illinois-5160",
-    "state": "illinois",
-    "category": "other"
-  },
-  {
     "slug": "senior-reactor-operator-delta-pennsylvania-142",
     "state": "pennsylvania",
     "category": "operations"
@@ -393,11 +443,6 @@
     "slug": "supv-fuel-handling-morris-illinois-43",
     "state": "illinois",
     "category": "operations"
-  },
-  {
-    "slug": "engineer-mechanical-or-electrical-morris-illinois-15",
-    "state": "illinois",
-    "category": "engineering"
   },
   {
     "slug": "electrical-engineer-cordova-illinois-31",
@@ -543,11 +588,6 @@
     "slug": "manager-design-engineering-byron-illinois-4233",
     "state": "illinois",
     "category": "engineering"
-  },
-  {
-    "slug": "sr-performance-specialist-middletown-pennsylva-3841",
-    "state": "pennsylvania",
-    "category": "administrative"
   },
   {
     "slug": "site-nde-technician-delta-pennsylvania-4236",
@@ -953,11 +993,6 @@
     "slug": "field-services-lead-os-lusby-maryland-2815",
     "state": "maryland",
     "category": "other"
-  },
-  {
-    "slug": "sr-plan-scheduler-turb-support-lusby-maryland-3240",
-    "state": "maryland",
-    "category": "administrative"
   },
   {
     "slug": "sr-radwaste-shipper-oswego-new-york-3243",
@@ -1893,6 +1928,11 @@
     "slug": "senior-rpo-technician-newport-mi-873",
     "state": "michigan",
     "category": "maintenance"
+  },
+  {
+    "slug": "safeguards-specialist-eunice-new-mexico-4330",
+    "state": "new-mexico",
+    "category": "administrative"
   },
   {
     "slug": "etc-itsecurity-eunice-new-mexico-3358",
