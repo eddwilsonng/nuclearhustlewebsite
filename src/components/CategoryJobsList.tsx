@@ -6,7 +6,7 @@ import { toJobListItem } from '@/lib/jobUtils';
 import { getStateBySlug } from '@/lib/states';
 import { cn } from '@/lib/cn';
 import { PaginatedJobResults } from './PaginatedJobResults';
-import { compareFeaturedThenNewest, isLiveFeatured } from '@/lib/jobs/sort';
+import { isLiveFeatured, orderByFeaturedThenNewest } from '@/lib/jobs/sort';
 import { JobAlertForm } from './JobAlertForm';
 
 type SortOption = 'recent' | 'featured' | 'alphabetical';
@@ -60,7 +60,7 @@ export function CategoryJobsList({
       case 'featured':
       case 'recent':
       default:
-        return copy.sort((a, b) => compareFeaturedThenNewest(a, b, now));
+        return orderByFeaturedThenNewest(copy, now);
     }
   }, [filteredJobs, sortBy]);
 
