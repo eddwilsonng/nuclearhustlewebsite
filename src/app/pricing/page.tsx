@@ -16,11 +16,11 @@ const PRICE = featuredPriceLabel();
 const SITE = "https://www.nuclearhustle.com";
 
 export const metadata: Metadata = {
-  title: "Post a Nuclear Job | Nuclear Hustle",
+  title: "Featured Job Pricing | Nuclear Hustle",
   description: `List a US nuclear role free for ${JOB_DURATION_DAYS} days. Feature it for ${PRICE}: pinned for ${FEATURED_DURATION_DAYS} days on the board and homepage, and included in every Monday digest during that window.`,
   alternates: { canonical: "/pricing" },
   openGraph: {
-    title: "Post a Nuclear Job | Nuclear Hustle",
+    title: "Featured Job Pricing | Nuclear Hustle",
     description: `A listing is free for ${JOB_DURATION_DAYS} days. Featuring it is ${PRICE} for ${FEATURED_DURATION_DAYS} days.`,
     type: "website",
     url: `${SITE}/pricing`,
@@ -55,7 +55,7 @@ export default async function PricingPage() {
   const offers = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: "Post a nuclear job",
+    name: "Featured job pricing",
     url: `${SITE}/pricing`,
     description: featuredPlacementSentence(),
     mainEntity: {
@@ -104,7 +104,7 @@ export default async function PricingPage() {
             Employers
           </p>
           <h1 className="max-w-2xl font-sans text-3xl leading-tight font-bold text-ink md:text-4xl">
-            Post a nuclear job.
+            Featured job pricing.
           </h1>
           <p className="mt-6 max-w-xl font-sans text-lg leading-relaxed text-secondary">
             A listing is free for {JOB_DURATION_DAYS} days. Featuring it is {PRICE}{" "}
@@ -176,11 +176,10 @@ export default async function PricingPage() {
               </p>
             ) : null}
             <p className="mt-6 max-w-xl font-sans text-base leading-relaxed text-secondary">
-              You publish the listing first. Featuring it is a separate {PRICE}{" "}
-              checkout. Full refund if it never goes live as featured.
-              Non-refundable once it does.{" "}
+              You can add featuring while you create the free listing, or later
+              from your dashboard. Featuring is a separate {PRICE} checkout.{" "}
               <Link href="/terms" className="text-ink underline underline-offset-2">
-                Terms
+                Terms and conditions
               </Link>
             </p>
             <p className="mt-4 max-w-xl font-sans text-base leading-relaxed text-secondary">
