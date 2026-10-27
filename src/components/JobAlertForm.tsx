@@ -106,7 +106,7 @@ export function JobAlertForm({
     <form onSubmit={handleSubmit} className="max-w-md space-y-3">
       <FieldGroup>
         <FieldLabel htmlFor={inputId}>{heading}</FieldLabel>
-        <FieldDescription>{description}</FieldDescription>
+        {description ? <FieldDescription>{description}</FieldDescription> : null}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
           <Input
             id={inputId}

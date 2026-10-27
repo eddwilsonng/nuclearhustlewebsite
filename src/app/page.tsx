@@ -75,20 +75,21 @@ export default async function Home() {
   return (
     <div>
       <div className="border-b border-rule bg-surface">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-1 px-6 py-2 font-mono text-xs text-secondary">
-          <span className="font-semibold text-ink">FLEET&nbsp;STATUS</span>
-          <span>
-            <span className="tabular-nums text-ink">{jobCount}</span> open roles
+        <div className="mx-auto flex max-w-6xl flex-wrap items-baseline gap-x-3 gap-y-0.5 px-6 py-2.5 font-mono text-xs text-secondary md:gap-x-6 md:py-2">
+          <span className="whitespace-nowrap">
+            <span className="tabular-nums text-ink">{jobCount}</span>
+            <span className="md:hidden"> roles</span>
+            <span className="hidden md:inline"> open roles</span>
           </span>
-          <span>
+          <span className="whitespace-nowrap">
             <span className="tabular-nums text-ink">{companies.length}</span>{" "}
             operators
           </span>
-          <span>
+          <span className="whitespace-nowrap">
             <span className="tabular-nums text-ink">{activeStates.length}</span>{" "}
             states
           </span>
-          <span className="ml-auto">
+          <span className="whitespace-nowrap md:ml-auto">
             Updated <span className="text-ink">{updated}</span>
           </span>
         </div>
@@ -144,8 +145,7 @@ export default async function Home() {
               Where the jobs are
             </h2>
             <p className="mt-1 font-sans text-sm text-secondary">
-              Open roles by state, ranked. The fleet is concentrated — so is the
-              hiring.
+              Browse open roles by state or by field of work.
             </p>
 
             <ol className="mt-6 divide-y divide-rule border-y border-rule">
@@ -217,17 +217,17 @@ export default async function Home() {
         <div className="mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-2 md:items-center">
           <div>
             <p className="font-mono text-xs uppercase tracking-widest text-secondary">
-              Get ahead of the posting
+              Job alerts
             </p>
             <h2 className="mt-3 font-sans text-3xl font-bold tracking-tight text-ink text-balance">
-              New roles hit the fleet every day. See them Monday morning.
+              New roles every Monday.
             </h2>
             <p className="mt-4 max-w-md font-sans text-base leading-relaxed text-secondary">
-              One email a week, grouped by region. No filler — just what&rsquo;s
-              new across {companies.length} operators.
+              We group that week&rsquo;s new roles by region and send them
+              straight to your inbox.
             </p>
             <div className="mt-8">
-              <JobAlertForm />
+              <JobAlertForm description="" />
             </div>
           </div>
           <div className="border border-rule bg-raised p-8">
@@ -270,47 +270,54 @@ function OperatorWall() {
 
   if (operators.length === 0) return null;
 
-  const columns =
+  const cellWidth =
     operators.length >= 6
-      ? "lg:grid-cols-6"
+      ? "md:w-1/3 lg:w-1/6"
       : operators.length === 4
-        ? "lg:grid-cols-4"
-        : "lg:grid-cols-5";
+        ? "md:w-1/4"
+        : operators.length === 3
+          ? "md:w-1/3"
+          : operators.length === 2
+            ? "md:w-1/2"
+            : "md:w-1/3 lg:w-1/5";
 
   return (
     <section className="border-b border-rule bg-surface">
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <div className="mb-4 flex items-end justify-between gap-4">
+        <div className="mb-4 flex flex-col items-start gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
           <h2 className="font-mono text-xs uppercase tracking-widest text-secondary">
             Hiring from America&rsquo;s largest operators
           </h2>
           <Link
             href="/companies"
-            className="font-mono text-xs uppercase tracking-widest text-ink hover:underline underline-offset-4"
+            className="shrink-0 whitespace-nowrap font-mono text-xs uppercase tracking-widest text-ink hover:underline underline-offset-4"
           >
             All operators →
           </Link>
         </div>
 
-        <ul
-          className={`grid grid-cols-2 gap-px border border-rule bg-rule sm:grid-cols-3 ${columns}`}
-        >
+        <ul className="flex flex-col border-t border-l border-rule md:flex-row md:flex-wrap">
           {operators.map((op) => (
-            <li key={op.id}>
+            <li
+              key={op.id}
+              className={`w-full border-r border-b border-rule ${cellWidth}`}
+            >
               <Link
                 href={`/companies/${op.id}`}
-                className="group flex h-full min-h-[6rem] flex-col items-center justify-center gap-2 bg-surface px-4 py-5 transition-colors duration-150 hover:bg-canvas"
+                className="group flex h-full items-center gap-3 bg-surface px-4 py-3.5 transition-colors duration-150 hover:bg-canvas md:min-h-36 md:flex-col md:justify-center md:gap-2 md:py-5 md:text-center"
               >
-                <CompanyMark
-                  src={op.src}
-                  width={160}
-                  height={40}
-                  className="h-8 w-auto max-w-36 object-contain opacity-85 grayscale transition duration-150 group-hover:opacity-100 group-hover:grayscale-0"
-                />
-                <span className="font-sans text-sm font-semibold text-ink">
+                <span className="flex h-8 w-16 shrink-0 items-center justify-start md:w-full md:justify-center">
+                  <CompanyMark
+                    src={op.src}
+                    width={160}
+                    height={40}
+                    className="h-8 w-auto max-w-16 object-contain opacity-85 grayscale transition duration-150 group-hover:opacity-100 group-hover:grayscale-0 md:max-w-36"
+                  />
+                </span>
+                <span className="min-w-0 flex-1 font-sans text-sm font-semibold text-ink md:flex-none">
                   {op.name}
                 </span>
-                <span className="font-mono text-xs text-secondary">
+                <span className="shrink-0 font-mono text-xs text-secondary">
                   <span className="tabular-nums text-ink">{op.jobCount}</span>{" "}
                   open
                 </span>
@@ -326,13 +333,13 @@ function OperatorWall() {
 function RolesTable({ jobs, total }: { jobs: JobListItem[]; total: string }) {
   return (
     <div className="border border-rule bg-canvas">
-      <div className="flex items-center justify-between border-b border-rule px-4 py-2.5">
-        <h2 className="font-mono text-xs uppercase tracking-widest text-secondary">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-rule px-4 py-2.5">
+        <h2 className="whitespace-nowrap font-mono text-xs uppercase tracking-widest text-secondary">
           Latest on the board
         </h2>
         <Link
           href="/jobs"
-          className="font-mono text-xs uppercase tracking-widest text-ink hover:underline underline-offset-4"
+          className="whitespace-nowrap font-mono text-xs uppercase tracking-widest text-ink hover:underline underline-offset-4"
         >
           All {total} →
         </Link>
@@ -350,37 +357,81 @@ function RolesTable({ jobs, total }: { jobs: JobListItem[]; total: string }) {
         {jobs.map((job) => {
           const salary = formatSalary(job.salary);
           const field = CATEGORY_LABELS[job.category] ?? job.category;
+          const showField = field !== "—";
           const featured = isLiveFeatured(job);
           return (
-            <li key={job.id}>
+            <li
+              key={job.id}
+              className={`border-b border-rule last:border-b-0 ${
+                featured ? "border-l-2 border-l-signal" : ""
+              }`}
+            >
               <Link
                 href={`/job/${job.slug}`}
-                className={`grid grid-cols-1 gap-x-4 gap-y-1 border-b border-rule px-4 py-3 transition-colors last:border-b-0 hover:bg-surface md:grid-cols-[minmax(0,1fr)_10rem_7rem_8rem_5rem] md:items-center ${
-                  featured ? "border-l-2 border-l-signal" : ""
-                }`}
+                className="block px-4 py-3.5 transition-colors hover:bg-surface md:grid md:grid-cols-[minmax(0,1fr)_10rem_7rem_8rem_5rem] md:items-center md:gap-4 md:py-3"
               >
                 <span className="min-w-0">
-                  <span className="block truncate font-sans text-sm font-semibold tracking-tight text-ink">
+                  <span className="block font-sans text-base leading-snug font-semibold tracking-tight text-ink md:truncate md:text-sm">
                     {job.title}
                   </span>
-                  <span className="mt-1 flex min-w-0 items-center gap-2">
-                    {featured && <Badge tone="featured">Featured</Badge>}
-                    <span className="truncate font-sans text-xs text-secondary">
+                  <span className="mt-0.5 flex min-w-0 items-center gap-2">
+                    {featured && (
+                      <span className="hidden shrink-0 md:inline-flex">
+                        <Badge tone="featured">Featured</Badge>
+                      </span>
+                    )}
+                    <span className="font-sans text-sm text-secondary md:truncate md:text-xs">
                       {job.company.name}
                     </span>
                   </span>
                 </span>
-                <span className="truncate font-sans text-sm text-secondary">
+
+                <span className="mt-2 block md:hidden">
+                  {featured && (
+                    <span className="mb-1.5 block">
+                      <Badge tone="featured">Featured</Badge>
+                    </span>
+                  )}
+                  <span className="flex items-baseline justify-between gap-3">
+                    <span className="min-w-0 font-sans text-sm text-secondary">
+                      {job.location}
+                      {showField && <span> · {field}</span>}
+                    </span>
+                    {!salary && (
+                      <span
+                        className="shrink-0 font-mono text-xs tabular-nums text-secondary"
+                        suppressHydrationWarning
+                      >
+                        {getPostedLabel(job.scraped_at)}
+                      </span>
+                    )}
+                  </span>
+                  {salary && (
+                    <span className="mt-1 flex items-baseline justify-between gap-3 font-mono text-xs">
+                      <span className="whitespace-nowrap tabular-nums text-ink">
+                        {salary}
+                      </span>
+                      <span
+                        className="shrink-0 tabular-nums text-secondary"
+                        suppressHydrationWarning
+                      >
+                        {getPostedLabel(job.scraped_at)}
+                      </span>
+                    </span>
+                  )}
+                </span>
+
+                <span className="hidden min-w-0 truncate font-sans text-sm text-secondary md:block">
                   {job.location}
                 </span>
-                <span className="font-mono text-xs text-secondary">
-                  {field}
+                <span className="hidden font-mono text-xs text-secondary md:block">
+                  {showField ? field : <span className="text-muted">—</span>}
                 </span>
-                <span className="font-mono text-xs tabular-nums text-ink">
+                <span className="hidden font-mono text-xs tabular-nums text-ink md:block">
                   {salary ?? <span className="text-muted">—</span>}
                 </span>
                 <span
-                  className="font-mono text-xs tabular-nums text-secondary md:text-right"
+                  className="hidden text-right font-mono text-xs tabular-nums text-secondary md:block"
                   suppressHydrationWarning
                 >
                   {getPostedLabel(job.scraped_at)}
