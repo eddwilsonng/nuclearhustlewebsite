@@ -140,6 +140,176 @@
     "category": "administrative"
   },
   {
+    "slug": "nuclear-electrical-technician-pottstown-pennsylvan-6220",
+    "state": "pennsylvania",
+    "category": "maintenance"
+  },
+  {
+    "slug": "nuclear-maintenance-tech-pottstown-pennsylvan-6221",
+    "state": "pennsylvania",
+    "category": "maintenance"
+  },
+  {
+    "slug": "strategic-electrical-engineer-cordova-illinois-3821",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "manager-engineering-marseilles-illinois-56",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "i-c-technician-pottstown-pennsylvan-6227",
+    "state": "pennsylvania",
+    "category": "maintenance"
+  },
+  {
+    "slug": "engineer-senior-analyst-morris-illinois-5122",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "supervisor-maintenance-ic-marseilles-illinois-5131",
+    "state": "illinois",
+    "category": "maintenance"
+  },
+  {
+    "slug": "dry-cask-storage-specialist-marseilles-illinois-3216",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-regulatory-specialist-corp-kennett-square-penns-5136",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-manager-design-engineering-morris-illinois-2805",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-manager-oswego-new-york-3283",
+    "state": "new-york",
+    "category": "engineering"
+  },
+  {
+    "slug": "training-project-specialist-middletown-pennsylva-6230",
+    "state": "pennsylvania",
+    "category": "training"
+  },
+  {
+    "slug": "mgr-operations-training-middletown-pennsylva-6231",
+    "state": "pennsylvania",
+    "category": "training"
+  },
+  {
+    "slug": "engineer-manager-morris-illinois-3224",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-regulatory-kennett-square-penns-3230",
+    "state": "pennsylvania",
+    "category": "engineering"
+  },
+  {
+    "slug": "utility-technician-pottstown-pennsylvan-6232",
+    "state": "pennsylvania",
+    "category": "maintenance"
+  },
+  {
+    "slug": "cycle-manager-lusby-maryland-3874",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "prin-business-analyst-ira-compliance-middletown-pennsylva-6233",
+    "state": "pennsylvania",
+    "category": "administrative"
+  },
+  {
+    "slug": "maint-program-specialist-braceville-illinois-6234",
+    "state": "illinois",
+    "category": "maintenance"
+  },
+  {
+    "slug": "associate-ic-technician-oswego-new-york-6236",
+    "state": "new-york",
+    "category": "maintenance"
+  },
+  {
+    "slug": "lead-maintenance-planner-baltimore-maryland-l-5846",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "manager-engineering-lusby-maryland-3843",
+    "state": "maryland",
+    "category": "engineering"
+  },
+  {
+    "slug": "rx-services-technician-lusby-maryland-6239",
+    "state": "maryland",
+    "category": "maintenance"
+  },
+  {
+    "slug": "ic-technician-trainee-oswego-new-york-6242",
+    "state": "new-york",
+    "category": "maintenance"
+  },
+  {
+    "slug": "sr-radwaste-shipper-morris-illinois-4240",
+    "state": "illinois",
+    "category": "health-physics"
+  },
+  {
+    "slug": "assoc-rad-protection-spclst-morris-illinois-6243",
+    "state": "illinois",
+    "category": "health-physics"
+  },
+  {
+    "slug": "assoc-dry-cask-storage-specialist-morris-illinois-5164",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-analyst-outage-services-warrenville-illinois-5218",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "electrical-engineer-marseilles-illinois-5258",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "electrical-engineer-lusby-maryland-189",
+    "state": "maryland",
+    "category": "engineering"
+  },
+  {
+    "slug": "summer-2027-engineering-internship-warrenville-il-warrenville-illinois-5263",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-sr-regulatory-warrenville-illinois-2830",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "rx-services-technician-lusby-maryland-5855",
+    "state": "maryland",
+    "category": "maintenance"
+  },
+  {
+    "slug": "sr-turbine-equip-specialist-lusby-maryland-2820",
+    "state": "maryland",
+    "category": "maintenance"
+  },
+  {
     "slug": "sr-ops-training-instructor-lusby-maryland-6",
     "state": "maryland",
     "category": "training"
@@ -700,11 +870,6 @@
     "category": "engineering"
   },
   {
-    "slug": "sr-ops-training-instructor-cordova-illinois-3819",
-    "state": "illinois",
-    "category": "training"
-  },
-  {
     "slug": "engineer-mechanical-or-civil-structural-kennett-square-penns-25",
     "state": "pennsylvania",
     "category": "engineering"
@@ -1257,11 +1422,6 @@
   {
     "slug": "maintenance-fin-supervisor-ic-braceville-illinois-2014",
     "state": "illinois",
-    "category": "maintenance"
-  },
-  {
-    "slug": "electrician-technician-lusby-maryland-2814",
-    "state": "maryland",
     "category": "maintenance"
   },
   {
@@ -1928,6 +2088,11 @@
     "slug": "senior-rpo-technician-newport-mi-873",
     "state": "michigan",
     "category": "maintenance"
+  },
+  {
+    "slug": "project-director-eunice-new-mexico-3986",
+    "state": "new-mexico",
+    "category": "administrative"
   },
   {
     "slug": "safeguards-specialist-eunice-new-mexico-4330",

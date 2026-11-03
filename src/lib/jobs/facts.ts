@@ -44,12 +44,16 @@ function corpusFrom(job: JobWithCompany): string {
 }
 
 function matchPlant(text: string, title: string): PlantMatch | undefined {
+  const hit = (plant: PlantRecord, hay: string) =>
+    new RegExp(`\\b${plant.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(hay);
+
+  // Title wins. Southern's boilerplate names every plant in the fleet, and the
+  // first name in that paragraph was labeling Vogtle jobs as Farley.
   for (const plant of PLANTS) {
-    const re = new RegExp(
-      `\\b${plant.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
-      "i",
-    );
-    if (re.test(title) || re.test(text)) return plant;
+    if (hit(plant, title)) return plant;
+  }
+  for (const plant of PLANTS) {
+    if (hit(plant, text)) return plant;
   }
   return undefined;
 }
