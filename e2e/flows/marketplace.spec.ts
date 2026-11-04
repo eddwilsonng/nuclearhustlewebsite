@@ -1,7 +1,9 @@
 import { test, expect, type Browser, type BrowserContext, type Page } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 import {
   TEST_PASSWORD,
   adminClient,
+  markEmailVerified,
   resetLocalApplyRateLimit,
   testCv,
   testEmail,
@@ -52,8 +54,19 @@ async function logIn(page: Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(TEST_PASSWORD);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByRole("button", { name: "Log in" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
+}
+
+async function expectNoSeriousAxeViolations(page: Page, path: string) {
+  await page.goto(path);
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+    .analyze();
+  const blocking = results.violations.filter(
+    (violation) => violation.impact === "critical" || violation.impact === "serious",
+  );
+  expect(blocking, path).toEqual([]);
 }
 
 function applicationForm(page: Page) {
@@ -62,18 +75,26 @@ function applicationForm(page: Page) {
   });
 }
 
-test("employer can sign up", async ({ page }) => {
-  await page.goto("/signup/employer");
+test("employer can sign up, confirm their email and add company details", async ({ page }) => {
+  await page.goto("/signup/employer?redirect=%2Fdashboard%2Fjobs%2Fnew");
   await page.getByLabel("Your name").fill(employer.name);
   await page.getByLabel("Work email").fill(employer.email);
   await page.getByLabel("Password", { exact: true }).fill(TEST_PASSWORD);
   await page.getByLabel("Company name").fill(employer.company);
-  await page.getByLabel("Website").fill("https://example.com");
   await page.getByRole("checkbox", { name: /Terms of Service/ }).check();
   await page.getByRole("button", { name: "Create employer account" }).click();
 
-  await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByText(employer.company).first()).toBeVisible();
+  // Step 2 asks for the emailed code. Tests can't read the inbox, so confirm
+  // the address directly and carry on to step 3.
+  await expect(page).toHaveURL(/\/onboarding\/(verify|company)/);
+  await markEmailVerified(employer.email);
+  await page.goto("/onboarding/company?redirect=%2Fdashboard%2Fjobs%2Fnew");
+  await expect(page.getByLabel("Company name")).toHaveValue(employer.company);
+  await page.getByLabel(/Website/).fill("https://example.com");
+  await page.getByRole("button", { name: "Save and continue" }).click();
+
+  await expect(page).toHaveURL(/\/dashboard\/jobs\/new$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Post your first job" })).toBeVisible();
 });
 
 test("signed-in employer is bounced away from auth pages", async ({ browser }) => {
@@ -83,6 +104,9 @@ test("signed-in employer is bounced away from auth pages", async ({ browser }) =
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.goto("/signup/job-seeker");
   await expect(page).toHaveURL(/\/dashboard$/);
+  // "Post a job" links carry a redirect, so a signed-in employer lands on the form.
+  await page.goto("/signup/employer?redirect=%2Fdashboard%2Fjobs%2Fnew");
+  await expect(page).toHaveURL(/\/dashboard\/jobs\/new$/);
 });
 
 test("job posting form rejects bad input", async ({ browser }) => {
@@ -117,12 +141,14 @@ test("employer can post a job that takes applications by email", async ({ browse
     );
   await page.getByLabel("Responsibilities").fill("Monitor plant parameters\nPerform surveillances");
   await page.getByLabel("Required qualifications").fill("High school diploma\nAbility to obtain unescorted access");
-  await page.getByRole("button", { name: /Receive by email/ }).click();
+  await page.getByRole("radio", { name: /Receive by email/ }).click();
   await page.getByLabel("Application email").fill(inboxEmail);
   await page.getByRole("button", { name: "Post job" }).click();
 
-  await expect(page).toHaveURL(/\/dashboard\/jobs$/);
-  await expect(page.getByRole("link", { name: jobTitle })).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard\/jobs\/[^/]+\/posted$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Your listing is live" })).toBeVisible();
+  await page.goto("/dashboard/jobs");
+  await expect(page.getByRole("link", { name: jobTitle, exact: true })).toBeVisible();
 
   const { data: job, error } = await adminClient()
     .from("employer_jobs")
@@ -218,21 +244,27 @@ test("guest clicking Save is asked to sign up", async ({ page }) => {
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("link", { name: "Create free account" })).toHaveAttribute(
     "href",
-    `/signup/job-seeker?redirect=${encodeURIComponent(`/job/${jobSlug}`)}`,
+    `/signup/job-seeker?redirect=${encodeURIComponent(`/job/${jobSlug}?intent=save`)}`,
   );
 });
 
-test("job seeker can sign up from a job and return to it", async ({ page }) => {
-  await page.goto(`/signup/job-seeker?redirect=${encodeURIComponent(`/job/${jobSlug}`)}`);
+test("job seeker can sign up from Save, set up matching, and land back on the saved job", async ({ page }) => {
+  await page.goto(`/signup/job-seeker?redirect=${encodeURIComponent(`/job/${jobSlug}?intent=save`)}`);
   await page.getByLabel("Full name").fill(seeker.name);
   await page.getByLabel("Email", { exact: true }).fill(seeker.email);
   await page.getByLabel("Password", { exact: true }).fill(TEST_PASSWORD);
-  await page.getByLabel(/City/).fill("Chicago");
-  await page.getByLabel(/State/).selectOption("IL");
   await page.getByRole("checkbox", { name: /Terms of Service/ }).check();
   await page.getByRole("button", { name: "Create account" }).click();
 
+  await expect(page).toHaveURL(/\/onboarding\/profile/);
+  await page.getByLabel("Your field").selectOption("operations");
+  await page.getByLabel("Home state").selectOption("IL");
+  await page.getByLabel(/City/).fill("Chicago");
+  await page.getByRole("button", { name: "Save and continue" }).click();
+
+  // The save the visitor started before signing up completes on arrival.
   await expect(page).toHaveURL(new RegExp(`/job/${jobSlug}$`));
+  await expect(page.getByRole("button", { name: "Unsave job" }).first()).toBeVisible();
 });
 
 test("job seeker can save a job and see it in Saved", async ({ browser }) => {
@@ -240,6 +272,9 @@ test("job seeker can save a job and see it in Saved", async ({ browser }) => {
   await logIn(page, seeker.email);
   await page.goto(`/job/${jobSlug}`);
 
+  // Saved during signup; toggle it off and on again from the listing.
+  await page.getByRole("button", { name: "Unsave job" }).first().click();
+  await expect(page.getByRole("button", { name: "Save job" }).first()).toBeVisible();
   await page.getByRole("button", { name: "Save job" }).first().click();
   await expect(page.getByRole("button", { name: "Unsave job" }).first()).toBeVisible();
 
@@ -255,9 +290,10 @@ test("job seeker can update profile and upload a resume", async ({ browser }) =>
   await logIn(page, seeker.email);
   await page.goto("/dashboard/profile");
 
+  await expect(page.getByLabel("Home state")).toHaveValue("IL");
   await page.getByLabel(/Phone/).fill("5551234567");
-  await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.getByText("Profile updated.")).toBeVisible();
+  await page.getByRole("button", { name: "Save profile" }).click();
+  await expect(page.getByText("Profile saved.")).toBeVisible();
 
   await page.locator("input#resume").setInputFiles(testCv("seeker-resume.pdf"));
   await page.getByRole("button", { name: "Upload resume" }).click();
@@ -267,7 +303,7 @@ test("job seeker can update profile and upload a resume", async ({ browser }) =>
   await expect(page.getByText("seeker-resume.pdf")).toBeVisible();
 });
 
-test("signed-in job seeker applies with prefilled details", async ({ browser }) => {
+test("signed-in job seeker applies with their stored resume and sees it under Applications", async ({ browser }) => {
   const page = await newPage(browser);
   await logIn(page, seeker.email);
   await page.goto(`/job/${jobSlug}`);
@@ -275,10 +311,50 @@ test("signed-in job seeker applies with prefilled details", async ({ browser }) 
   const form = applicationForm(page);
   await expect(form.getByLabel("Full name")).toHaveValue(seeker.name);
   await expect(form.getByLabel("Email", { exact: true })).toHaveValue(seeker.email);
-  await form.getByLabel(/CV \/ resume/).setInputFiles(testCv());
+  await expect(form.getByRole("radio", { name: "Use my stored resume" })).toBeChecked();
   await form.getByRole("checkbox", { name: /Terms of Service/ }).check();
   await form.getByRole("button", { name: `Apply for ${jobTitle}` }).click();
   await expect(page.getByText(/Application sent\./)).toBeVisible();
+
+  const { data: application } = await adminClient()
+    .from("job_applications")
+    .select("cv_path")
+    .eq("job_id", jobId)
+    .eq("applicant_email", seeker.email)
+    .single();
+  expect(application?.cv_path).toMatch(new RegExp(`^applications/${jobId}/`));
+
+  await page.goto("/dashboard/applications");
+  await expect(page.getByRole("link", { name: jobTitle })).toBeVisible();
+});
+
+test("job seeker account pages pass axe", async ({ browser }) => {
+  const page = await newPage(browser);
+  await logIn(page, seeker.email);
+  for (const path of [
+    "/dashboard",
+    "/dashboard/applications",
+    "/dashboard/saved",
+    "/dashboard/profile",
+    "/dashboard/settings",
+  ]) {
+    await expectNoSeriousAxeViolations(page, path);
+  }
+});
+
+test("employer account pages pass axe", async ({ browser }) => {
+  const page = await newPage(browser);
+  await logIn(page, employer.email);
+  for (const path of [
+    "/dashboard",
+    "/dashboard/jobs",
+    "/dashboard/applicants",
+    "/dashboard/profile",
+    "/dashboard/settings",
+    "/dashboard/jobs/new",
+  ]) {
+    await expectNoSeriousAxeViolations(page, path);
+  }
 });
 
 test("job seeker cannot open employer pages", async ({ browser }) => {
@@ -286,6 +362,8 @@ test("job seeker cannot open employer pages", async ({ browser }) => {
   await logIn(page, seeker.email);
   await page.goto("/dashboard/jobs");
   await expect(page).toHaveURL(/\/dashboard$/);
+  await page.goto("/dashboard/jobs/new");
+  await expect(page.getByText("Posting needs an employer account")).toBeVisible();
   await page.goto(`/dashboard/jobs/${jobId}/applications`);
   await expect(page.getByText(guestApplicant.name)).toHaveCount(0);
 });
@@ -298,11 +376,14 @@ test("employer sees both applications and can change status", async ({ browser }
   await expect(page.getByText(guestApplicant.name)).toBeVisible();
   await expect(page.getByText(seeker.name)).toBeVisible();
 
-  const status = page.getByLabel("Application status").first();
+  const status = page.getByLabel(/Application status/).first();
   await status.selectOption("shortlisted");
   await expect(status).toBeEnabled();
   await page.reload();
-  await expect(page.getByLabel("Application status").first()).toHaveValue("shortlisted");
+  await expect(page.getByLabel(/Application status/).first()).toHaveValue("shortlisted");
+
+  await page.goto("/dashboard/applicants");
+  await expect(page.getByText(guestApplicant.name)).toBeVisible();
 });
 
 test("employer can deactivate a job, which closes it to applicants", async ({ browser, request, baseURL }) => {
@@ -310,8 +391,8 @@ test("employer can deactivate a job, which closes it to applicants", async ({ br
   await logIn(page, employer.email);
   await page.goto("/dashboard/jobs");
 
-  await page.getByRole("button", { name: "Job actions" }).first().click();
-  await page.getByRole("menuitem", { name: "Deactivate" }).click();
+  await page.getByRole("button", { name: `More actions for ${jobTitle}` }).click();
+  await page.getByRole("menuitem", { name: "Pause listing" }).click();
   await expect
     .poll(async () => {
       const { data } = await adminClient()
@@ -340,7 +421,7 @@ test("employer can delete a job", async ({ browser }) => {
   await logIn(page, employer.email);
   await page.goto("/dashboard/jobs");
 
-  await page.getByRole("button", { name: "Job actions" }).first().click();
+  await page.getByRole("button", { name: `More actions for ${jobTitle}` }).click();
   await page.getByRole("menuitem", { name: "Delete" }).click();
   const dialog = page.getByRole("dialog", { name: "Delete this posting?" });
   await dialog.getByRole("button", { name: "Delete posting" }).click();
@@ -353,7 +434,7 @@ test("employer can delete a job", async ({ browser }) => {
     })
     .toBe(0);
   await page.reload();
-  await expect(page.getByRole("link", { name: jobTitle })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: jobTitle, exact: true })).toHaveCount(0);
 });
 
 test("sign out ends the session", async ({ browser }) => {

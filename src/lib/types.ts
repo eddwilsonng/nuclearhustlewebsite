@@ -101,6 +101,7 @@ export interface Profile {
   email: string;
   full_name: string;
   role: UserRole;
+  terms_accepted_at?: string | null;
   created_at: string;
 }
 
@@ -113,6 +114,8 @@ export interface JobSeekerProfile {
   phone: string | null;
   resume_url: string | null;
   resume_filename: string | null;
+  /** A src/lib/categorize.ts category slug. */
+  primary_category?: string | null;
   created_at: string;
 }
 
@@ -190,5 +193,6 @@ export interface JobApplication {
   message: string | null;
   cv_path: string | null;
   status: ApplicationStatus;
+  applicant_user_id?: string | null;
   created_at: string;
 }

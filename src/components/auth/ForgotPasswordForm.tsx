@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { requestPasswordReset, type ActionState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/Button";
-import { FieldGroup, FieldLabel, FormStatus, Input } from "@/components/ui/Field";
+import { FormStatus, TextField } from "@/components/ui/Field";
 import { AuthError } from "./AuthShared";
 
 export function ForgotPasswordForm() {
@@ -18,7 +18,7 @@ export function ForgotPasswordForm() {
       <div className="space-y-6">
         <FormStatus>
           If an account exists for that email, we sent a reset link. Check your inbox
-          and spam folder.
+          and spam folder. The link works in this browser.
         </FormStatus>
         <Link
           href="/login"
@@ -31,20 +31,19 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-4" noValidate>
       {state.error && <AuthError>{state.error}</AuthError>}
 
-      <FieldGroup>
-        <FieldLabel htmlFor="email">Email</FieldLabel>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          placeholder="you@example.com"
-        />
-      </FieldGroup>
+      <TextField
+        id="email"
+        label="Email"
+        type="email"
+        required
+        autoComplete="email"
+        placeholder="you@example.com"
+        defaultValue={state.values?.email}
+        error={state.fieldErrors?.email}
+      />
 
       <Button type="submit" variant="primary" fullWidth disabled={isPending}>
         {isPending ? "Sending…" : "Send reset link"}

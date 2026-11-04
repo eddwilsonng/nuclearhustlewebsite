@@ -17,9 +17,9 @@ import { formatSalary } from "@/lib/salary";
 import { getPostedLabel } from "@/lib/jobs/dates";
 import { isLiveFeatured } from "@/lib/jobs/sort";
 import { Badge } from "@/components/ui/Badge";
-import { createClient } from "@/lib/supabase/server";
 import type { JobListItem } from "@/lib/types";
 import type { Metadata } from "next";
+import { POST_JOB_HREF } from "@/components/site-nav";
 
 export const metadata: Metadata = {
   title: "Nuclear Hustle | Job Board Built for Nuclear Professionals",
@@ -54,11 +54,7 @@ export default async function Home() {
     getAllActiveCategories(),
   ]);
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const postJobHref = user ? "/dashboard/jobs/new" : "/signup/employer";
+  const postJobHref = POST_JOB_HREF;
 
   const latest = jobs.slice(0, 10);
   const jobCount = jobs.length.toLocaleString("en-US");

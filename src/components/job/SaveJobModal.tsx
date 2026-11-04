@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { Modal } from "@/components/ui/Dialog";
 import { LinkButton } from "@/components/ui/LinkButton";
+import { withRedirect } from "@/lib/redirects";
 
 interface SaveJobModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Where to land after signing up or logging in, e.g. `/job/x?intent=save`. */
   redirectPath?: string;
 }
 
@@ -15,25 +17,18 @@ export function SaveJobModal({
   onOpenChange,
   redirectPath,
 }: SaveJobModalProps) {
-  const signupHref = redirectPath
-    ? `/signup/job-seeker?redirect=${encodeURIComponent(redirectPath)}`
-    : "/signup/job-seeker";
-  const loginHref = redirectPath
-    ? `/login?redirect=${encodeURIComponent(redirectPath)}`
-    : "/login";
-
   return (
     <Modal
       open={open}
       onOpenChange={onOpenChange}
       title="Save this job"
-      description="Create a free account to keep roles and come back to them later."
+      description="Create a free account and we'll save this role for you, then bring you back to it."
     >
       <div className="flex flex-col gap-2">
-        <LinkButton href={signupHref} variant="primary" fullWidth>
+        <LinkButton href={withRedirect("/signup/job-seeker", redirectPath)} variant="primary" fullWidth>
           Create free account
         </LinkButton>
-        <LinkButton href={loginHref} variant="secondary" fullWidth>
+        <LinkButton href={withRedirect("/login", redirectPath)} variant="secondary" fullWidth>
           Log in
         </LinkButton>
         <p className="pt-1 text-center font-sans text-sm text-secondary">

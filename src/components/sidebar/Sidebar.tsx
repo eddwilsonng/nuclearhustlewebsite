@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LinkButton } from "@/components/ui/LinkButton";
+import { JOB_ALERTS_HREF } from "@/components/site-nav";
 
 export function Sidebar({ children }: { children: ReactNode }) {
   return (
@@ -104,7 +105,7 @@ export function SidebarCTA({
 export function SidebarAlertCard({
   label = "Free job alerts",
   body,
-  href = "/signup",
+  href = JOB_ALERTS_HREF,
   ctaLabel = "Create free alert →",
 }: {
   label?: string;

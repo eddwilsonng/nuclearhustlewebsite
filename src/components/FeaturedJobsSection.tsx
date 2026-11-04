@@ -1,8 +1,9 @@
 import { getFeaturedJobs } from '@/lib/data/employer';
 import { JobCard } from '@/components/JobCard';
 import { LinkButton } from '@/components/ui/LinkButton';
+import { POST_JOB_HREF } from "@/components/site-nav";
 
-export async function FeaturedJobsSection({ postHref = '/signup/employer' }: { postHref?: string }) {
+export async function FeaturedJobsSection({ postHref = POST_JOB_HREF }: { postHref?: string }) {
   const featuredJobs = await getFeaturedJobs();
 
   return (

@@ -74,7 +74,10 @@ export interface EmployerJobWrite {
   application_email: string | null;
 }
 
-type ParseResult = { ok: true; data: EmployerJobWrite } | { ok: false; error: string };
+/** `field` names the form control the error belongs to, so the form can focus it. */
+type ParseResult =
+  | { ok: true; data: EmployerJobWrite }
+  | { ok: false; error: string; field?: string };
 
 function field(formData: FormData, name: string): string {
   return (formData.get(name) as string | null) ?? "";
@@ -104,27 +107,28 @@ export function parseJobPostingForm(formData: FormData): ParseResult {
   });
 
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0].message };
+    const issue = parsed.error.issues[0];
+    return { ok: false, error: issue.message, field: String(issue.path[0] ?? "") || undefined };
   }
 
   const input = parsed.data;
 
   const titleIssue = getTitleIssues(input.title)[0];
-  if (titleIssue) return { ok: false, error: titleIssue };
+  if (titleIssue) return { ok: false, error: titleIssue, field: "title" };
 
   // Location
   const plant = getPlantOption(input.plantId);
-  if (input.plantId && !plant) return { ok: false, error: "Pick a plant from the list" };
+  if (input.plantId && !plant) return { ok: false, error: "Pick a plant from the list", field: "plantId" };
 
   const stateCode = input.stateCode || plant?.state || "";
   const city = input.city || plant?.city || "";
   const state = stateCode ? stateCodeToSlug(stateCode) : null;
 
   if (input.workMode !== "remote") {
-    if (!city) return { ok: false, error: "Add the city the role is based in" };
-    if (!state) return { ok: false, error: "Pick the state the role is based in" };
+    if (!city) return { ok: false, error: "Add the city the role is based in", field: "city" };
+    if (!state) return { ok: false, error: "Pick the state the role is based in", field: "stateCode" };
   } else if (stateCode && !state) {
-    return { ok: false, error: "Pick a valid state" };
+    return { ok: false, error: "Pick a valid state", field: "stateCode" };
   }
 
   // Pay
@@ -133,13 +137,13 @@ export function parseJobPostingForm(formData: FormData): ParseResult {
   const salaryPeriod = input.salaryPeriod || null;
 
   if ((input.salaryMin && salaryMin === null) || (input.salaryMax && salaryMax === null)) {
-    return { ok: false, error: "Pay must be a number, e.g. 55 or 95000" };
+    return { ok: false, error: "Pay must be a number, e.g. 55 or 95000", field: input.salaryMin && salaryMin === null ? "salaryMin" : "salaryMax" };
   }
   if ((salaryMin || salaryMax) && !salaryPeriod) {
-    return { ok: false, error: "Choose whether pay is per hour or per year" };
+    return { ok: false, error: "Choose whether pay is per hour or per year", field: "salaryPeriod" };
   }
   if (salaryMin && salaryMax && salaryMin > salaryMax) {
-    return { ok: false, error: "Minimum pay can't be higher than maximum pay" };
+    return { ok: false, error: "Minimum pay can't be higher than maximum pay", field: "salaryMin" };
   }
   if (salaryPeriod) {
     const bounds = SALARY_BOUNDS[salaryPeriod];
@@ -147,6 +151,7 @@ export function parseJobPostingForm(formData: FormData): ParseResult {
       if (amount !== null && (amount < bounds.min || amount > bounds.max)) {
         return {
           ok: false,
+          field: amount === salaryMin ? "salaryMin" : "salaryMax",
           error:
             salaryPeriod === "hour"
               ? "Hourly pay looks off — enter dollars per hour, e.g. 55 to 75"
@@ -165,30 +170,32 @@ export function parseJobPostingForm(formData: FormData): ParseResult {
   const whatWeOffer = normalizeProse(input.whatWeOffer ?? "");
 
   if (about.length < ABOUT_MIN_LENGTH) {
-    return { ok: false, error: `Add a short overview of the role (at least ${ABOUT_MIN_LENGTH} characters)` };
+    return { ok: false, field: "about", error: `Add a short overview of the role (at least ${ABOUT_MIN_LENGTH} characters)` };
   }
   if (about.length > ABOUT_MAX_LENGTH) {
     return {
       ok: false,
+      field: "about",
       error: `Keep the overview under ${ABOUT_MAX_LENGTH} characters — move duties and requirements into their own sections`,
     };
   }
-  if (!responsibilities) return { ok: false, error: "Add at least one responsibility" };
-  if (!qualifications) return { ok: false, error: "Add at least one required qualification" };
+  if (!responsibilities) return { ok: false, error: "Add at least one responsibility", field: "responsibilities" };
+  if (!qualifications) return { ok: false, error: "Add at least one required qualification", field: "qualifications" };
 
-  for (const text of [about, responsibilities, qualifications, desired, locationDetails, whatWeOffer]) {
+  const descriptionSections = { about, responsibilities, qualifications, desired, locationDetails, whatWeOffer };
+  for (const [name, text] of Object.entries(descriptionSections)) {
     const issue = getContactDetailsIssue(text);
-    if (issue) return { ok: false, error: issue };
+    if (issue) return { ok: false, error: issue, field: name };
   }
 
   // Application
   if (input.applicationType === "link") {
     const url = input.applicationUrl ?? "";
     if (!/^https?:\/\/\S+\.\S+/i.test(url)) {
-      return { ok: false, error: "Add the full application link, starting with https://" };
+      return { ok: false, error: "Add the full application link, starting with https://", field: "applicationUrl" };
     }
   } else if (!z.string().email().safeParse(input.applicationEmail).success) {
-    return { ok: false, error: "Add the email address applications should go to" };
+    return { ok: false, error: "Add the email address applications should go to", field: "applicationEmail" };
   }
 
   const structured: StructuredDescription = {

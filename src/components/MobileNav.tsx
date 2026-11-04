@@ -11,6 +11,7 @@ import {
   EMPLOYER_NAV,
   FIND_WORK_NAV,
   JOBS_NAV_GROUPS,
+  POST_JOB_HREF,
   isNavItemActive,
   type NavItem,
 } from "@/components/site-nav";
@@ -78,7 +79,13 @@ function Section({
   );
 }
 
-export function MobileNav({ isAuthed = false }: { isAuthed?: boolean }) {
+export function MobileNav({
+  isAuthed = false,
+  role,
+}: {
+  isAuthed?: boolean;
+  role?: "employer" | "job_seeker";
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const close = () => setOpen(false);
@@ -149,19 +156,19 @@ export function MobileNav({ isAuthed = false }: { isAuthed?: boolean }) {
               {isAuthed ? (
                 <>
                   {(
-                    [
-                      { href: "/dashboard", label: "Dashboard", match: "exact" },
-                      {
-                        href: "/dashboard/profile",
-                        label: "Profile",
-                        match: "exact",
-                      },
-                      {
-                        href: "/dashboard/saved",
-                        label: "Saved jobs",
-                        match: "exact",
-                      },
-                    ] as const satisfies readonly NavItem[]
+                    (role === "employer"
+                      ? [
+                          { href: "/dashboard", label: "Dashboard", match: "exact" },
+                          { href: "/dashboard/jobs", label: "Jobs", match: "prefix" },
+                          { href: "/dashboard/applicants", label: "Applicants", match: "exact" },
+                          { href: "/dashboard/settings", label: "Settings", match: "exact" },
+                        ]
+                      : [
+                          { href: "/dashboard", label: "Dashboard", match: "exact" },
+                          { href: "/dashboard/applications", label: "Applications", match: "exact" },
+                          { href: "/dashboard/saved", label: "Saved jobs", match: "exact" },
+                          { href: "/dashboard/settings", label: "Settings", match: "exact" },
+                        ]) satisfies readonly NavItem[]
                   ).map((item) => (
                     <MenuLink
                       key={item.href}
@@ -198,7 +205,7 @@ export function MobileNav({ isAuthed = false }: { isAuthed?: boolean }) {
               Browse jobs
             </LinkButton>
             <LinkButton
-              href="/signup/employer"
+              href={POST_JOB_HREF}
               variant="secondary"
               fullWidth
               onClick={close}

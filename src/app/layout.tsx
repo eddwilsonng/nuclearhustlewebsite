@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ConditionalFooter } from "@/components/ConditionalFooter";
 import { ConditionalHeader } from "@/components/ConditionalHeader";
+import { ConditionalMain } from "@/components/ConditionalMain";
 import { ConditionalClicky } from "@/components/ConditionalClicky";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/schema";
 
@@ -73,9 +74,7 @@ export default function RootLayout({
           <ConditionalHeader>
             <Header />
           </ConditionalHeader>
-          <main id="main-content" className="flex-1" tabIndex={-1}>
-          {children}
-          </main>
+          <ConditionalMain>{children}</ConditionalMain>
           <ConditionalFooter>
             <Footer />
           </ConditionalFooter>
