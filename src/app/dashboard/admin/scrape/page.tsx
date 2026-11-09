@@ -4,6 +4,11 @@ import { isAdmin } from '@/lib/admin';
 import { getCompanies } from '@/lib/data/static';
 import { getAllScrapedJobs } from '@/lib/data/jobs-full';
 import { ScrapePanel } from '@/components/admin/ScrapePanel';
+import { DashboardBody, DashboardPageHeader } from '@/components/dashboard/DashboardChrome';
+
+export const metadata = {
+  title: 'Scraper - Nuclear Hustle',
+};
 
 export default async function AdminScrapePage() {
   const supabase = await createClient();
@@ -24,18 +29,28 @@ export default async function AdminScrapePage() {
       id: c.id,
       name: c.name,
       careersUrl: c.careers_url,
-      lastScraped: c.last_scraped,
+      // Formatted here so server and browser render the same text.
+      lastScraped: c.last_scraped
+        ? new Date(c.last_scraped).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            timeZone: 'UTC',
+          })
+        : null,
       jobCount,
     };
   });
 
   return (
-    <div>
-      <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mb-1">Scrape Jobs</h1>
-      <p className="text-sm text-stone-500 mb-8 font-mono">
-        Trigger per-company scrapes. New jobs are merged, existing jobs are updated, manual edits are preserved.
-      </p>
-      <ScrapePanel companies={companyCards} />
-    </div>
+    <>
+      <DashboardPageHeader
+        title="Scraper"
+        description="Run a crawl for one operator. New jobs are merged in, existing jobs are updated and manual edits are kept."
+      />
+      <DashboardBody>
+        <ScrapePanel companies={companyCards} />
+      </DashboardBody>
+    </>
   );
 }

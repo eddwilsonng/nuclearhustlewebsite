@@ -2,224 +2,325 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Menu } from '@base-ui/react/menu';
 import {
   adminDeleteJob,
   adminToggleJob,
   adminDeleteScrapedJob,
 } from '@/lib/admin/actions';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Dialog';
+import { FieldError, FormStatus, SelectField, TextField } from '@/components/ui/Field';
+import { useToast } from '@/components/ui/Toast';
+import { DashboardEmptyState } from '@/components/dashboard/DashboardChrome';
 
-interface AdminJob {
+export interface AdminJob {
   id: string;
   title: string;
   company: string;
   location: string;
-  category: string;
-  date: string;
   source: 'scraped' | 'employer';
-  isActive?: boolean;
-  slug: string;
+  /** ISO timestamp, for sorting. */
+  date: string;
+  dateLabel: string;
+  statusKey: 'live' | 'paused' | 'expired' | 'pending_review' | 'rejected' | 'duplicate';
+  statusLabel: string;
+  statusTone: 'success' | 'neutral' | 'danger';
+  /** Employer listings that haven't expired can be paused or made live again. */
+  toggle?: { isActive: boolean };
+  /** Set only when the public job page actually serves this listing. */
+  publicHref: string | null;
+  editHref: string;
 }
 
 interface AdminJobTableProps {
   jobs: AdminJob[];
 }
 
+const PAGE_SIZE = 50;
+
+const STATUS_FILTERS: { value: 'all' | AdminJob['statusKey']; label: string }[] = [
+  { value: 'all', label: 'All statuses' },
+  { value: 'live', label: 'Live' },
+  { value: 'pending_review', label: 'Pending review' },
+  { value: 'paused', label: 'Paused' },
+  { value: 'expired', label: 'Expired' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'duplicate', label: 'Duplicate' },
+];
+
+const menuItemClass =
+  'flex min-h-10 w-full cursor-pointer items-center px-3 py-2 text-left font-sans text-sm text-ink no-underline outline-none data-highlighted:bg-surface data-disabled:opacity-50';
+
+type ActionResult = { success?: boolean; error?: string };
+
+/** Runs an admin action; returns an error message, or null when it worked. */
+async function attempt(action: () => Promise<ActionResult>): Promise<string | null> {
+  try {
+    const result = await action();
+    if (result.error) return result.error;
+    return result.success ? null : 'Something went wrong. Refresh and try again.';
+  } catch {
+    return "That didn't go through. Refresh and try again.";
+  }
+}
+
+function deleteDescription(job: AdminJob) {
+  return job.source === 'employer'
+    ? `“${job.title}” at ${job.company} comes off the board and its applications are deleted. This can't be undone. Pausing it keeps them.`
+    : `“${job.title}” at ${job.company} is removed from the scraped job file and comes off the board. This can't be undone.`;
+}
+
 export function AdminJobTable({ jobs }: AdminJobTableProps) {
+  const router = useRouter();
+  const toast = useToast();
   const [search, setSearch] = useState('');
-  const [sourceFilter, setSourceFilter] = useState<'all' | 'scraped' | 'employer'>('all');
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [sourceFilter, setSourceFilter] = useState<'all' | AdminJob['source']>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | AdminJob['statusKey']>('all');
+  const [visible, setVisible] = useState(PAGE_SIZE);
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
-  const [toggledJobs, setToggledJobs] = useState<Map<string, boolean>>(new Map());
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminJob | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const keyOf = (job: AdminJob) => `${job.source}-${job.id}`;
+  const query = search.trim().toLowerCase();
+
   const filtered = jobs.filter((job) => {
-    if (removedIds.has(`${job.source}-${job.id}`)) return false;
+    if (removedIds.has(keyOf(job))) return false;
     if (sourceFilter !== 'all' && job.source !== sourceFilter) return false;
-    if (!search) return true;
-    const q = search.toLowerCase();
+    if (statusFilter !== 'all' && job.statusKey !== statusFilter) return false;
+    if (!query) return true;
     return (
-      job.title.toLowerCase().includes(q) ||
-      job.company.toLowerCase().includes(q) ||
-      job.location.toLowerCase().includes(q)
+      job.title.toLowerCase().includes(query) ||
+      job.company.toLowerCase().includes(query) ||
+      job.location.toLowerCase().includes(query)
     );
   });
+  const shown = filtered.slice(0, visible);
 
-  function handleDelete(job: AdminJob) {
-    if (!confirm('Permanently delete this job posting?')) return;
-    const compositeId = `${job.source}-${job.id}`;
-    setDeletingId(compositeId);
+  function handleToggle(job: AdminJob) {
+    if (!job.toggle) return;
+    const makeLive = !job.toggle.isActive;
+    setBusyId(keyOf(job));
     startTransition(async () => {
-      const result =
-        job.source === 'employer'
-          ? await adminDeleteJob(job.id)
-          : await adminDeleteScrapedJob(job.id);
-
-      if (result.success) {
-        setRemovedIds((prev) => new Set(prev).add(compositeId));
-      } else {
-        alert(result.error || 'Failed to delete');
+      const problem = await attempt(() => adminToggleJob(job.id, makeLive));
+      setBusyId(null);
+      if (problem) {
+        toast.error("Couldn't change the listing", problem);
+        return;
       }
-      setDeletingId(null);
+      toast.success(makeLive ? `“${job.title}” is live again.` : `Paused “${job.title}”.`);
+      router.refresh();
     });
   }
 
-  function handleToggle(jobId: string, currentlyActive: boolean) {
-    setTogglingId(jobId);
+  function askDelete(job: AdminJob) {
+    setDeleteTarget(job);
+    setDeleteError(null);
+    setDeleteOpen(true);
+  }
+
+  function confirmDelete() {
+    const job = deleteTarget;
+    if (!job) return;
     startTransition(async () => {
-      const result = await adminToggleJob(jobId, !currentlyActive);
-      if (result.success) {
-        setToggledJobs((prev) => new Map(prev).set(jobId, !currentlyActive));
-      } else {
-        alert(result.error || 'Failed to toggle');
+      const problem = await attempt(() =>
+        job.source === 'employer' ? adminDeleteJob(job.id) : adminDeleteScrapedJob(job.id),
+      );
+      if (problem) {
+        setDeleteError(problem);
+        return;
       }
-      setTogglingId(null);
+      setRemovedIds((prev) => new Set(prev).add(keyOf(job)));
+      setDeleteOpen(false);
+      toast.success(`Deleted “${job.title}”.`);
+      router.refresh();
     });
+  }
+
+  function clearFilters() {
+    setSearch('');
+    setSourceFilter('all');
+    setStatusFilter('all');
+    setVisible(PAGE_SIZE);
   }
 
   return (
     <div>
-      <div className="flex gap-3 mb-6">
-        <input
-          type="text"
-          placeholder="Search jobs..."
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_11rem_11rem]">
+        <TextField
+          id="admin-job-search"
+          label="Search"
+          type="search"
+          placeholder="Title, company or location"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-3 py-2 border border-[#CFC8BC] font-mono text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setVisible(PAGE_SIZE);
+          }}
         />
-        <select
+        <SelectField
+          id="admin-job-source"
+          label="Source"
           value={sourceFilter}
-          onChange={(e) => setSourceFilter(e.target.value as typeof sourceFilter)}
-          className="px-3 py-2 border border-[#CFC8BC] font-mono text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+          onChange={(e) => {
+            setSourceFilter(e.target.value as typeof sourceFilter);
+            setVisible(PAGE_SIZE);
+          }}
         >
-          <option value="all">All Sources</option>
-          <option value="scraped">Scraped</option>
+          <option value="all">All sources</option>
           <option value="employer">Employer</option>
-        </select>
+          <option value="scraped">Scraped</option>
+        </SelectField>
+        <SelectField
+          id="admin-job-status"
+          label="Status"
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value as typeof statusFilter);
+            setVisible(PAGE_SIZE);
+          }}
+        >
+          {STATUS_FILTERS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </SelectField>
       </div>
 
-      <p className="text-xs font-mono text-stone-400 mb-3">
-        {filtered.length} job{filtered.length !== 1 ? 's' : ''}
-      </p>
+      <FormStatus className="mt-4 font-mono text-xs">
+        {filtered.length === shown.length
+          ? `${filtered.length.toLocaleString('en-US')} job${filtered.length === 1 ? '' : 's'}`
+          : `Showing ${shown.length.toLocaleString('en-US')} of ${filtered.length.toLocaleString('en-US')} jobs`}
+      </FormStatus>
 
-      <div className="border border-[#CFC8BC] overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-[#E5DFD5] border-b border-[#CFC8BC]">
-              <th className="text-left px-4 py-3 font-mono text-xs tracking-widest uppercase text-stone-500">
-                Title
-              </th>
-              <th className="text-left px-4 py-3 font-mono text-xs tracking-widest uppercase text-stone-500">
-                Company
-              </th>
-              <th className="text-left px-4 py-3 font-mono text-xs tracking-widest uppercase text-stone-500 hidden md:table-cell">
-                Location
-              </th>
-              <th className="text-left px-4 py-3 font-mono text-xs tracking-widest uppercase text-stone-500 hidden lg:table-cell">
-                Source
-              </th>
-              <th className="text-left px-4 py-3 font-mono text-xs tracking-widest uppercase text-stone-500 hidden lg:table-cell">
-                Date
-              </th>
-              <th className="text-right px-4 py-3 font-mono text-xs tracking-widest uppercase text-stone-500">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#CFC8BC]">
-            {filtered.map((job) => {
-              const compositeId = `${job.source}-${job.id}`;
-              const active = toggledJobs.has(job.id)
-                ? toggledJobs.get(job.id)
-                : job.isActive;
+      {filtered.length === 0 ? (
+        <DashboardEmptyState
+          className="mt-3"
+          title="No jobs match"
+          description="Try a different search, source or status."
+          action={
+            <Button size="compact" onClick={clearFilters}>
+              Clear filters
+            </Button>
+          }
+        />
+      ) : (
+        <ul className="mt-3 divide-y divide-rule border-y border-rule" aria-label="Jobs">
+          {shown.map((job) => {
+            const busy = isPending && busyId === keyOf(job);
+            return (
+              <li
+                key={keyOf(job)}
+                className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-2 py-4 md:grid-cols-[minmax(0,1fr)_12rem_7.5rem_auto] md:items-center"
+              >
+                <div className="min-w-0">
+                  <Link
+                    href={job.editHref}
+                    className="font-sans text-sm font-semibold text-ink hover:underline"
+                  >
+                    {job.title}
+                  </Link>
+                  <p className="mt-0.5 font-sans text-sm text-secondary">
+                    {job.company} · {job.location}
+                  </p>
+                </div>
 
-              const editHref =
-                job.source === 'employer'
-                  ? `/dashboard/admin/jobs/${job.id}/edit`
-                  : `/dashboard/admin/jobs/scraped/${job.id}/edit`;
-
-              return (
-                <tr key={compositeId} className="hover:bg-[#E5DFD5]">
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/job/${job.slug}`}
-                      className="text-stone-900 hover:text-yellow-500 font-medium"
+                <div className="col-start-2 row-start-1 flex items-start justify-end md:col-start-4">
+                  <Menu.Root>
+                    <Menu.Trigger
+                      aria-label={`Actions for ${job.title}`}
+                      className="inline-flex min-h-10 items-center px-2 font-sans text-sm text-secondary hover:text-ink"
                     >
-                      {job.title}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-stone-500">{job.company}</td>
-                  <td className="px-4 py-3 text-stone-500 hidden md:table-cell">
-                    {job.location}
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 text-xs font-mono ${
-                        job.source === 'employer'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-[#E5DFD5] text-stone-500'
-                      }`}
-                    >
-                      {job.source}
-                    </span>
-                    {job.source === 'employer' && (
-                      <span
-                        className={`ml-1 inline-flex items-center px-2 py-0.5 text-xs font-mono ${
-                          active
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-600'
-                        }`}
-                      >
-                        {active ? 'active' : 'inactive'}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-stone-500 font-mono text-xs hidden lg:table-cell">
-                    {new Date(job.date).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {job.source === 'employer' && (
-                        <button
-                          onClick={() => handleToggle(job.id, !!active)}
-                          disabled={isPending && togglingId === job.id}
-                          className="text-xs font-mono text-stone-500 hover:text-stone-900 disabled:opacity-50"
-                        >
-                          {togglingId === job.id
-                            ? '...'
-                            : active
-                              ? 'Deactivate'
-                              : 'Activate'}
-                        </button>
-                      )}
-                      <Link
-                        href={editHref}
-                        className="text-xs font-mono text-yellow-600 hover:text-yellow-800"
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(job)}
-                        disabled={isPending && deletingId === compositeId}
-                        className="text-xs font-mono text-red-500 hover:text-red-700 disabled:opacity-50"
-                      >
-                        {deletingId === compositeId ? '...' : 'Delete'}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-stone-400 font-mono text-sm">
-                  No jobs found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                      {busy ? 'Working…' : 'More'}
+                    </Menu.Trigger>
+                    <Menu.Portal>
+                      <Menu.Positioner sideOffset={4} align="end" className="z-50">
+                        <Menu.Popup className="card-raised min-w-48 border border-control bg-raised py-1 outline-none">
+                          <Menu.Item render={<Link href={job.editHref} className={menuItemClass} />}>
+                            Edit
+                          </Menu.Item>
+                          {job.toggle && (
+                            <Menu.Item
+                              disabled={isPending}
+                              className={menuItemClass}
+                              onClick={() => handleToggle(job)}
+                            >
+                              {job.toggle.isActive ? 'Pause listing' : 'Make live again'}
+                            </Menu.Item>
+                          )}
+                          {job.publicHref && (
+                            <Menu.Item
+                              render={
+                                <a
+                                  href={job.publicHref}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={menuItemClass}
+                                />
+                              }
+                            >
+                              View public listing
+                            </Menu.Item>
+                          )}
+                          <Menu.Item
+                            className={`${menuItemClass} text-danger`}
+                            onClick={() => askDelete(job)}
+                          >
+                            Delete
+                          </Menu.Item>
+                        </Menu.Popup>
+                      </Menu.Positioner>
+                    </Menu.Portal>
+                  </Menu.Root>
+                </div>
+
+                <div className="col-span-2 flex flex-wrap items-center gap-1.5 md:col-span-1 md:col-start-2 md:row-start-1">
+                  <Badge>{job.source === 'employer' ? 'Employer' : 'Scraped'}</Badge>
+                  <Badge tone={job.statusTone}>{job.statusLabel}</Badge>
+                </div>
+
+                <p className="col-span-2 font-mono text-xs text-secondary md:col-span-1 md:col-start-3 md:row-start-1">
+                  {job.dateLabel}
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {shown.length < filtered.length ? (
+        <div className="mt-4 flex justify-center">
+          <Button size="compact" onClick={() => setVisible((n) => n + PAGE_SIZE)}>
+            Show {Math.min(PAGE_SIZE, filtered.length - shown.length)} more
+          </Button>
+        </div>
+      ) : null}
+
+      <Modal
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete this listing?"
+        description={deleteTarget ? deleteDescription(deleteTarget) : undefined}
+      >
+        <div className="space-y-4">
+          {deleteError ? <FieldError>{deleteError}</FieldError> : null}
+          <div className="flex justify-end gap-3">
+            <Button variant="secondary" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" disabled={isPending} onClick={confirmDelete}>
+              {isPending ? 'Deleting…' : 'Delete listing'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

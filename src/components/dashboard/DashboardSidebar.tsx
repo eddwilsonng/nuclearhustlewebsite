@@ -36,14 +36,7 @@ export const EMPLOYER_NAV: NavLink[] = [
   { href: "/dashboard/settings", label: "Settings" },
 ];
 
-const ADMIN_NAV: NavLink[] = [
-  { href: "/dashboard/admin", label: "Operations", exact: true },
-  { href: "/dashboard/admin/review", label: "Review" },
-  { href: "/dashboard/admin/scrape", label: "Scraper" },
-  { href: "/dashboard/admin/jobs", label: "All jobs" },
-  { href: "/dashboard/admin/email", label: "Email" },
-  { href: "/dashboard/admin/linkedin", label: "Weekly picks" },
-];
+const ADMIN_NAV: NavLink[] = [{ href: "/dashboard/admin/jobs", label: "All jobs" }];
 
 function isActivePath(pathname: string, link: NavLink) {
   if (link.exact) return pathname === link.href;

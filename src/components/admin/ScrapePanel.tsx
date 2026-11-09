@@ -1,11 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { useToast } from '@/components/ui/Toast';
+import { DashboardAlert } from '@/components/dashboard/DashboardChrome';
 
 interface CompanyCard {
   id: string;
   name: string;
   careersUrl: string;
+  /** Already formatted for display. */
   lastScraped: string | null;
   jobCount: number;
 }
@@ -27,168 +32,145 @@ interface ScrapePanelProps {
   companies: CompanyCard[];
 }
 
+async function fetchScrapeStatus(): Promise<ScrapeStatus | null> {
+  try {
+    const res = await fetch('/api/admin/scrape/status');
+    return res.ok ? ((await res.json()) as ScrapeStatus) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function ScrapePanel({ companies }: ScrapePanelProps) {
+  const toast = useToast();
   const [status, setStatus] = useState<ScrapeStatus | null>(null);
   const [starting, setStarting] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
 
-  const pollStatus = useCallback(async () => {
-    try {
-      const res = await fetch('/api/admin/scrape/status');
-      if (res.ok) {
-        const data = await res.json();
-        setStatus(data);
-        return data;
-      }
-    } catch {
-      // ignore
-    }
-    return null;
-  }, []);
+  const isRunning = status?.status === 'running';
 
+  // Load the current status, then poll every 2s while a scrape is running.
   useEffect(() => {
-    pollStatus();
-  }, [pollStatus]);
+    let cancelled = false;
+    const apply = (next: ScrapeStatus | null) => {
+      if (!cancelled && next) setStatus(next);
+    };
+    fetchScrapeStatus().then(apply);
+    const interval = isRunning ? setInterval(() => fetchScrapeStatus().then(apply), 2000) : undefined;
+    return () => {
+      cancelled = true;
+      if (interval) clearInterval(interval);
+    };
+  }, [isRunning]);
 
-  useEffect(() => {
-    if (status?.status !== 'running') return;
-
-    const interval = setInterval(pollStatus, 2000);
-    return () => clearInterval(interval);
-  }, [status?.status, pollStatus]);
-
-  async function handleScrape(companyId: string) {
-    setStarting(companyId);
+  async function handleScrape(company: CompanyCard) {
+    setStarting(company.id);
+    setStartError(null);
+    let problem: string | null = null;
     try {
       const res = await fetch('/api/admin/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ companyId }),
+        body: JSON.stringify({ companyId: company.id }),
       });
-
-      const data = await res.json();
-
       if (!res.ok) {
-        alert(data.error || 'Failed to start scrape');
-        setStarting(null);
-        return;
+        const data = await res.json().catch(() => ({}));
+        problem = data.error || `The ${company.name} scrape didn't start.`;
       }
-
-      // Start polling
-      setTimeout(pollStatus, 1000);
     } catch {
-      alert('Failed to start scrape');
+      problem = `The ${company.name} scrape didn't start. Check your connection and try again.`;
     }
     setStarting(null);
+
+    if (problem) {
+      setStartError(problem);
+      toast.error("Scrape didn't start", problem);
+      return;
+    }
+
+    toast.success(`Started the ${company.name} scrape.`);
+    setTimeout(() => {
+      fetchScrapeStatus().then((next) => {
+        if (next) setStatus(next);
+      });
+    }, 1000);
   }
 
-  const isRunning = status?.status === 'running';
   const lastResult =
     status?.status === 'done' || status?.status === 'error' ? status : null;
 
   return (
     <div>
-      {/* Status banner */}
-      {isRunning && (
-        <div className="mb-6 bg-yellow-50 border border-yellow-400 p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse" />
-            <div>
-              <p className="text-sm font-medium text-stone-900">
-                Scraping {status.companyName}...
-              </p>
-              <p className="text-xs font-mono text-stone-500 mt-0.5">
-                {status.phase} &middot; {status.jobsFound} jobs found
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {lastResult && lastResult.status === 'done' && (
-        <div className="mb-6 bg-green-50 border border-green-200 p-4">
-          <p className="text-sm font-medium text-green-800">
-            {lastResult.companyName} scrape complete
+      <div className="mb-6 space-y-3 empty:hidden">
+        {startError ? <DashboardAlert tone="error">{startError}</DashboardAlert> : null}
+        {isRunning ? (
+          <p role="status" className="border border-control bg-raised px-3 py-2.5 font-sans text-sm text-ink">
+            Scraping {status.companyName}…{' '}
+            <span className="font-mono text-xs text-secondary">
+              {status.phase} · {status.jobsFound} jobs found
+            </span>
           </p>
-          <p className="text-xs font-mono text-green-600 mt-1">
-            {lastResult.jobsFound} found &middot; {lastResult.newJobs} new &middot;{' '}
-            {lastResult.updatedJobs} updated &middot;{' '}
-            {lastResult.completedAt &&
-              new Date(lastResult.completedAt).toLocaleTimeString()}
-          </p>
-        </div>
-      )}
+        ) : lastResult?.status === 'done' ? (
+          <DashboardAlert tone="success">
+            {lastResult.companyName} scrape complete: {lastResult.jobsFound} found · {lastResult.newJobs} new ·{' '}
+            {lastResult.updatedJobs} updated
+            {lastResult.completedAt
+              ? ` · ${new Date(lastResult.completedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+              : ''}
+          </DashboardAlert>
+        ) : lastResult?.status === 'error' ? (
+          <DashboardAlert tone="error">
+            {lastResult.companyName} scrape failed: {lastResult.error || 'no details recorded'}
+          </DashboardAlert>
+        ) : null}
+      </div>
 
-      {lastResult && lastResult.status === 'error' && (
-        <div className="mb-6 bg-red-50 border border-red-200 p-4">
-          <p className="text-sm font-medium text-red-800">
-            {lastResult.companyName} scrape failed
-          </p>
-          <p className="text-xs font-mono text-red-600 mt-1">{lastResult.error}</p>
-        </div>
-      )}
-
-      {/* Company cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <ul className="divide-y divide-rule border-y border-rule" aria-label="Operators">
         {companies.map((company) => {
           const isScraping = isRunning && status?.company === company.id;
           const isStarting = starting === company.id;
-          const disabled = isRunning || isStarting;
 
           return (
-            <div
+            <li
               key={company.id}
-              className={`bg-white border p-5 transition-colors ${
-                isScraping ? 'border-yellow-400 bg-yellow-50' : 'border-[#CFC8BC]'
-              }`}
+              className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 py-4"
             >
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="font-semibold text-stone-900">{company.name}</h3>
-                {isScraping && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-mono bg-yellow-100 text-yellow-800">
-                    <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse" />
-                    running
-                  </span>
-                )}
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-sans text-sm font-semibold text-ink">{company.name}</h2>
+                  {isScraping ? <Badge className="border-ink text-ink">Running</Badge> : null}
+                </div>
+                <p className="mt-0.5 font-mono text-xs text-secondary">
+                  {company.jobCount.toLocaleString('en-US')} jobs ·{' '}
+                  {company.lastScraped ? `Last scraped ${company.lastScraped}` : 'Never scraped'}
+                  {company.careersUrl ? (
+                    <>
+                      {' · '}
+                      <a
+                        href={company.careersUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline underline-offset-2 hover:text-ink"
+                      >
+                        Careers page<span className="sr-only"> for {company.name} (opens in a new tab)</span>
+                      </a>
+                    </>
+                  ) : null}
+                </p>
               </div>
 
-              <div className="space-y-1 mb-4">
-                <p className="text-xs font-mono text-stone-500">
-                  {company.jobCount} jobs
-                </p>
-                <p className="text-xs font-mono text-stone-400">
-                  {company.lastScraped
-                    ? `Last scraped: ${new Date(company.lastScraped).toLocaleDateString()}`
-                    : 'Never scraped'}
-                </p>
-                <a
-                  href={company.careersUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-mono text-yellow-600 hover:text-yellow-800 underline"
-                >
-                  Careers page
-                </a>
-              </div>
-
-              <button
-                onClick={() => handleScrape(company.id)}
-                disabled={disabled}
-                className={`w-full py-2 px-3 text-sm font-mono font-medium transition-colors ${
-                  disabled
-                    ? 'bg-[#E5DFD5] text-stone-400 cursor-not-allowed'
-                    : 'bg-stone-900 text-white hover:bg-stone-900/80'
-                }`}
+              <Button
+                size="compact"
+                onClick={() => handleScrape(company)}
+                disabled={isRunning || isStarting}
+                aria-label={`Run the ${company.name} scrape`}
               >
-                {isStarting
-                  ? 'Starting...'
-                  : isScraping
-                    ? 'Scraping...'
-                    : 'Run Scrape'}
-              </button>
-            </div>
+                {isStarting ? 'Starting…' : isScraping ? 'Scraping…' : 'Run scrape'}
+              </Button>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 }
