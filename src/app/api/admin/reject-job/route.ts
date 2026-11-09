@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { adminGuard } from '@/lib/admin/session';
 
 const JOBS_PATH = path.join(process.cwd(), 'src/data/jobs.json');
 
-function isAdmin(request: NextRequest): boolean {
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const authHeader = request.headers.get('x-admin-email');
-  return !!adminEmail && authHeader === adminEmail;
-}
-
 export async function POST(request: NextRequest) {
-  if (!isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const denied = await adminGuard();
+  if (denied) return denied;
 
   const { jobId } = await request.json();
   if (!jobId) return NextResponse.json({ error: 'Missing jobId' }, { status: 400 });

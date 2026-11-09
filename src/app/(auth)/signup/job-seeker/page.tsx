@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { JobSeekerSignupForm } from "@/components/auth/JobSeekerSignupForm";
+import { AuthError } from "@/components/auth/AuthShared";
+import { withRedirect } from "@/lib/redirects";
 
 export const metadata = {
   title: "Job Seeker Sign Up — Nuclear Hustle",
@@ -9,9 +11,9 @@ export const metadata = {
 export default async function JobSeekerSignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<{ redirect?: string; error?: string }>;
 }) {
-  const { redirect } = await searchParams;
+  const { redirect, error } = await searchParams;
 
   return (
     <div className="w-full max-w-md">
@@ -19,24 +21,30 @@ export default async function JobSeekerSignupPage({
         Job seeker
       </p>
       <h1 className="mb-1 font-sans text-3xl font-bold leading-tight text-ink md:text-4xl">
-        Create your profile.
+        Create your account.
       </h1>
-      <p className="mb-10 font-sans text-sm text-secondary">
-        Find your next nuclear role
+      <p className="mb-8 font-sans text-sm leading-relaxed text-secondary">
+        Save roles, apply with a stored resume and see every application in one place.
       </p>
+
+      {error ? (
+        <div className="mb-6">
+          <AuthError>{error}</AuthError>
+        </div>
+      ) : null}
 
       <JobSeekerSignupForm redirect={redirect} />
 
       <div className="mt-8 space-y-2 border-t border-rule pt-6">
         <p className="font-sans text-sm text-secondary">
           Hiring instead?{" "}
-          <Link href="/signup/employer" className="font-semibold text-ink underline underline-offset-2">
+          <Link href={withRedirect("/signup/employer", redirect)} className="font-semibold text-ink underline underline-offset-2">
             Employer sign up →
           </Link>
         </p>
         <p className="font-sans text-sm text-secondary">
           Have an account?{" "}
-          <Link href={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"} className="font-semibold text-ink underline underline-offset-2">
+          <Link href={withRedirect("/login", redirect)} className="font-semibold text-ink underline underline-offset-2">
             Log in →
           </Link>
         </p>

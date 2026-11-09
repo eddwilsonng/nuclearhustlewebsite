@@ -26,6 +26,7 @@ import {
 import { generateCategoryPageSchema, generateBreadcrumbSchema } from '@/lib/seo/schema';
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
+import { JOB_ALERTS_HREF, POST_JOB_HREF } from "@/components/site-nav";
 
 interface PageProps {
   params: Promise<{ state: string; category: string }>;
@@ -156,7 +157,7 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
             )}
           </BrowseMeta>
           {jobs.length > 0 && (
-            <BrowseAlertLink href="/signup">
+            <BrowseAlertLink href={JOB_ALERTS_HREF}>
               ★ Get {categoryInfo.name} alerts in {stateInfo.name} →
             </BrowseAlertLink>
           )}
@@ -191,7 +192,7 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
                   New roles are added daily — set up an alert so you don&apos;t miss one.
                 </p>
                 <div className="flex flex-col justify-center gap-3 sm:flex-row">
-                  <LinkButton href="/signup" variant="primary">
+                  <LinkButton href={JOB_ALERTS_HREF} variant="primary">
                     Get job alerts →
                   </LinkButton>
                   <LinkButton href={`/jobs/${state}`} variant="secondary">
@@ -243,7 +244,7 @@ export default async function StateCategoryPage({ params, searchParams }: PagePr
             <SidebarCTA
               label={`Hiring in ${stateInfo.name}?`}
               body={`Post a ${categoryInfo.name.toLowerCase()} role and reach qualified nuclear professionals.`}
-              href="/signup/employer"
+              href={POST_JOB_HREF}
             />
           </Sidebar>
         </div>

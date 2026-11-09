@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { LinkButton } from '@/components/ui/LinkButton';
+import { POST_JOB_HREF } from "@/components/site-nav";
 
 export const metadata: Metadata = {
   title: 'About — Nuclear Hustle',
@@ -116,7 +117,7 @@ export default function AboutPage() {
                   Your jobs appear alongside listings from major operators
                 </li>
               </ul>
-              <LinkButton href="/signup/employer" variant="secondary" className="mt-8">
+              <LinkButton href={POST_JOB_HREF} variant="secondary" className="mt-8">
                 Post a job →
               </LinkButton>
             </div>
@@ -137,7 +138,7 @@ export default function AboutPage() {
             <LinkButton href="/jobs" variant="primary">
               Browse jobs
             </LinkButton>
-            <LinkButton href="/signup/employer" variant="secondary">
+            <LinkButton href={POST_JOB_HREF} variant="secondary">
               Post a job
             </LinkButton>
           </div>

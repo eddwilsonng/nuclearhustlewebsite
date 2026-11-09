@@ -130,8 +130,9 @@ export default async function JobPage({ params }: PageProps) {
   let initialSaved = false;
   let defaultName = "";
   let defaultEmail = "";
+  let storedResumeName: string | null = null;
   if (user) {
-    const [{ data: saved }, { data: profile }] = await Promise.all([
+    const [{ data: saved }, { data: profile }, { data: seeker }] = await Promise.all([
       supabase
         .from("saved_jobs")
         .select("id")
@@ -143,8 +144,14 @@ export default async function JobPage({ params }: PageProps) {
         .select("full_name, email")
         .eq("id", user.id)
         .maybeSingle(),
+      supabase
+        .from("job_seeker_profiles")
+        .select("resume_url, resume_filename")
+        .eq("user_id", user.id)
+        .maybeSingle(),
     ]);
     initialSaved = !!saved;
+    storedResumeName = seeker?.resume_url ? (seeker.resume_filename ?? "Resume on file") : null;
     defaultName = profile?.full_name ?? "";
     defaultEmail = profile?.email ?? user.email ?? "";
   }
@@ -486,6 +493,8 @@ export default async function JobPage({ params }: PageProps) {
                   companyName={job.company.name}
                   defaultName={defaultName}
                   defaultEmail={defaultEmail}
+                  signedIn={isAuthenticated}
+                  storedResumeName={storedResumeName}
                 />
               </section>
             )}
@@ -507,6 +516,7 @@ export default async function JobPage({ params }: PageProps) {
                     initialSaved={initialSaved}
                     isAuthenticated={isAuthenticated}
                     showLabel
+                    completeSaveIntent
                   />
                   <ShareJobButton title={job.title} />
                 </div>

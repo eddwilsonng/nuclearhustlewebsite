@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processJobDescription } from "@/lib/processJobDescription";
+import { adminGuard } from "@/lib/admin/session";
 import fs from "fs";
 import path from "path";
 
 const JOBS_PATH = path.join(process.cwd(), "src/data/jobs.json");
 const COMPANIES_PATH = path.join(process.cwd(), "src/data/companies.json");
-
-function isAdmin(request: NextRequest): boolean {
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const authHeader = request.headers.get("x-admin-email");
-  return !!adminEmail && authHeader === adminEmail;
-}
 
 function companyName(id: string): string {
   try {
@@ -24,9 +19,8 @@ function companyName(id: string): string {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isAdmin(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = await adminGuard();
+  if (denied) return denied;
 
   const { jobId } = await request.json();
   if (!jobId)

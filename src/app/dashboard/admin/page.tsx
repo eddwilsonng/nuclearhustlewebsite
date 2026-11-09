@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { isAdmin } from '@/lib/admin';
 import { getAllJobsForAdmin } from '@/lib/data/jobs-full';
 import { getJobs, getCompanies } from '@/lib/data/static';
@@ -7,6 +8,20 @@ import { readAgentRuns } from '@/lib/ops/runLog';
 import { JobChart } from '@/components/admin/JobChart';
 import { PipelinePanel, type PipelineStats } from '@/components/admin/PipelinePanel';
 import { AgentRunsPanel } from '@/components/admin/AgentRunsPanel';
+import { Badge } from '@/components/ui/Badge';
+import { LinkButton } from '@/components/ui/LinkButton';
+import { StatRow } from '@/components/ui/StatRow';
+import {
+  DashboardAlert,
+  DashboardBody,
+  DashboardPageHeader,
+  DashboardSection,
+} from '@/components/dashboard/DashboardChrome';
+import type { UserRole } from '@/lib/types';
+
+export const metadata = {
+  title: 'Operations - Nuclear Hustle',
+};
 
 function buildPipelineStats(): PipelineStats {
   const all = getAllJobsForAdmin();
@@ -42,55 +57,82 @@ function buildPipelineStats(): PipelineStats {
   };
 }
 
+// Admin-only reads use the service client: RLS would limit the signed-in admin
+// to their own rows. Callers check isAdmin() first.
 async function getEmployerJobsForAdmin() {
-  const supabase = await createClient();
-  const { data } = await supabase
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
     .from('employer_jobs')
     .select('id, created_at, is_active')
     .order('created_at', { ascending: true });
+  if (error) throw error;
   return data || [];
 }
 
-async function getMemberStats() {
-  const supabase = await createClient();
-  const { data: profiles } = await supabase
+type MemberRow = {
+  id: string;
+  role: UserRole | null;
+  created_at: string;
+  full_name: string | null;
+  email: string | null;
+};
+
+async function getMemberStats(): Promise<MemberRow[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
     .from('profiles')
-    .select('id, role, created_at')
+    .select('id, role, created_at, full_name, email')
     .order('created_at', { ascending: true });
-  return profiles || [];
+  if (error) throw error;
+  return data || [];
 }
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
+const ROLE_LABEL: Record<UserRole, string> = {
+  employer: 'Employer',
+  job_seeker: 'Job seeker',
+};
 
 function buildChartData(
   scrapedJobs: { scraped_at: string }[],
   employerJobs: { created_at: string }[]
 ) {
+  // Bucket by calendar day (YYYY-MM-DD) so the same date in different years
+  // never merges, and the keys sort chronologically as strings.
   const buckets = new Map<string, { scraped: number; employer: number }>();
+  const add = (iso: string, field: 'scraped' | 'employer') => {
+    const day = new Date(iso);
+    if (Number.isNaN(day.getTime())) return;
+    const key = day.toISOString().slice(0, 10);
+    const entry = buckets.get(key) || { scraped: 0, employer: 0 };
+    entry[field]++;
+    buckets.set(key, entry);
+  };
 
-  for (const job of scrapedJobs) {
-    const key = new Date(job.scraped_at).toLocaleDateString('en-US', {
+  for (const job of scrapedJobs) add(job.scraped_at, 'scraped');
+  for (const job of employerJobs) add(job.created_at, 'employer');
+
+  const sorted = Array.from(buckets.entries()).sort(([a], [b]) => a.localeCompare(b));
+  const spansYears =
+    sorted.length > 0 && sorted[0][0].slice(0, 4) !== sorted[sorted.length - 1][0].slice(0, 4);
+
+  return sorted.map(([key, counts]) => ({
+    date: new Date(`${key}T00:00:00Z`).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-    });
-    const entry = buckets.get(key) || { scraped: 0, employer: 0 };
-    entry.scraped++;
-    buckets.set(key, entry);
-  }
-
-  for (const job of employerJobs) {
-    const key = new Date(job.created_at).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    });
-    const entry = buckets.get(key) || { scraped: 0, employer: 0 };
-    entry.employer++;
-    buckets.set(key, entry);
-  }
-
-  return Array.from(buckets.entries())
-    .sort(
-      (a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime()
-    )
-    .map(([date, counts]) => ({ date, ...counts }));
+      year: spansYears ? 'numeric' : undefined,
+      timeZone: 'UTC',
+    }),
+    ...counts,
+  }));
 }
 
 export default async function AdminOverviewPage() {
@@ -104,34 +146,38 @@ export default async function AdminOverviewPage() {
   }
 
   const scrapedJobs = getJobs();
-  const [employerJobs, members] = await Promise.all([
-    getEmployerJobsForAdmin(),
-    getMemberStats(),
-  ]);
+  let employerJobs: Awaited<ReturnType<typeof getEmployerJobsForAdmin>> = [];
+  let members: MemberRow[] = [];
+  let accountsFailed = false;
+  try {
+    [employerJobs, members] = await Promise.all([getEmployerJobsForAdmin(), getMemberStats()]);
+  } catch {
+    accountsFailed = true;
+  }
 
   const totalScraped = scrapedJobs.length;
   const totalEmployer = employerJobs.length;
   const activeEmployer = employerJobs.filter((j) => j.is_active).length;
   const inactiveEmployer = totalEmployer - activeEmployer;
 
-  const totalMembers = members.length;
   const employers = members.filter((m) => m.role === 'employer');
   const jobSeekers = members.filter((m) => m.role === 'job_seeker');
 
   const chartData = buildChartData(scrapedJobs, employerJobs);
+  const count = (n: number) => n.toLocaleString('en-US');
 
   const jobStats = [
-    { label: 'Total Jobs', value: totalScraped + totalEmployer },
-    { label: 'Scraped', value: totalScraped },
-    { label: 'Employer', value: totalEmployer },
-    { label: 'Active', value: totalScraped + activeEmployer },
-    { label: 'Inactive', value: inactiveEmployer },
+    { label: 'Total jobs', value: count(totalScraped + totalEmployer), href: '/dashboard/admin/jobs' },
+    { label: 'Scraped', value: count(totalScraped) },
+    { label: 'Employer', value: count(totalEmployer) },
+    { label: 'Active', value: count(totalScraped + activeEmployer) },
+    { label: 'Inactive', value: count(inactiveEmployer), detail: 'Employer listings' },
   ];
 
   const memberStats = [
-    { label: 'Total Members', value: totalMembers },
-    { label: 'Employers', value: employers.length },
-    { label: 'Job Seekers', value: jobSeekers.length },
+    { label: 'Total members', value: count(members.length) },
+    { label: 'Employers', value: count(employers.length) },
+    { label: 'Job seekers', value: count(jobSeekers.length) },
   ];
 
   const recentMembers = [...members]
@@ -142,103 +188,72 @@ export default async function AdminOverviewPage() {
   const agentRuns = readAgentRuns(12);
 
   return (
-    <div>
-      <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mb-1">Operations</h1>
-      <p className="text-sm text-stone-500 mb-8 font-mono">
-        Run and monitor the site&apos;s automated processes
-      </p>
+    <>
+      <DashboardPageHeader
+        title="Operations"
+        description="Run and monitor the crawls, the review queue and member sign-ups."
+        action={
+          pipeline.pending > 0 ? (
+            <LinkButton href="/dashboard/admin/review" variant="primary" size="compact">
+              Review {count(pipeline.pending)} pending
+            </LinkButton>
+          ) : null
+        }
+      />
 
-      {/* Processes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-        <PipelinePanel stats={pipeline} />
-        <AgentRunsPanel runs={agentRuns} />
-      </div>
-
-      <h2 className="text-sm font-mono tracking-widest uppercase text-stone-500 mb-3">Jobs</h2>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-        {jobStats.map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-white border border-[#CFC8BC] p-4"
-          >
-            <p className="text-xs font-mono tracking-widest uppercase text-stone-400 mb-1">
-              {stat.label}
-            </p>
-            <p className="text-2xl font-bold text-stone-900">{stat.value}</p>
+      <DashboardBody>
+        {accountsFailed ? (
+          <div className="mb-8">
+            <DashboardAlert tone="error">
+              Employer listings and members couldn&apos;t load. Check SUPABASE_SERVICE_ROLE_KEY, then refresh.
+            </DashboardAlert>
           </div>
-        ))}
-      </div>
+        ) : null}
 
-      <h2 className="text-sm font-mono tracking-widest uppercase text-stone-500 mb-3">
-        Members
-      </h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
-        {memberStats.map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-white border border-[#CFC8BC] p-4"
-          >
-            <p className="text-xs font-mono tracking-widest uppercase text-stone-400 mb-1">
-              {stat.label}
-            </p>
-            <p className="text-2xl font-bold text-stone-900">{stat.value}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white border border-[#CFC8BC] p-6">
-          <h2 className="text-sm font-mono tracking-widest uppercase text-stone-500 mb-4">
-            Job Postings Over Time
-          </h2>
-          <JobChart data={chartData} />
+        <div className="grid gap-10 lg:grid-cols-2">
+          <PipelinePanel stats={pipeline} />
+          <AgentRunsPanel runs={agentRuns} />
         </div>
 
-        <div className="bg-white border border-[#CFC8BC] p-6">
-          <h2 className="text-sm font-mono tracking-widest uppercase text-stone-500 mb-4">
-            Recent Members
-          </h2>
-          {recentMembers.length === 0 ? (
-            <p className="text-sm text-stone-400 font-mono py-8 text-center">
-              No members yet
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {recentMembers.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#E5DFD5] flex items-center justify-center">
-                      <span className="text-xs font-mono text-stone-500">
-                        {member.role === 'employer' ? 'E' : 'JS'}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-sm text-stone-900 font-medium">
-                        {member.id.slice(0, 8)}...
+        <DashboardSection title="Jobs">
+          <StatRow stats={jobStats} />
+        </DashboardSection>
+
+        <DashboardSection title="Members">
+          <StatRow stats={memberStats} />
+        </DashboardSection>
+
+        <div className="mt-10 grid gap-10 lg:grid-cols-2">
+          <DashboardSection title="Job postings over time" className="mt-0">
+            <JobChart data={chartData} />
+          </DashboardSection>
+
+          <DashboardSection title="Recent members" className="mt-0">
+            {recentMembers.length === 0 ? (
+              <p className="border border-dashed border-rule px-5 py-12 text-center font-sans text-sm text-secondary">
+                No members yet.
+              </p>
+            ) : (
+              <ul className="divide-y divide-rule border-y border-rule">
+                {recentMembers.map((member) => (
+                  <li key={member.id} className="flex items-center justify-between gap-4 py-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-sans text-sm font-semibold text-ink">
+                        {member.full_name || member.email || 'Unnamed account'}
                       </p>
-                      <p className="text-xs text-stone-400 font-mono">
-                        {new Date(member.created_at).toLocaleDateString()}
+                      <p className="truncate font-mono text-xs text-secondary">
+                        {member.full_name && member.email ? `${member.email} · ` : ''}
+                        Joined {formatDate(member.created_at)}
                       </p>
                     </div>
-                  </div>
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 text-xs font-mono ${
-                      member.role === 'employer'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-blue-100 text-blue-700'
-                    }`}
-                  >
-                    {member.role === 'employer' ? 'employer' : 'job seeker'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+                    <Badge className="shrink-0">{member.role ? ROLE_LABEL[member.role] : 'No role'}</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </DashboardSection>
         </div>
-      </div>
-    </div>
+      </DashboardBody>
+    </>
   );
 }

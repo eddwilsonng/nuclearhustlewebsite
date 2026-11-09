@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState, useState, useTransition, useRef } from "react";
-import { getResumeViewUrl, uploadResume, type ActionState } from "@/lib/auth/actions";
+import { useActionState, useEffect, useState } from "react";
+import { uploadResume, type ActionState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/Button";
-import { FieldDescription, FieldError, FormStatus } from "@/components/ui/Field";
-import { cn } from "@/lib/cn";
+import { FileDropzone } from "@/components/ui/FileDropzone";
+import { useToast } from "@/components/ui/Toast";
 
 interface ResumeUploadProps {
   hasResume: boolean;
@@ -12,90 +12,52 @@ interface ResumeUploadProps {
 }
 
 export function ResumeUpload({ hasResume, currentFilename }: ResumeUploadProps) {
-  const [state, formAction, isPending] = useActionState<ActionState, FormData>(
-    uploadResume,
-    {},
-  );
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [dragging, setDragging] = useState(false);
-  const [viewPending, startView] = useTransition();
-  const [viewError, setViewError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [state, formAction, isPending] = useActionState<ActionState, FormData>(uploadResume, {});
+  const [hasFile, setHasFile] = useState(false);
+  const toast = useToast();
 
-  const handleView = () => {
-    setViewError(null);
-    startView(async () => {
-      const result = await getResumeViewUrl();
-      if (result.url) {
-        window.open(result.url, "_blank", "noopener,noreferrer");
-      } else {
-        setViewError(result.error ?? "Could not open resume");
-      }
-    });
-  };
-
-  const assignFile = (file: File | undefined) => {
-    if (!file || !inputRef.current) return;
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    inputRef.current.files = dt.files;
-    setFileName(file.name);
-  };
+  useEffect(() => {
+    // React resets the form on success, which clears the picker; the new file
+    // then shows as the one on file.
+    if (state.success) toast.success(state.message ?? "Resume uploaded.");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   return (
-    <div className="space-y-4">
-      {hasResume && currentFilename && (
-        <div className="flex items-center justify-between gap-3 border border-rule bg-surface px-4 py-3">
-          <p className="min-w-0 truncate font-sans text-sm text-ink">{currentFilename}</p>
-          <Button variant="quiet" size="compact" disabled={viewPending} onClick={handleView}>
-            {viewPending ? "Opening…" : "View"}
-          </Button>
-        </div>
-      )}
-      {viewError && <FieldError>{viewError}</FieldError>}
-
-      <form action={formAction}>
-        <label
-          htmlFor="resume"
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragging(false);
-            assignFile(e.dataTransfer.files[0]);
-          }}
-          className={cn(
-            "flex cursor-pointer flex-col items-center border border-dashed bg-surface px-4 py-8 text-center transition-colors duration-150",
-            dragging ? "border-ink" : "border-control hover:border-ink",
-          )}
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            name="resume"
-            id="resume"
-            accept=".pdf,.doc,.docx"
-            onChange={(e) => setFileName(e.target.files?.[0]?.name || null)}
-            className="sr-only"
-          />
-          <p className="font-sans text-sm font-medium text-ink">
-            {fileName || "Drop a file or click to upload"}
-          </p>
-          <FieldDescription className="mt-1">PDF or Word, max 5MB</FieldDescription>
-        </label>
-
-        {fileName && (
-          <Button type="submit" variant="primary" className="mt-4" disabled={isPending}>
-            {isPending ? "Uploading…" : "Upload resume"}
-          </Button>
-        )}
-      </form>
-
-      {state.error && <FieldError>{state.error}</FieldError>}
-      {state.success && <FormStatus>Resume uploaded.</FormStatus>}
-    </div>
+    <form action={formAction} className="space-y-4">
+      <FileDropzone
+        id="resume"
+        name="resume"
+        label={hasResume ? "Replace your resume" : "Upload your resume"}
+        accept=".pdf,.doc,.docx"
+        hint="PDF or Word, up to 5 MB."
+        maxBytes={5 * 1024 * 1024}
+        error={state.fieldErrors?.resume ?? state.error}
+        onFileChange={(file) => setHasFile(Boolean(file))}
+        current={
+          hasResume && currentFilename ? (
+            <div className="flex items-center justify-between gap-3">
+              <p className="min-w-0 truncate font-sans text-sm text-ink">
+                <span className="text-secondary">On file: </span>
+                {currentFilename}
+              </p>
+              <a
+                href="/dashboard/resume"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 shrink-0 items-center px-2 font-sans text-sm text-secondary underline underline-offset-2 hover:text-ink"
+              >
+                View
+              </a>
+            </div>
+          ) : undefined
+        }
+      />
+      {hasFile ? (
+        <Button type="submit" variant="secondary" disabled={isPending}>
+          {isPending ? "Uploading…" : "Upload resume"}
+        </Button>
+      ) : null}
+    </form>
   );
 }

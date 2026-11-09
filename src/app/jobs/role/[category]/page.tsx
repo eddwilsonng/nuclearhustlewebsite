@@ -28,6 +28,7 @@ import {
 import { generateCategoryPageSchema, generateBreadcrumbSchema } from '@/lib/seo/schema';
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
+import { JOB_ALERTS_HREF, POST_JOB_HREF } from "@/components/site-nav";
 
 interface PageProps {
   params: Promise<{ category: string }>;
@@ -158,7 +159,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             )}
           </BrowseMeta>
           {jobs.length > 0 && (
-            <BrowseAlertLink href="/signup">
+            <BrowseAlertLink href={JOB_ALERTS_HREF}>
               ★ Get {categoryInfo.name} job alerts →
             </BrowseAlertLink>
           )}
@@ -242,7 +243,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             <SidebarCTA
               label="Hiring?"
               body={`Post a ${categoryInfo.name.toLowerCase()} role and reach qualified nuclear professionals.`}
-              href="/signup/employer"
+              href={POST_JOB_HREF}
             />
           </Sidebar>
         </div>

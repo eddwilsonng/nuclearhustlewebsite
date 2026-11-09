@@ -1,21 +1,16 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { updateEmployerProfile, type ActionState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/Button";
-import { DeleteAccount } from "@/components/dashboard/DeleteAccount";
-import {
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  Input,
-  Textarea,
-} from "@/components/ui/Field";
+import { TextField } from "@/components/ui/Field";
+import { SettingsSection } from "@/components/ui/Settings";
+import { useToast } from "@/components/ui/Toast";
+import { CompanyFields } from "@/components/dashboard/CompanyFields";
 import {
   DashboardAlert,
   DashboardBody,
   DashboardPageHeader,
-  DashboardSectionLabel,
 } from "@/components/dashboard/DashboardChrome";
 import type { Profile, EmployerProfile } from "@/lib/types";
 
@@ -30,107 +25,57 @@ export function EmployerProfileForm({
     updateEmployerProfile,
     {},
   );
+  const toast = useToast();
+
+  useEffect(() => {
+    if (state.success && state.message) toast.success(state.message);
+    // Toast once per completed save.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   return (
     <>
-      <DashboardPageHeader title="Company" description="Shown on your job listings." />
+      <DashboardPageHeader
+        title="Company"
+        description="Shown beside every listing you post, and on your company page while you have a live listing."
+      />
       <DashboardBody width="form">
-        <form action={formAction} className="space-y-5">
-          {state.error && <DashboardAlert tone="error">{state.error}</DashboardAlert>}
-          {state.success && (
-            <DashboardAlert tone="success">Profile updated.</DashboardAlert>
-          )}
+        <form action={formAction} noValidate>
+          {state.error ? (
+            <div className="mb-6">
+              <DashboardAlert tone="error">{state.error}</DashboardAlert>
+            </div>
+          ) : null}
 
-          <FieldGroup>
-            <FieldLabel htmlFor="fullName">Your name</FieldLabel>
-            <Input
-              id="fullName"
-              name="fullName"
-              type="text"
-              required
-              defaultValue={profile.full_name}
-            />
-          </FieldGroup>
+          <SettingsSection title="Company details">
+            <div className="space-y-5 py-5">
+              <CompanyFields employer={employerProfile} state={state} />
+            </div>
+          </SettingsSection>
 
-          <FieldGroup>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              disabled
-              value={profile.email}
-            />
-            <FieldDescription>Email cannot be changed.</FieldDescription>
-          </FieldGroup>
-
-          <div className="border-t border-rule pt-5">
-            <DashboardSectionLabel>Company</DashboardSectionLabel>
-          </div>
-
-          <FieldGroup>
-            <FieldLabel htmlFor="companyName">Company name</FieldLabel>
-            <Input
-              id="companyName"
-              name="companyName"
-              type="text"
-              required
-              defaultValue={employerProfile?.company_name || ""}
-            />
-          </FieldGroup>
-
-          <FieldGroup>
-            <FieldLabel htmlFor="companyWebsite">
-              Website <span className="font-normal text-secondary">(optional)</span>
-            </FieldLabel>
-            <Input
-              id="companyWebsite"
-              name="companyWebsite"
-              type="url"
-              defaultValue={employerProfile?.company_website || ""}
-              placeholder="https://company.com"
-            />
-          </FieldGroup>
-
-          <FieldGroup>
-            <FieldLabel htmlFor="companyDescription">
-              Description <span className="font-normal text-secondary">(optional)</span>
-            </FieldLabel>
-            <Textarea
-              id="companyDescription"
-              name="companyDescription"
-              rows={4}
-              defaultValue={employerProfile?.company_description || ""}
-              placeholder="Tell job seekers about the plant, fleet, or contractor work."
-            />
-          </FieldGroup>
-
-          <FieldGroup>
-            <FieldLabel htmlFor="companyLogo">
-              Logo <span className="font-normal text-secondary">(optional)</span>
-            </FieldLabel>
-            {employerProfile?.company_logo_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={employerProfile.company_logo_url}
-                alt="Current company logo"
-                className="mb-2 h-14 w-14 border border-rule bg-raised object-contain"
+          <SettingsSection
+            title="Your details"
+            description="Candidates don't see this. It's who we contact about your listings."
+          >
+            <div className="py-5">
+              <TextField
+                id="fullName"
+                label="Your name"
+                type="text"
+                required
+                autoComplete="name"
+                defaultValue={state.values?.fullName ?? profile.full_name}
+                error={state.fieldErrors?.fullName}
               />
-            )}
-            <Input
-              id="companyLogo"
-              name="companyLogo"
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/svg+xml"
-            />
-            <FieldDescription>PNG, JPG, WEBP, or SVG. Max 2MB.</FieldDescription>
-          </FieldGroup>
+            </div>
+          </SettingsSection>
 
-          <Button type="submit" variant="primary" size="compact" disabled={isPending}>
-            {isPending ? "Saving…" : "Save"}
-          </Button>
+          <div className="flex justify-end">
+            <Button type="submit" variant="primary" disabled={isPending}>
+              {isPending ? "Saving…" : "Save company"}
+            </Button>
+          </div>
         </form>
-        <DeleteAccount />
       </DashboardBody>
     </>
   );

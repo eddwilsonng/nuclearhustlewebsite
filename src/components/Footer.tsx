@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getActiveStates } from '@/lib/data/static';
 import { legalOperatorName, legalPostalLines } from '@/lib/legal';
+import { POST_JOB_HREF } from "@/components/site-nav";
 
 const YEAR = new Date().getFullYear();
 
@@ -103,7 +104,7 @@ export function Footer() {
             <p className="font-mono text-xs uppercase tracking-widest text-secondary mb-4">Employers</p>
             <ul className="space-y-3">
               <li>
-                <Link href="/signup/employer" className={linkClass}>
+                <Link href={POST_JOB_HREF} className={linkClass}>
                   Post a nuclear job
                 </Link>
               </li>
@@ -113,7 +114,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/signup/employer" className={linkClass}>
+                <Link href={POST_JOB_HREF} className={linkClass}>
                   Create employer account
                 </Link>
               </li>

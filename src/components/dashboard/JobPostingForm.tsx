@@ -3,8 +3,11 @@
 import { useActionState, useState, useEffect, useRef } from "react";
 import { createJobPosting, updateJobPosting, type ActionState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/Button";
+import { ChoiceGroup } from "@/components/ui/ChoiceGroup";
+import { useToast } from "@/components/ui/Toast";
 import {
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
   Input,
@@ -41,6 +44,8 @@ interface JobPostingFormProps {
   job?: EmployerJob;
   mode: "create" | "edit";
   customAction?: (prevState: ActionState, formData: FormData) => Promise<ActionState>;
+  /** Create mode: false until the employer's work email is confirmed. */
+  canPublish?: boolean;
 }
 
 const CATEGORIES = [
@@ -68,33 +73,6 @@ const WORK_MODES: { value: WorkMode; label: string; description: string }[] = [
   { value: "remote", label: "Remote", description: "Works from home, with any site trips noted below" },
 ];
 
-function OptionButton({
-  selected,
-  onSelect,
-  title,
-  description,
-}: {
-  selected: boolean;
-  onSelect: () => void;
-  title: string;
-  description: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={selected}
-      className={cn(
-        "border p-4 text-left transition-colors duration-150",
-        selected ? "border-ink bg-surface" : "border-control hover:border-ink",
-      )}
-    >
-      <p className="font-sans text-sm font-semibold text-ink">{title}</p>
-      <p className="mt-1 font-sans text-sm text-secondary">{description}</p>
-    </button>
-  );
-}
-
 function IssueList({ id, issues }: { id: string; issues: string[] }) {
   if (issues.length === 0) return null;
   return (
@@ -108,10 +86,16 @@ function IssueList({ id, issues }: { id: string; issues: string[] }) {
   );
 }
 
-export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps) {
+function ServerFieldError({ id, message }: { id: string; message?: string }) {
+  return message ? <FieldError id={`${id}-error`}>{message}</FieldError> : null;
+}
+
+export function JobPostingForm({ job, mode, customAction, canPublish = true }: JobPostingFormProps) {
   const action = customAction || (mode === "create" ? createJobPosting : updateJobPosting);
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(action, {});
   const errorRef = useRef<HTMLDivElement>(null);
+  const toast = useToast();
+  const fieldError = (name: string) => state.fieldErrors?.[name];
 
   const initialLocation = parseLocation(job?.location ?? "");
   const initialWorkMode: WorkMode =
@@ -151,10 +135,19 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
   const titleIssues = title.trim() ? getTitleIssues(title) : [];
 
   useEffect(() => {
-    if (state.error && errorRef.current) {
-      errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    // Take the user to the field that needs fixing; fall back to the summary.
+    const field = state.fieldErrors ? Object.keys(state.fieldErrors)[0] : undefined;
+    const target = field ? document.getElementById(field) : null;
+    if (target) {
+      target.focus();
+      target.scrollIntoView({ block: "center" });
+    } else if (state.error && errorRef.current) {
+      errorRef.current.scrollIntoView({ block: "center" });
     }
-  }, [state.error]);
+    if (state.success && mode === "edit") toast.success(state.message ?? "Changes saved.");
+    // Runs once per submit result.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   function handleTitleChange(value: string) {
     setTitle(value);
@@ -240,17 +233,11 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
   return (
     <form action={formAction} className="space-y-10">
       {job && <input type="hidden" name="jobId" value={job.id} />}
-      <input type="hidden" name="applicationType" value={applicationType} />
-      <input type="hidden" name="workMode" value={workMode} />
 
-      {state.error && (
+      {state.error && !state.fieldErrors && (
         <div ref={errorRef}>
           <DashboardAlert tone="error">{state.error}</DashboardAlert>
         </div>
-      )}
-
-      {state.success && mode === "edit" && (
-        <DashboardAlert tone="success">Job posting updated.</DashboardAlert>
       )}
 
       <section className="space-y-5">
@@ -266,8 +253,8 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             maxLength={TITLE_MAX_LENGTH + 20}
             value={title}
             onChange={(e) => handleTitleChange(e.target.value)}
-            aria-describedby="title-hint title-issues"
-            aria-invalid={titleIssues.length > 0}
+            aria-describedby="title-hint title-issues title-error"
+            aria-invalid={titleIssues.length > 0 || Boolean(fieldError("title"))}
             placeholder="e.g. Electrical Design Engineer"
           />
           <FieldDescription id="title-hint">
@@ -275,6 +262,7 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             work mode are set below and shown on the listing.
           </FieldDescription>
           <IssueList id="title-issues" issues={titleIssues} />
+          <ServerFieldError id="title" message={fieldError("title")} />
         </FieldGroup>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -282,6 +270,8 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             <FieldLabel htmlFor="category">Category</FieldLabel>
             <Select
               id="category"
+              aria-invalid={fieldError("category") ? true : undefined}
+              aria-describedby={fieldError("category") ? "category-error" : undefined}
               name="category"
               required
               value={category}
@@ -300,11 +290,14 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             {!categoryTouched && category && (
               <FieldDescription>Suggested from the title. Change it if it&apos;s wrong.</FieldDescription>
             )}
+            <ServerFieldError id="category" message={fieldError("category")} />
           </FieldGroup>
           <FieldGroup>
             <FieldLabel htmlFor="employmentType">Employment type</FieldLabel>
             <Select
               id="employmentType"
+              aria-invalid={fieldError("employmentType") ? true : undefined}
+              aria-describedby={fieldError("employmentType") ? "employmentType-error" : undefined}
               name="employmentType"
               value={employmentType}
               onChange={(e) => setEmploymentType(e.target.value)}
@@ -315,6 +308,7 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
                 </option>
               ))}
             </Select>
+            <ServerFieldError id="employmentType" message={fieldError("employmentType")} />
           </FieldGroup>
         </div>
       </section>
@@ -328,6 +322,8 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
           </FieldLabel>
           <Select
             id="plantId"
+            aria-invalid={fieldError("plantId") ? true : undefined}
+            aria-describedby={fieldError("plantId") ? "plantId-error" : undefined}
             name="plantId"
             value={plantId}
             onChange={(e) => handlePlantChange(e.target.value)}
@@ -342,22 +338,17 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
           <FieldDescription>
             The plant this role supports, including remote roles. Fills in the city and state.
           </FieldDescription>
+          <ServerFieldError id="plantId" message={fieldError("plantId")} />
         </FieldGroup>
 
-        <fieldset className="space-y-2">
-          <legend className="font-sans text-sm font-medium text-ink">Work mode</legend>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {WORK_MODES.map((option) => (
-              <OptionButton
-                key={option.value}
-                selected={workMode === option.value}
-                onSelect={() => setWorkMode(option.value)}
-                title={option.label}
-                description={option.description}
-              />
-            ))}
-          </div>
-        </fieldset>
+        <ChoiceGroup<WorkMode>
+          name="workMode"
+          label="Work mode"
+          columns={3}
+          value={workMode}
+          onValueChange={setWorkMode}
+          options={WORK_MODES}
+        />
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <FieldGroup>
@@ -369,6 +360,8 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             </FieldLabel>
             <Input
               id="city"
+              aria-invalid={fieldError("city") ? true : undefined}
+              aria-describedby={fieldError("city") ? "city-error" : undefined}
               name="city"
               type="text"
               required={workMode !== "remote"}
@@ -376,6 +369,7 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
               onChange={(e) => setCity(e.target.value)}
               placeholder="e.g. Pottstown"
             />
+            <ServerFieldError id="city" message={fieldError("city")} />
           </FieldGroup>
           <FieldGroup>
             <FieldLabel htmlFor="stateCode">
@@ -386,6 +380,8 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             </FieldLabel>
             <Select
               id="stateCode"
+              aria-invalid={fieldError("stateCode") ? true : undefined}
+              aria-describedby={fieldError("stateCode") ? "stateCode-error" : undefined}
               name="stateCode"
               required={workMode !== "remote"}
               value={stateCode}
@@ -398,6 +394,7 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
                 </option>
               ))}
             </Select>
+            <ServerFieldError id="stateCode" message={fieldError("stateCode")} />
           </FieldGroup>
         </div>
       </section>
@@ -415,28 +412,36 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             <FieldLabel htmlFor="salaryMin">Minimum ($)</FieldLabel>
             <Input
               id="salaryMin"
+              aria-invalid={fieldError("salaryMin") ? true : undefined}
+              aria-describedby={fieldError("salaryMin") ? "salaryMin-error" : undefined}
               name="salaryMin"
               inputMode="decimal"
               value={salaryMin}
               onChange={(e) => setSalaryMin(e.target.value)}
               placeholder={salaryPeriod === "year" ? "95000" : "55"}
             />
+            <ServerFieldError id="salaryMin" message={fieldError("salaryMin")} />
           </FieldGroup>
           <FieldGroup>
             <FieldLabel htmlFor="salaryMax">Maximum ($)</FieldLabel>
             <Input
               id="salaryMax"
+              aria-invalid={fieldError("salaryMax") ? true : undefined}
+              aria-describedby={fieldError("salaryMax") ? "salaryMax-error" : undefined}
               name="salaryMax"
               inputMode="decimal"
               value={salaryMax}
               onChange={(e) => setSalaryMax(e.target.value)}
               placeholder={salaryPeriod === "year" ? "130000" : "75"}
             />
+            <ServerFieldError id="salaryMax" message={fieldError("salaryMax")} />
           </FieldGroup>
           <FieldGroup>
             <FieldLabel htmlFor="salaryPeriod">Per</FieldLabel>
             <Select
               id="salaryPeriod"
+              aria-invalid={fieldError("salaryPeriod") ? true : undefined}
+              aria-describedby={fieldError("salaryPeriod") ? "salaryPeriod-error" : undefined}
               name="salaryPeriod"
               required={Boolean(salaryMin || salaryMax)}
               value={salaryPeriod}
@@ -446,6 +451,7 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
               <option value="hour">Hour</option>
               <option value="year">Year</option>
             </Select>
+            <ServerFieldError id="salaryPeriod" message={fieldError("salaryPeriod")} />
           </FieldGroup>
         </div>
       </section>
@@ -476,8 +482,8 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
                 maxLength={id === "about" ? ABOUT_MAX_LENGTH + 200 : undefined}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                aria-describedby={`${id}-hint ${id}-issues`}
-                aria-invalid={Boolean(contactIssue)}
+                aria-describedby={`${id}-hint ${id}-issues ${id}-error`}
+                aria-invalid={Boolean(contactIssue) || Boolean(fieldError(id))}
                 placeholder={placeholder}
               />
               <FieldDescription id={`${id}-hint`}>
@@ -494,6 +500,7 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
                 )}
               </FieldDescription>
               <IssueList id={`${id}-issues`} issues={contactIssue ? [contactIssue] : []} />
+              {contactIssue ? null : <ServerFieldError id={id} message={fieldError(id)} />}
             </FieldGroup>
           );
         })}
@@ -502,26 +509,33 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
       <section className="space-y-5">
         <DashboardSectionLabel>How to apply</DashboardSectionLabel>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <OptionButton
-            selected={applicationType === "form"}
-            onSelect={() => setApplicationType("form")}
-            title="Receive by email"
-            description="Candidates apply on Nuclear Hustle; applications land in your inbox with a CV"
-          />
-          <OptionButton
-            selected={applicationType === "link"}
-            onSelect={() => setApplicationType("link")}
-            title="Link to your careers page"
-            description="Send candidates to your own application page"
-          />
-        </div>
+        <ChoiceGroup<"form" | "link">
+          name="applicationType"
+          label="How candidates apply"
+          columns={2}
+          value={applicationType}
+          onValueChange={setApplicationType}
+          options={[
+            {
+              value: "form",
+              label: "Receive by email",
+              description: "Candidates apply on Nuclear Hustle. Each application lands in your inbox and under Applicants, with a CV.",
+            },
+            {
+              value: "link",
+              label: "Link to your careers page",
+              description: "Send candidates to your own application page.",
+            },
+          ]}
+        />
 
         {applicationType === "link" ? (
           <FieldGroup>
             <FieldLabel htmlFor="applicationUrl">Application URL</FieldLabel>
             <Input
               id="applicationUrl"
+              aria-invalid={fieldError("applicationUrl") ? true : undefined}
+              aria-describedby={fieldError("applicationUrl") ? "applicationUrl-error" : undefined}
               name="applicationUrl"
               type="url"
               required
@@ -532,12 +546,15 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             <FieldDescription>
               Link straight to this role&apos;s application, not your careers homepage.
             </FieldDescription>
+            <ServerFieldError id="applicationUrl" message={fieldError("applicationUrl")} />
           </FieldGroup>
         ) : (
           <FieldGroup>
             <FieldLabel htmlFor="applicationEmail">Application email</FieldLabel>
             <Input
               id="applicationEmail"
+              aria-invalid={fieldError("applicationEmail") ? true : undefined}
+              aria-describedby={fieldError("applicationEmail") ? "applicationEmail-error" : undefined}
               name="applicationEmail"
               type="email"
               required
@@ -548,6 +565,7 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
             <FieldDescription>
               Applications will be emailed here with the candidate&apos;s CV attached.
             </FieldDescription>
+            <ServerFieldError id="applicationEmail" message={fieldError("applicationEmail")} />
           </FieldGroup>
         )}
       </section>
@@ -609,8 +627,14 @@ export function JobPostingForm({ job, mode, customAction }: JobPostingFormProps)
         </section>
       )}
 
-      <div className="flex justify-end">
-        <Button type="submit" variant="primary" size="compact" disabled={isPending}>
+      <div className="flex flex-col items-end gap-2">
+        {state.fieldErrors ? (
+          <FieldError>Fix the highlighted field above, then try again.</FieldError>
+        ) : null}
+        {mode === "create" && !canPublish ? (
+          <p className="font-sans text-sm text-secondary">Confirm your work email above to publish.</p>
+        ) : null}
+        <Button type="submit" variant="primary" disabled={isPending || (mode === "create" && !canPublish)}>
           {isPending
             ? mode === "create"
               ? feature

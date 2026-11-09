@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getActiveStates, getActiveCategories, getCompanies } from '@/lib/data/static';
 import plantsData from '@/data/plants.json';
 import type { Metadata } from 'next';
+import { POST_JOB_HREF } from "@/components/site-nav";
 
 export const metadata: Metadata = {
   title: 'Sitemap | Nuclear Hustle',
@@ -28,7 +29,7 @@ const STATIC_PAGES = [
 ];
 
 const EMPLOYER_PAGES = [
-  { href: '/signup/employer', label: 'Post a job' },
+  { href: POST_JOB_HREF, label: 'Post a job' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/login', label: 'Employer login' },
 ];

@@ -45,7 +45,7 @@ export async function Header() {
           ) : null}
         </DesktopNav>
 
-        <MobileNav isAuthed={isAuthed} />
+        <MobileNav isAuthed={isAuthed} role={profile?.role} />
       </div>
     </StickyHeader>
   );

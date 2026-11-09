@@ -2,14 +2,17 @@ import { Button } from "@/components/ui/Button";
 
 export function GoogleAuthButton({
   role,
+  redirect,
   disabled,
 }: {
   role?: "job_seeker" | "employer";
+  redirect?: string;
   disabled?: boolean;
 }) {
   return (
     <>
       {role ? <input type="hidden" name="role" value={role} /> : null}
+      {redirect ? <input type="hidden" name="redirect" value={redirect} /> : null}
       <Button type="submit" variant="secondary" fullWidth disabled={disabled}>
         <svg viewBox="0 0 24 24" className="size-4 shrink-0" aria-hidden="true">
           <path

@@ -1,109 +1,84 @@
 import { notFound } from "next/navigation";
 import { getJobApplications } from "@/lib/data/applications";
-import { StatusSelect, DownloadCvButton } from "./ApplicationActions";
-import { LinkButton } from "@/components/ui/LinkButton";
+import { getListingStatus } from "@/lib/jobs/listingStatus";
+import { ExternalLinkButton, LinkButton } from "@/components/ui/LinkButton";
 import {
+  DashboardBody,
   DashboardEmptyState,
   DashboardPageHeader,
 } from "@/components/dashboard/DashboardChrome";
+import { ApplicantFilter, ApplicantList } from "@/components/dashboard/ApplicantList";
+import type { ApplicationStatus } from "@/lib/types";
 
 export const metadata = {
   title: "Applications - Nuclear Hustle",
 };
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
+const STATUSES: ApplicationStatus[] = ["new", "reviewed", "shortlisted", "rejected"];
 
 export default async function JobApplicationsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ status?: string }>;
 }) {
-  const { id } = await params;
+  const [{ id }, { status: requested }] = await Promise.all([params, searchParams]);
   const data = await getJobApplications(id);
 
   if (!data) notFound();
 
   const { job, applications } = data;
-  const newCount = applications.filter((a) => a.status === "new").length;
+  const status = STATUSES.includes(requested as ApplicationStatus) ? (requested as ApplicationStatus) : undefined;
+  const counts: Record<string, number> = { all: applications.length };
+  for (const app of applications) counts[app.status] = (counts[app.status] ?? 0) + 1;
+  const shown = status ? applications.filter((app) => app.status === status) : applications;
+  const listing = getListingStatus(job);
 
   return (
     <>
       <DashboardPageHeader
         title={job.title}
-        description={`${applications.length} application${applications.length === 1 ? "" : "s"}${newCount > 0 ? ` · ${newCount} new` : ""}`}
+        description={`${listing.label} · ${applications.length} application${applications.length === 1 ? "" : "s"}${counts.new ? ` · ${counts.new} new` : ""}`}
+        back={{ href: "/dashboard/jobs", label: "Jobs" }}
         action={
-          <LinkButton href="/dashboard/jobs" variant="quiet" size="compact">
-            Back
-          </LinkButton>
+          <>
+            <LinkButton href={`/dashboard/jobs/${job.id}/edit`} variant="secondary" size="compact">
+              Edit listing
+            </LinkButton>
+            <ExternalLinkButton href={`/job/${job.slug}`} target="_blank" variant="quiet" size="compact">
+              View public listing
+            </ExternalLinkButton>
+          </>
         }
       />
 
-      {applications.length === 0 ? (
-        <DashboardEmptyState
-          title="No applications yet"
-          description="Share the public listing to start receiving them."
-          action={
-            <LinkButton href={`/job/${job.slug}`} target="_blank" variant="secondary" size="compact">
-              View listing
-            </LinkButton>
-          }
-        />
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[36rem] text-sm">
-            <thead className="border-b border-rule">
-              <tr>
-                <th className="px-5 py-2 text-left font-mono text-xs font-medium uppercase tracking-widest text-secondary">
-                  Applicant
-                </th>
-                <th className="px-3 py-2 text-left font-mono text-xs font-medium uppercase tracking-widest text-secondary">
-                  Applied
-                </th>
-                <th className="px-3 py-2 text-left font-mono text-xs font-medium uppercase tracking-widest text-secondary">
-                  Status
-                </th>
-                <th className="px-5 py-2 text-right font-mono text-xs font-medium uppercase tracking-widest text-secondary">
-                  CV
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {applications.map((app) => (
-                <tr key={app.id} className="border-b border-rule last:border-0 hover:bg-surface">
-                  <td className="px-5 py-3 align-top">
-                    <p className="font-medium text-ink">{app.applicant_name}</p>
-                    <a
-                      href={`mailto:${app.applicant_email}`}
-                      className="font-sans text-sm text-secondary hover:text-ink hover:underline"
-                    >
-                      {app.applicant_email}
-                    </a>
-                    {app.message ? (
-                      <p className="mt-2 max-w-md whitespace-pre-wrap font-sans text-sm leading-relaxed text-secondary">
-                        {app.message}
-                      </p>
-                    ) : null}
-                  </td>
-                  <td className="px-3 py-3 align-top font-mono text-xs text-secondary">
-                    {formatDate(app.created_at)}
-                  </td>
-                  <td className="px-3 py-3 align-top">
-                    <StatusSelect applicationId={app.id} status={app.status} />
-                  </td>
-                  <td className="px-5 py-3 align-top text-right">
-                    <DownloadCvButton applicationId={app.id} hasCv={!!app.cv_path} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DashboardBody>
+        {applications.length === 0 ? (
+          <DashboardEmptyState
+            title="No applications yet"
+            description={
+              job.application_type === "link"
+                ? "This listing sends candidates to your careers page, so applications arrive there rather than here."
+                : "Applications arrive here and by email as soon as candidates apply. Share the listing to reach more of them."
+            }
+            action={
+              <ExternalLinkButton href={`/job/${job.slug}`} target="_blank" variant="secondary" size="compact">
+                View public listing
+              </ExternalLinkButton>
+            }
+          />
+        ) : (
+          <>
+            <ApplicantFilter basePath={`/dashboard/jobs/${job.id}/applications`} current={status} counts={counts} />
+            {shown.length === 0 ? (
+              <p className="py-6 font-sans text-sm text-secondary">No applications with this status.</p>
+            ) : (
+              <ApplicantList applications={shown} />
+            )}
+          </>
+        )}
+      </DashboardBody>
     </>
   );
 }

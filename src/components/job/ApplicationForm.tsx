@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { ChoiceGroup } from "@/components/ui/ChoiceGroup";
 import {
   FieldError,
   FieldGroup,
@@ -10,6 +12,7 @@ import {
   Input,
   Textarea,
 } from "@/components/ui/Field";
+import { withRedirect } from "@/lib/redirects";
 
 interface ApplicationFormProps {
   jobId: string;
@@ -17,7 +20,13 @@ interface ApplicationFormProps {
   companyName: string;
   defaultName?: string;
   defaultEmail?: string;
+  /** Signed in: the application is linked to the account. */
+  signedIn?: boolean;
+  /** File name of the resume stored on the seeker's profile, if any. */
+  storedResumeName?: string | null;
 }
+
+type CvSource = "stored" | "upload";
 
 export function ApplicationForm({
   jobId,
@@ -25,11 +34,14 @@ export function ApplicationForm({
   companyName,
   defaultName = "",
   defaultEmail = "",
+  signedIn = false,
+  storedResumeName = null,
 }: ApplicationFormProps) {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">(
     "idle",
   );
   const [errorMessage, setErrorMessage] = useState("");
+  const [cvSource, setCvSource] = useState<CvSource>(storedResumeName ? "stored" : "upload");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -59,11 +71,30 @@ export function ApplicationForm({
 
   if (status === "success") {
     return (
-      <div className="border border-rule p-6">
-        <FormStatus>
-          Application sent. {companyName} will be in touch if your profile is a
-          match.
+      <div className="space-y-3 border border-rule p-6">
+        <FormStatus className="text-ink">
+          Application sent. {companyName} has it, along with your CV, and will reply by
+          email if it&apos;s a match. We&apos;ve emailed you a copy.
         </FormStatus>
+        {signedIn ? (
+          <Link
+            href="/dashboard/applications"
+            className="inline-flex min-h-11 items-center font-sans text-sm font-medium text-ink underline underline-offset-2"
+          >
+            See it in My applications
+          </Link>
+        ) : (
+          <p className="font-sans text-sm leading-relaxed text-secondary">
+            Applying to more roles?{" "}
+            <Link
+              href={withRedirect("/signup/job-seeker", "/dashboard/applications")}
+              className="font-medium text-ink underline underline-offset-2"
+            >
+              Create a free account
+            </Link>{" "}
+            to store your resume and keep a record of each application.
+          </p>
+        )}
       </div>
     );
   }
@@ -101,17 +132,32 @@ export function ApplicationForm({
         <Textarea id="message" name="message" rows={4} />
       </FieldGroup>
 
-      <FieldGroup>
-        <FieldLabel htmlFor="cv">CV / resume, PDF or Word, max 5MB</FieldLabel>
-        <Input
-          id="cv"
-          name="cv"
-          type="file"
-          accept=".pdf,.doc,.docx"
-          required
-          className="py-2"
+      {storedResumeName ? (
+        <ChoiceGroup<CvSource>
+          name="cvSource"
+          label="CV / resume"
+          value={cvSource}
+          onValueChange={setCvSource}
+          options={[
+            { value: "stored", label: "Use my stored resume", description: storedResumeName },
+            { value: "upload", label: "Upload a different file", description: "PDF or Word, max 5MB" },
+          ]}
         />
-      </FieldGroup>
+      ) : null}
+
+      {cvSource === "upload" ? (
+        <FieldGroup>
+          <FieldLabel htmlFor="cv">CV / resume, PDF or Word, max 5MB</FieldLabel>
+          <Input
+            id="cv"
+            name="cv"
+            type="file"
+            accept=".pdf,.doc,.docx"
+            required
+            className="py-2"
+          />
+        </FieldGroup>
+      ) : null}
 
       <div className="flex items-start gap-3">
         <input
