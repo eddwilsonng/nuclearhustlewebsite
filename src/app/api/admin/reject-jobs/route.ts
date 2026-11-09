@@ -2,23 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { recordAgentRun } from '@/lib/ops/runLog';
+import { adminGuard } from '@/lib/admin/session';
 
 const JOBS_PATH = path.join(process.cwd(), 'src/data/jobs.json');
-
-function isAdmin(request: NextRequest): boolean {
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const authHeader = request.headers.get('x-admin-email');
-  return !!adminEmail && authHeader === adminEmail;
-}
 
 /**
  * Bulk-reject reviewed jobs. Body: { jobIds: string[] }.
  * Only affects jobs currently pending_review.
  */
 export async function POST(request: NextRequest) {
-  if (!isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const denied = await adminGuard();
+  if (denied) return denied;
 
   const { jobIds } = await request.json();
   if (!Array.isArray(jobIds) || jobIds.length === 0) {
