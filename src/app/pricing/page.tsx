@@ -11,6 +11,7 @@ import {
 } from "@/lib/jobs/featuredOffer";
 import { LEGAL_EMAIL } from "@/lib/legal";
 import { generateBreadcrumbSchema } from "@/lib/seo/schema";
+import { POST_JOB_HREF } from "@/components/site-nav";
 
 const PRICE = featuredPriceLabel();
 const SITE = "https://www.nuclearhustle.com";
@@ -45,7 +46,7 @@ export default async function PricingPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const postHref = user ? "/dashboard/jobs/new" : "/signup/employer";
+  const postHref = POST_JOB_HREF;
 
   const breadcrumb = generateBreadcrumbSchema([
     { name: "Home", url: `${SITE}/` },

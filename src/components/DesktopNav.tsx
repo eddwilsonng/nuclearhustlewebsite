@@ -10,6 +10,7 @@ import {
   EMPLOYER_NAV,
   FIND_WORK_NAV,
   JOBS_NAV_GROUPS,
+  POST_JOB_HREF,
   isNavItemActive,
   type NavItem,
 } from "@/components/site-nav";
@@ -170,7 +171,7 @@ export function DesktopNav({
                 Log in
               </Link>
             )}
-            <LinkButton href="/signup/employer" variant="secondary">
+            <LinkButton href={POST_JOB_HREF} variant="secondary">
               Post a job
             </LinkButton>
           </>

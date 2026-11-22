@@ -187,6 +187,12 @@ There is no separate admin panel — the employer dashboard IS the admin interfa
 
 ## What's Been Built (Session Log)
 
+### Onboarding (Nov 2026)
+- Employer: signup (name, work email, company, password) → `/onboarding/verify` (6-digit code via Resend, `email_verifications` table, service-role only) → `/onboarding/company` → `/dashboard/jobs/new` → `/dashboard/jobs/[id]/posted`. Google employers skip verification. Unverified employers can't publish (app check + RLS on `employer_jobs` insert).
+- Job seeker: signup (name, email, password) → `/onboarding/profile` (field, state, resume, Monday email; skippable) → back to `redirect`. Save intent survives signup via `?intent=save`.
+- Account rows are created by `provisionAccount()` (`src/lib/auth/provision.ts`), idempotent; the dashboard layout re-runs it if a signup stopped halfway.
+- `getAccountContext()` (`src/lib/account.ts`) loads user, profile, role (incl. admin view), employer/seeker rows and verification once per request.
+
 ### Auth System
 - Dual user types: employer and job seeker
 - Login/signup forms with server actions (`src/lib/auth/actions.ts`)
@@ -216,6 +222,7 @@ There is no separate admin panel — the employer dashboard IS the admin interfa
 ### Before going live
 - [ ] Run `supabase/schema.sql` in Supabase SQL Editor
 - [ ] Run `supabase/rate-limits-migration.sql`
+- [ ] Run `supabase/onboarding-migration.sql` (employer email verification, applicant history, seeker matching) — before deploying the onboarding code
 - [ ] Run `supabase/weekly-picks-migration.sql` (powers `/this-week` + the Weekly Picks console)
 - [ ] Create `resumes` storage bucket in Supabase dashboard (set to private)
 - [ ] Configure Supabase Auth → Site URL: `https://nuclearhustle.com`

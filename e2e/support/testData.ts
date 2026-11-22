@@ -48,6 +48,20 @@ export function adminClient(): SupabaseClient {
   });
 }
 
+// Employers confirm their work email with a code we can't read in a test, so
+// flows mark the address confirmed directly, as the verify step would.
+export async function markEmailVerified(email: string) {
+  const admin = adminClient();
+  const { data: profile } = await admin.from("profiles").select("id").eq("email", email).single();
+  if (!profile) throw new Error(`No profile for ${email}`);
+  const { error } = await admin
+    .from("email_verifications")
+    .upsert({ user_id: profile.id, email, verified_at: new Date().toISOString() }, { onConflict: "user_id" });
+  // Before onboarding-migration.sql runs there is no table, and the app treats
+  // every employer as verified, so there is nothing to mark.
+  if (error && !/email_verifications/.test(error.message)) throw error;
+}
+
 // /api/apply allows 5 requests per IP per 10 minutes. Locally every request
 // comes from the same loopback address, so flows reset it between tests.
 const LOCAL_RATE_LIMIT_KEYS = ["apply:unknown", "apply:::1", "apply:127.0.0.1", "apply:::ffff:127.0.0.1"];

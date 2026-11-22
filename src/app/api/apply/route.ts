@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { z } from 'zod';
+import { applicationConfirmationEmail } from '@/lib/email/templates/accountEmails';
 
 function escapeHtml(str: string): string {
   return str
@@ -118,27 +119,37 @@ export async function POST(request: Request) {
     }
 
     const { jobId, applicantName, applicantEmail, message } = parsed.data;
-    const cvFile = formData.get('cv') as File | null;
 
-    if (!cvFile || cvFile.size === 0) {
-      return NextResponse.json({ error: 'A CV or resume is required' }, { status: 400 });
-    }
-
-    if (cvFile.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: 'CV must be less than 5MB' }, { status: 400 });
-    }
-
-    // Validate file type
-    if (!ALLOWED_CV_TYPES.includes(cvFile.type)) {
-      return NextResponse.json({ error: 'Only PDF and Word documents are allowed' }, { status: 400 });
-    }
-
-    const fileExt = cvFile.name.split('.').pop()?.toLowerCase() || '';
-    if (!ALLOWED_CV_EXTENSIONS.includes(fileExt)) {
-      return NextResponse.json({ error: 'Only .pdf, .doc, and .docx files are allowed' }, { status: 400 });
-    }
-
+    // Signed-in job seekers can send the resume stored on their profile, and
+    // their application is linked to the account for "My applications".
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const useStoredResume = formData.get('cvSource') === 'stored' && Boolean(user);
+    const cvFile = formData.get('cv') as File | null;
+    let fileExt = '';
+
+    if (!useStoredResume) {
+      if (!cvFile || cvFile.size === 0) {
+        return NextResponse.json({ error: 'A CV or resume is required' }, { status: 400 });
+      }
+
+      if (cvFile.size > 5 * 1024 * 1024) {
+        return NextResponse.json({ error: 'CV must be less than 5MB' }, { status: 400 });
+      }
+
+      // Validate file type
+      if (!ALLOWED_CV_TYPES.includes(cvFile.type)) {
+        return NextResponse.json({ error: 'Only PDF and Word documents are allowed' }, { status: 400 });
+      }
+
+      fileExt = cvFile.name.split('.').pop()?.toLowerCase() || '';
+      if (!ALLOWED_CV_EXTENSIONS.includes(fileExt)) {
+        return NextResponse.json({ error: 'Only .pdf, .doc, and .docx files are allowed' }, { status: 400 });
+      }
+    }
+
     const { data: job, error: jobError } = await supabase
       .from('employer_jobs')
       .select('id, employer_id, title, slug, application_type, application_email, employer:employer_profiles(company_name)')
@@ -171,30 +182,69 @@ export async function POST(request: Request) {
     let cvPath: string | null = null;
     let cvUrl: string | null = null;
     const safeName = sanitizeFilename(applicantName);
-    const fileName = `applications/${job.id}/${Date.now()}-${safeName}.${fileExt}`;
 
-    const { error: uploadError } = await admin.storage
-      .from('resumes')
-      .upload(fileName, cvFile, { cacheControl: '3600', upsert: false });
+    const { data: seeker } = user
+      ? await admin
+          .from('job_seeker_profiles')
+          .select('resume_url, phone')
+          .eq('user_id', user.id)
+          .maybeSingle()
+      : { data: null };
 
-    if (!uploadError) {
+    if (useStoredResume) {
+      const storedPath =
+        seeker?.resume_url && !seeker.resume_url.startsWith('http') ? (seeker.resume_url as string) : null;
+      if (!storedPath) {
+        return NextResponse.json(
+          { error: "There's no resume on your profile. Upload one with this application." },
+          { status: 400 },
+        );
+      }
+      // A copy, not a reference: replacing your profile resume later must not
+      // change what this employer received.
+      const storedExt = storedPath.split('.').pop()?.toLowerCase() || 'pdf';
+      const fileName = `applications/${job.id}/${Date.now()}-${safeName}.${storedExt}`;
+      const { error: copyError } = await admin.storage.from('resumes').copy(storedPath, fileName);
+      if (copyError) {
+        console.error('[apply] Could not copy stored resume:', copyError.message);
+        return NextResponse.json(
+          { error: "We couldn't attach your stored resume. Upload the file with this application instead." },
+          { status: 500 },
+        );
+      }
       cvPath = fileName;
+    } else if (cvFile) {
+      const fileName = `applications/${job.id}/${Date.now()}-${safeName}.${fileExt}`;
+      const { error: uploadError } = await admin.storage
+        .from('resumes')
+        .upload(fileName, cvFile, { cacheControl: '3600', upsert: false });
+      if (!uploadError) cvPath = fileName;
+    }
+
+    if (cvPath) {
       // Short-lived signed URL just for the notification email
       const { data: signedData } = await admin.storage
         .from('resumes')
-        .createSignedUrl(fileName, 60 * 60 * 24);
+        .createSignedUrl(cvPath, 60 * 60 * 24);
       cvUrl = signedData?.signedUrl ?? null;
     }
 
     // Persist the application so it shows in the recruiter dashboard
-    const { error: insertError } = await admin.from('job_applications').insert({
+    const application = {
       job_id: job.id,
       employer_id: job.employer_id,
       applicant_name: applicantName,
       applicant_email: applicantEmail,
       message: message || null,
       cv_path: cvPath,
-    });
+    };
+    let { error: insertError } = await admin
+      .from('job_applications')
+      .insert(user ? { ...application, applicant_user_id: user.id } : application);
+    if (insertError && user && /applicant_user_id/.test(insertError.message)) {
+      // supabase/onboarding-migration.sql not run yet: still deliver the application.
+      ({ error: insertError } = await admin.from('job_applications').insert(application));
+    }
 
     if (insertError) {
       console.error('[apply] Failed to persist application:', insertError.message);
@@ -215,6 +265,7 @@ export async function POST(request: Request) {
       const eTitle = escapeHtml(job.title);
       const eMessage = message ? escapeHtml(message) : null;
       const eCvUrl = cvUrl ? escapeHtml(cvUrl) : null;
+      const ePhone = seeker?.phone ? escapeHtml(seeker.phone as string) : null;
 
       const { error: sendError } = await resend.emails.send({
         from: 'Nuclear Hustle <applications@nuclearhustle.com>',
@@ -239,6 +290,11 @@ export async function POST(request: Request) {
                 <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #999;">Position</td>
                 <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #111;">${eTitle}</td>
               </tr>
+              ${ePhone ? `
+              <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #999;">Phone</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #111;">${ePhone}</td>
+              </tr>` : ''}
               ${eCvUrl ? `
               <tr>
                 <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #999;">CV</td>
@@ -265,6 +321,26 @@ export async function POST(request: Request) {
           { status: 502 },
         );
       }
+
+      // Confirmation to the applicant. Best effort: the application is
+      // already delivered, so a failure here doesn't fail the request.
+      const confirmation = applicationConfirmationEmail({
+        applicantName,
+        jobTitle: job.title,
+        companyName: companyName ?? 'The employer',
+        jobSlug: job.slug,
+        hasAccount: Boolean(user),
+      });
+      const { error: confirmError } = await resend.emails.send({
+        from: 'Nuclear Hustle <applications@nuclearhustle.com>',
+        to: applicantEmail,
+        // Not the employer's inbox: listings keep application_email private.
+        replyTo: 'nuclearhustle@gmail.com',
+        subject: confirmation.subject,
+        html: confirmation.html,
+        text: confirmation.text,
+      });
+      if (confirmError) console.error('[apply] Applicant confirmation failed:', confirmError.message);
     } else {
       console.error('[apply] RESEND_API_KEY not set. Application saved for job:', job.id);
       return NextResponse.json(

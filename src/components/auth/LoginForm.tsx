@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { signIn, signInWithGoogle, type ActionState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/Button";
-import { FieldGroup, FieldLabel, Input } from "@/components/ui/Field";
+import { TextField } from "@/components/ui/Field";
 import { AuthDivider, AuthError, GoogleAuthButton } from "./AuthShared";
 import { PasswordField } from "./PasswordField";
 
@@ -17,34 +17,33 @@ export function LoginForm({ redirect }: { redirect?: string }) {
   return (
     <div className="space-y-4">
       <form action={signInWithGoogle}>
-        <GoogleAuthButton />
+        <GoogleAuthButton redirect={redirect} />
       </form>
 
       <AuthDivider />
 
-      <form action={formAction} className="space-y-4">
+      <form action={formAction} className="space-y-4" noValidate>
         {redirect && <input type="hidden" name="redirect" value={redirect} />}
 
         {state.error && <AuthError>{state.error}</AuthError>}
 
-        <FieldGroup>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            placeholder="you@example.com"
-          />
-        </FieldGroup>
+        <TextField
+          id="email"
+          label="Email"
+          type="email"
+          required
+          autoComplete="email"
+          placeholder="you@example.com"
+          defaultValue={state.values?.email}
+          error={state.fieldErrors?.email}
+        />
 
         <div className="space-y-2">
-          <PasswordField autoComplete="current-password" />
+          <PasswordField autoComplete="current-password" error={state.fieldErrors?.password} />
           <div className="flex justify-end">
             <Link
               href="/forgot-password"
-              className="font-sans text-sm text-secondary underline underline-offset-2 hover:text-ink"
+              className="inline-flex min-h-11 items-center font-sans text-sm text-secondary underline underline-offset-2 hover:text-ink"
             >
               Forgot password?
             </Link>
@@ -52,7 +51,7 @@ export function LoginForm({ redirect }: { redirect?: string }) {
         </div>
 
         <Button type="submit" variant="primary" fullWidth disabled={isPending}>
-          {isPending ? "Signing in…" : "Sign in"}
+          {isPending ? "Logging in…" : "Log in"}
         </Button>
       </form>
     </div>

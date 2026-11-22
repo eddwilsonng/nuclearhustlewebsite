@@ -3,6 +3,10 @@
 import { useActionState, useState, useEffect, useRef } from 'react';
 import { adminUpdateScrapedJob } from '@/lib/admin/actions';
 import type { ActionState } from '@/lib/auth/actions';
+import { Button } from '@/components/ui/Button';
+import { SelectField, TextareaField, TextField } from '@/components/ui/Field';
+import { useToast } from '@/components/ui/Toast';
+import { DashboardAlert } from '@/components/dashboard/DashboardChrome';
 
 interface ScrapedJob {
   id: string;
@@ -33,6 +37,7 @@ export function ScrapedJobForm({ job }: ScrapedJobFormProps) {
     adminUpdateScrapedJob,
     {}
   );
+  const toast = useToast();
   const errorRef = useRef<HTMLDivElement>(null);
 
   const [title, setTitle] = useState(job.title);
@@ -42,119 +47,76 @@ export function ScrapedJobForm({ job }: ScrapedJobFormProps) {
   const [description, setDescription] = useState(job.description || '');
 
   useEffect(() => {
-    if (state.error && errorRef.current) {
-      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [state.error]);
+    if (state.error) errorRef.current?.scrollIntoView({ block: 'center' });
+    if (state.success) toast.success('Changes saved.');
+    // Runs once per submit result.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   return (
     <form action={formAction} className="space-y-6">
       <input type="hidden" name="jobId" value={job.id} />
 
       {state.error && (
-        <div
-          ref={errorRef}
-          className="p-4 text-sm text-red-700 bg-red-50 border border-red-300"
-        >
-          {state.error}
+        <div ref={errorRef}>
+          <DashboardAlert tone="error">{state.error}</DashboardAlert>
         </div>
       )}
 
-      {state.success && (
-        <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200">
-          Job updated successfully!
-        </div>
-      )}
+      <TextField
+        id="title"
+        label="Job title"
+        required
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
 
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-stone-900 mb-1">
-          Job Title
-        </label>
-        <input
-          id="title"
-          name="title"
-          type="text"
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <TextField
+          id="location"
+          label="Location"
           required
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full px-3 py-2 border border-[#CFC8BC] focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
         />
+        <SelectField
+          id="category"
+          label="Category"
+          required
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option value="">Select a category</option>
+          {CATEGORIES.map((cat) => (
+            <option key={cat.value} value={cat.value}>
+              {cat.label}
+            </option>
+          ))}
+        </SelectField>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="location" className="block text-sm font-medium text-stone-900 mb-1">
-            Location
-          </label>
-          <input
-            id="location"
-            name="location"
-            type="text"
-            required
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="w-full px-3 py-2 border border-[#CFC8BC] focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-          />
-        </div>
+      <TextField
+        id="url"
+        label="Source URL"
+        type="url"
+        optional
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+      />
 
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-stone-900 mb-1">
-            Category
-          </label>
-          <select
-            id="category"
-            name="category"
-            required
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full px-3 py-2 border border-[#CFC8BC] focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-          >
-            <option value="">Select a category</option>
-            {CATEGORIES.map((cat) => (
-              <option key={cat.value} value={cat.value}>
-                {cat.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor="url" className="block text-sm font-medium text-stone-900 mb-1">
-          Source URL
-        </label>
-        <input
-          id="url"
-          name="url"
-          type="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="w-full px-3 py-2 border border-[#CFC8BC] focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-stone-900 mb-1">
-          Description
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          rows={10}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full px-3 py-2 border border-[#CFC8BC] focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-        />
-      </div>
+      <TextareaField
+        id="description"
+        label="Description"
+        optional
+        rows={10}
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
 
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="px-6 py-2 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-stone-900 font-semibold transition-colors"
-        >
-          {isPending ? 'Saving...' : 'Save Changes'}
-        </button>
+        <Button type="submit" variant="primary" disabled={isPending}>
+          {isPending ? 'Saving…' : 'Save changes'}
+        </Button>
       </div>
     </form>
   );

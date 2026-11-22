@@ -26,6 +26,7 @@ import { Sidebar, SidebarSection, SidebarNavList, SidebarCTA } from '@/component
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
 import { generateBreadcrumbSchema } from '@/lib/seo/schema';
+import { JOB_ALERTS_HREF, POST_JOB_HREF } from "@/components/site-nav";
 
 interface PageProps {
   params: Promise<{ state: string }>;
@@ -121,7 +122,7 @@ export default async function StatePage({ params, searchParams }: PageProps) {
             )}
           </BrowseMeta>
           {jobs.length > 0 && (
-            <BrowseAlertLink href="/signup">
+            <BrowseAlertLink href={JOB_ALERTS_HREF}>
               ★ Get {stateInfo.name} job alerts →
             </BrowseAlertLink>
           )}
@@ -195,7 +196,7 @@ export default async function StatePage({ params, searchParams }: PageProps) {
             <SidebarCTA
               label={`Hiring in ${stateInfo.name}?`}
               body="Post a role and reach nuclear professionals actively looking."
-              href="/signup/employer"
+              href={POST_JOB_HREF}
             />
           </Sidebar>
         </div>

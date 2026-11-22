@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
       jobId,
       userId: user.id,
       customerEmail: user.email,
-      successUrl: `${siteUrl}/dashboard/jobs?featured=success`,
-      cancelUrl: `${siteUrl}/dashboard/jobs`,
+      successUrl: `${siteUrl}/dashboard/jobs/${jobId}/posted?featured=success`,
+      cancelUrl: `${siteUrl}/dashboard/jobs/${jobId}/posted?featured=cancelled`,
     });
 
     if (!result.ok) {

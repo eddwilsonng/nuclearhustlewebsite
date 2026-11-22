@@ -30,6 +30,7 @@ const KEY_PAGES = [
   "/signup/employer",
   "/signup/job-seeker",
   "/forgot-password",
+  "/alerts",
 ];
 
 const SITEMAP_SAMPLE_PER_FILE = 15;
@@ -132,8 +133,8 @@ test("login shows an error for wrong credentials", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Email", { exact: true }).fill("delivered+nh-e2e-nobody@resend.dev");
   await page.getByLabel("Password", { exact: true }).fill("definitely-wrong-password");
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page.getByText(/invalid/i).first()).toBeVisible();
+  await page.getByRole("button", { name: "Log in" }).click();
+  await expect(page.getByText(/don't match an account/i).first()).toBeVisible();
   await expect(page).toHaveURL(/\/login/);
 });
 

@@ -11,6 +11,7 @@ const pages = [
   { path: '/nuclear-skills', priority: '0.7', changefreq: 'monthly', listsJobs: false },
   { path: '/about', priority: '0.5', changefreq: 'monthly', listsJobs: false },
   { path: '/pricing', priority: '0.6', changefreq: 'monthly', listsJobs: false },
+  { path: '/alerts', priority: '0.5', changefreq: 'monthly', listsJobs: false },
   { path: '/contact', priority: '0.5', changefreq: 'monthly', listsJobs: false },
   { path: '/privacy', priority: '0.3', changefreq: 'monthly', listsJobs: false },
   { path: '/terms', priority: '0.3', changefreq: 'monthly', listsJobs: false },

@@ -1,5 +1,14 @@
 export type NavMatch = "exact" | "prefix";
 
+/**
+ * "Post a job" everywhere. Signed out, it starts employer signup and lands on
+ * the job form afterwards; signed in, middleware forwards straight to the form.
+ */
+export const POST_JOB_HREF = "/signup/employer?redirect=%2Fdashboard%2Fjobs%2Fnew";
+
+/** Email-only Monday digest signup. No account needed. */
+export const JOB_ALERTS_HREF = "/alerts";
+
 export type NavItem = {
   href: string;
   label: string;
@@ -16,7 +25,7 @@ export const FIND_WORK_NAV = [
 ] as const satisfies readonly NavItem[];
 
 export const EMPLOYER_NAV = [
-  { href: "/signup/employer", label: "Post a job", match: "exact" },
+  { href: POST_JOB_HREF, label: "Post a job", match: "exact" },
   { href: "/pricing", label: "Pricing", match: "exact" },
   { href: "/contact", label: "Contact", match: "prefix" },
 ] as const satisfies readonly NavItem[];

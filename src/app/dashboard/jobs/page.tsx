@@ -1,108 +1,43 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { isAdmin } from "@/lib/admin";
-import { JobRowMenu } from "./JobActions";
-import { FeaturedSuccessBanner } from "./FeaturedSuccessBanner";
+import { getAccountContext } from "@/lib/account";
 import { getApplicationCountsByJob } from "@/lib/data/applications";
+import { formatShortDate, getListingStatus } from "@/lib/jobs/listingStatus";
+import { JobRowMenu } from "./JobActions";
 import { Badge } from "@/components/ui/Badge";
 import { LinkButton } from "@/components/ui/LinkButton";
 import {
+  DashboardAlert,
   DashboardBody,
   DashboardEmptyState,
   DashboardPageHeader,
 } from "@/components/dashboard/DashboardChrome";
-import { cn } from "@/lib/cn";
-import type { EmployerProfile, EmployerJob } from "@/lib/types";
-
-const EXPIRY_SOON_DAYS = 7;
-
-function getExpiryState(expiresAt: string | null): {
-  label: string;
-  expired: boolean;
-  soon: boolean;
-} | null {
-  if (!expiresAt) return null;
-  const diffMs = new Date(expiresAt).getTime() - Date.now();
-  const days = Math.ceil(diffMs / (24 * 60 * 60 * 1000));
-  if (days <= 0) return { label: "Expired", expired: true, soon: false };
-  if (days <= EXPIRY_SOON_DAYS)
-    return { label: `${days}d left`, expired: false, soon: true };
-  return {
-    label: new Date(expiresAt).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    }),
-    expired: false,
-    soon: false,
-  };
-}
-
-const thClass =
-  "px-3 py-2 text-left font-mono text-xs font-medium uppercase tracking-widest text-secondary first:pl-5 last:pr-5";
-const tdClass = "px-3 py-2.5 align-middle first:pl-5 last:pr-5";
+import type { EmployerJob } from "@/lib/types";
 
 export const metadata = {
   title: "Jobs - Nuclear Hustle",
 };
 
-export default async function ManageJobsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ featured?: string }>;
-}) {
-  const params = await searchParams;
-  const showFeaturedSuccess = params.featured === "success";
+const STATUS_TONE = { live: "success", paused: "neutral", expired: "danger" } as const;
+
+export default async function ManageJobsPage() {
+  const account = await getAccountContext();
+  if (!account?.profile) return null;
+  if (account.role !== "employer") redirect("/dashboard");
+  if (!account.employer) redirect("/onboarding/company?redirect=/dashboard/jobs");
+
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return null;
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (profile?.role === "job_seeker" && !isAdmin(user.email)) {
-    redirect("/dashboard");
-  }
-
-  const { data: employerProfile } = await supabase
-    .from("employer_profiles")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!employerProfile) {
-    return (
-      <>
-        <DashboardPageHeader title="Jobs" />
-        <DashboardEmptyState
-          title="No company profile yet"
-          description="Finish company setup before posting jobs."
-          action={
-            <LinkButton href="/dashboard/profile" variant="primary" size="compact">
-              Company profile
-            </LinkButton>
-          }
-        />
-      </>
-    );
-  }
-
-  const typedEmployerProfile = employerProfile as EmployerProfile;
-
-  const { data: jobs } = await supabase
+  const { data: jobs, error } = await supabase
     .from("employer_jobs")
     .select("*")
-    .eq("employer_id", typedEmployerProfile.id)
+    .eq("employer_id", account.employer.id)
     .order("created_at", { ascending: false });
 
   const typedJobs = (jobs || []) as EmployerJob[];
   const applicationCounts = await getApplicationCountsByJob();
+  const now = new Date();
+  const liveCount = typedJobs.filter((job) => getListingStatus(job, now).key === "live").length;
 
   return (
     <>
@@ -110,130 +45,101 @@ export default async function ManageJobsPage({
         title="Jobs"
         description={
           typedJobs.length > 0
-            ? `${typedJobs.length} posting${typedJobs.length === 1 ? "" : "s"}`
-            : undefined
+            ? `${liveCount} live · ${typedJobs.length} posted`
+            : "Listings stay up for 60 days and can be renewed."
         }
         action={
           <LinkButton href="/dashboard/jobs/new" variant="primary" size="compact">
-            New job
+            Post a job
           </LinkButton>
         }
       />
 
-      {showFeaturedSuccess && (
-        <DashboardBody className="pb-0">
-          <FeaturedSuccessBanner />
-        </DashboardBody>
-      )}
+      <DashboardBody>
+        {error ? (
+          <DashboardAlert tone="error">We couldn&apos;t load your listings. Refresh to try again.</DashboardAlert>
+        ) : typedJobs.length === 0 ? (
+          <DashboardEmptyState
+            title="No listings yet"
+            description="Posting is free. Listings reach operators, engineers and plant crews, and applications arrive with a CV."
+            action={
+              <LinkButton href="/dashboard/jobs/new" variant="secondary" size="compact">
+                Post a job
+              </LinkButton>
+            }
+          />
+        ) : (
+          <ul className="divide-y divide-rule border-y border-rule" aria-label="Your listings">
+            {typedJobs.map((job) => {
+              const counts = applicationCounts[job.id];
+              const status = getListingStatus(job, now);
+              const canRenew = status.key === "expired" || status.expiringSoon;
 
-      {typedJobs.length === 0 ? (
-        <DashboardEmptyState
-          title="No jobs yet"
-          description="Publish a listing to reach operators, engineers, and plant crews."
-          action={
-            <LinkButton href="/dashboard/jobs/new" variant="primary" size="compact">
-              New job
-            </LinkButton>
-          }
-        />
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[40rem] border-b border-rule text-sm">
-            <thead className="border-b border-rule">
-              <tr>
-                <th className={thClass}>Role</th>
-                <th className={cn(thClass, "hidden sm:table-cell")}>Location</th>
-                <th className={thClass}>Status</th>
-                <th className={cn(thClass, "hidden md:table-cell")}>Expires</th>
-                <th className={cn(thClass, "hidden lg:table-cell text-right")}>Views</th>
-                <th className={cn(thClass, "text-right")}>Apps</th>
-                <th className={thClass}>
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {typedJobs.map((job) => {
-                const appCount = applicationCounts[job.id];
-                const expiry = getExpiryState(job.expires_at);
-                const featuredLive =
-                  job.is_featured &&
-                  job.featured_until &&
-                  new Date(job.featured_until) > new Date();
-
-                return (
-                  <tr key={job.id} className="border-b border-rule last:border-0 hover:bg-surface">
-                    <td className={tdClass}>
-                      <Link
-                        href={`/dashboard/jobs/${job.id}/edit`}
-                        className="font-medium text-ink hover:underline"
-                      >
-                        {job.title}
-                      </Link>
-                    </td>
-                    <td className={cn(tdClass, "hidden text-secondary sm:table-cell")}>
-                      {job.location}
-                    </td>
-                    <td className={tdClass}>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <Badge tone={job.is_active ? "success" : "neutral"}>
-                          {job.is_active ? "Active" : "Inactive"}
-                        </Badge>
-                        {featuredLive ? <Badge tone="featured">Featured</Badge> : null}
-                      </div>
-                    </td>
-                    <td
-                      className={cn(
-                        tdClass,
-                        "hidden font-mono text-xs md:table-cell",
-                        expiry?.expired
-                          ? "text-danger"
-                          : expiry?.soon
-                            ? "text-ink"
-                            : "text-secondary",
-                      )}
+              return (
+                <li
+                  key={job.id}
+                  className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-2 py-4 md:grid-cols-[minmax(0,1fr)_9rem_9rem_auto] md:items-center"
+                >
+                  <div className="min-w-0">
+                    <Link
+                      href={`/dashboard/jobs/${job.id}/applications`}
+                      className="font-sans text-sm font-semibold text-ink hover:underline"
                     >
-                      {expiry?.label ?? "—"}
-                    </td>
-                    <td className={cn(tdClass, "hidden text-right font-mono text-xs text-secondary lg:table-cell")}>
-                      {job.view_count}
-                    </td>
-                    <td className={cn(tdClass, "text-right font-mono text-xs")}>
-                      <Link
-                        href={`/dashboard/jobs/${job.id}/applications`}
-                        className="text-secondary hover:text-ink hover:underline"
-                      >
-                        {appCount?.total ?? 0}
-                        {appCount?.new ? (
-                          <span className="text-ink"> · {appCount.new}</span>
-                        ) : null}
-                      </Link>
-                    </td>
-                    <td className={tdClass}>
-                      <div className="flex items-center justify-end gap-1">
-                        <Link
-                          href={`/dashboard/jobs/${job.id}/edit`}
-                          className="inline-flex min-h-9 items-center px-2 text-sm text-secondary hover:text-ink"
-                        >
-                          Edit
-                        </Link>
-                        <JobRowMenu
-                          jobId={job.id}
-                          slug={job.slug}
-                          isActive={job.is_active}
-                          isFeatured={job.is_featured}
-                          featuredUntil={job.featured_until}
-                          expired={!!expiry?.expired}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                      {job.title}
+                    </Link>
+                    <p className="mt-0.5 font-sans text-sm text-secondary">{job.location}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      <Badge tone={STATUS_TONE[status.key]}>{status.label}</Badge>
+                      {status.featuredUntil ? (
+                        <Badge tone="featured">Featured until {formatShortDate(status.featuredUntil)}</Badge>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="col-start-2 row-start-1 flex items-start justify-end md:col-start-4">
+                    <JobRowMenu
+                      jobId={job.id}
+                      slug={job.slug}
+                      title={job.title}
+                      isActive={job.is_active}
+                      featuredLive={Boolean(status.featuredUntil)}
+                      canRenew={canRenew}
+                      expired={status.key === "expired"}
+                    />
+                  </div>
+
+                  <p className="col-span-2 font-mono text-xs text-secondary md:col-span-1 md:col-start-2 md:row-start-1">
+                    {status.key === "expired"
+                      ? `Expired ${job.expires_at ? formatShortDate(job.expires_at) : ""}`
+                      : job.expires_at
+                        ? (
+                            <span className={status.expiringSoon ? "text-ink" : undefined}>
+                              {status.expiringSoon
+                                ? `Expires in ${status.daysLeft} day${status.daysLeft === 1 ? "" : "s"}`
+                                : `Expires ${formatShortDate(job.expires_at)}`}
+                            </span>
+                          )
+                        : "No expiry"}
+                    <span className="block">{job.view_count.toLocaleString("en-US")} views</span>
+                  </p>
+
+                  <p className="col-span-2 font-mono text-xs md:col-span-1 md:col-start-3 md:row-start-1">
+                    <Link
+                      href={`/dashboard/jobs/${job.id}/applications`}
+                      className="inline-flex min-h-10 flex-col justify-center text-secondary hover:text-ink md:min-h-0"
+                    >
+                      <span>
+                        {counts?.total ?? 0} application{counts?.total === 1 ? "" : "s"}
+                      </span>
+                      {counts?.new ? <span className="text-ink">{counts.new} new</span> : null}
+                    </Link>
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </DashboardBody>
     </>
   );
 }

@@ -127,15 +127,20 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages (not onboarding or
   // password reset — recovery links land authenticated on /reset-password).
+  // A `redirect` param wins, so a signed-in employer clicking "Post a job"
+  // (/signup/employer?redirect=/dashboard/jobs/new) lands on the form.
   if (
     user &&
     (request.nextUrl.pathname.startsWith("/login") ||
       request.nextUrl.pathname.startsWith("/signup") ||
       request.nextUrl.pathname === "/forgot-password")
   ) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+    const wanted = request.nextUrl.searchParams.get("redirect");
+    const safe =
+      wanted && wanted.startsWith("/") && !wanted.startsWith("//") && !wanted.includes("\\")
+        ? wanted
+        : "/dashboard";
+    return NextResponse.redirect(new URL(safe, request.url));
   }
 
   return supabaseResponse;

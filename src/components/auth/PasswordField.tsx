@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { FieldDescription, FieldGroup, FieldLabel, Input } from "@/components/ui/Field";
+import { cn } from "@/lib/cn";
+import { FieldDescription, FieldError, FieldGroup, FieldLabel, Input } from "@/components/ui/Field";
 
 export function PasswordField({
   id = "password",
@@ -9,14 +10,20 @@ export function PasswordField({
   label = "Password",
   autoComplete,
   description,
+  error,
+  required = true,
 }: {
   id?: string;
   name?: string;
   label?: string;
   autoComplete: string;
   description?: string;
+  error?: string;
+  required?: boolean;
 }) {
   const [visible, setVisible] = useState(false);
+  const descriptionId = `${id}-description`;
+  const errorId = `${id}-error`;
 
   return (
     <FieldGroup>
@@ -26,11 +33,13 @@ export function PasswordField({
           id={id}
           name={name}
           type={visible ? "text" : "password"}
-          required
-          minLength={8}
+          required={required}
+          minLength={autoComplete === "new-password" ? 8 : undefined}
           autoComplete={autoComplete}
           placeholder="••••••••"
           className="pr-20"
+          aria-describedby={cn(description && descriptionId, error && errorId) || undefined}
+          aria-invalid={error ? true : undefined}
         />
         <button
           type="button"
@@ -42,7 +51,8 @@ export function PasswordField({
           {visible ? "Hide" : "Show"}
         </button>
       </div>
-      {description ? <FieldDescription>{description}</FieldDescription> : null}
+      {description ? <FieldDescription id={descriptionId}>{description}</FieldDescription> : null}
+      {error ? <FieldError id={errorId}>{error}</FieldError> : null}
     </FieldGroup>
   );
 }

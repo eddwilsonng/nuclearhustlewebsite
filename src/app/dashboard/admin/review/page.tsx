@@ -1,8 +1,20 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import { StructuredDescription } from "@/lib/types";
+import { cn } from "@/lib/cn";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Dialog";
+import { FieldError, FormStatus, TextareaField } from "@/components/ui/Field";
+import { LinkButton } from "@/components/ui/LinkButton";
+import { useToast } from "@/components/ui/Toast";
+import {
+  DashboardAlert,
+  DashboardBody,
+  DashboardEmptyState,
+  DashboardPageHeader,
+} from "@/components/dashboard/DashboardChrome";
 
 interface ReviewJob {
   id: string;
@@ -11,6 +23,8 @@ interface ReviewJob {
   location: string;
   category: string;
   status: string;
+  /** The original posting on the operator's careers site. */
+  url?: string;
   agent_confidence?: "high" | "low";
   review_notes?: string;
   structured_description?: StructuredDescription | null;
@@ -40,55 +54,57 @@ function textToBullets(value: string): string[] {
     .filter(Boolean);
 }
 
+function plural(count: number) {
+  return `${count} job${count === 1 ? "" : "s"}`;
+}
+
+/** POSTs to an admin route; returns an error message, or null when it worked. */
+async function postAdmin(url: string, body: object): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) return null;
+    const data = await res.json().catch(() => ({}));
+    return data.error || `The request failed (${res.status}).`;
+  } catch {
+    return "Couldn't reach the server. Check your connection and try again.";
+  }
+}
+
 function DescriptionPreview({ sd }: { sd: StructuredDescription }) {
   const fields = [
-    { label: "Good fit if", value: bulletsToText(sd.fit?.good), reading: true },
-    { label: "About this role", value: asText(sd.about), reading: false },
-    {
-      label: "Responsibilities",
-      value: asText(sd.responsibilities),
-      reading: false,
-    },
-    {
-      label: "Qualifications",
-      value: asText(sd.qualifications),
-      reading: false,
-    },
-    { label: "Desired", value: asText(sd.desired), reading: false },
-    {
-      label: "Location / Working conditions",
-      value: asText(sd.location_details),
-      reading: false,
-    },
-    {
-      label: "Pay, eligibility, and equal opportunity",
-      value: asText(sd.notices),
-      reading: false,
-    },
+    { label: "Good fit if", value: bulletsToText(sd.fit?.good) },
+    { label: "About this role", value: asText(sd.about) },
+    { label: "Responsibilities", value: asText(sd.responsibilities) },
+    { label: "Qualifications", value: asText(sd.qualifications) },
+    { label: "Desired", value: asText(sd.desired) },
+    { label: "Location / Working conditions", value: asText(sd.location_details) },
+    { label: "Pay, eligibility, and equal opportunity", value: asText(sd.notices) },
   ].filter((f) => f.value.trim());
 
   return (
-    <div className="space-y-4">
-      {fields.map(({ label, value, reading }) => (
+    <dl className="space-y-4">
+      {fields.map(({ label, value }) => (
         <div key={label}>
-          <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1">
-            {label}
-          </p>
-          <p
-            className={`${reading ? "font-sans" : "font-mono"} text-xs text-stone-500 whitespace-pre-line leading-relaxed`}
-          >
+          <dt className="font-mono text-xs uppercase tracking-widest text-secondary">{label}</dt>
+          <dd className="mt-1 max-w-prose whitespace-pre-line font-sans text-sm leading-relaxed text-ink">
             {value}
-          </p>
+          </dd>
         </div>
       ))}
-    </div>
+    </dl>
   );
 }
 
 function EditableDescription({
+  jobId,
   sd,
   onChange,
 }: {
+  jobId: string;
   sd: StructuredDescription;
   onChange: (updated: StructuredDescription) => void;
 }) {
@@ -107,38 +123,35 @@ function EditableDescription({
     { key: "notices", label: "Pay, eligibility, and equal opportunity" },
   ];
 
+  // Keep the raw text so a new, still-empty bullet line survives typing.
+  const [fitText, setFitText] = useState(() => bulletsToText(sd.fit?.good));
+
   function setFit(raw: string) {
+    setFitText(raw);
     const bullets = textToBullets(raw);
     const fit = bullets.length === 0 ? undefined : { good: bullets };
     onChange({ ...sd, fit });
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1 block">
-          Good fit if
-        </label>
-        <textarea
-          rows={4}
-          value={bulletsToText(sd.fit?.good)}
-          onChange={(e) => setFit(e.target.value)}
-          placeholder="One bullet per line"
-          className="w-full font-sans text-xs text-stone-900 bg-white border border-[#CFC8BC] px-3 py-2 focus:outline-none focus:border-stone-400 resize-y"
-        />
-      </div>
+    <div className="space-y-5">
+      <TextareaField
+        id={`${jobId}-fit`}
+        label="Good fit if"
+        description="One bullet per line."
+        rows={4}
+        value={fitText}
+        onChange={(e) => setFit(e.target.value)}
+      />
       {fields.map(({ key, label }) => (
-        <div key={key}>
-          <label className="font-mono text-[10px] tracking-widest uppercase text-stone-400 mb-1 block">
-            {label}
-          </label>
-          <textarea
-            rows={4}
-            value={asText(sd[key])}
-            onChange={(e) => onChange({ ...sd, [key]: e.target.value })}
-            className="w-full font-mono text-xs text-stone-900 bg-white border border-[#CFC8BC] px-3 py-2 focus:outline-none focus:border-stone-400 resize-y"
-          />
-        </div>
+        <TextareaField
+          key={key}
+          id={`${jobId}-${key}`}
+          label={label}
+          rows={4}
+          value={asText(sd[key])}
+          onChange={(e) => onChange({ ...sd, [key]: e.target.value })}
+        />
       ))}
     </div>
   );
@@ -146,173 +159,182 @@ function EditableDescription({
 
 function JobCard({
   job,
-  adminEmail,
   onAction,
 }: {
   job: ReviewJob;
-  adminEmail: string;
-  onAction: () => void;
+  onAction: () => Promise<void>;
 }) {
+  const toast = useToast();
   const [editing, setEditing] = useState(false);
   const [editedSd, setEditedSd] = useState<StructuredDescription>(
     job.structured_description || {},
   );
-  const [processing, setProcessing] = useState(false);
-  const [reprocessing, setReprocessing] = useState(false);
+  const [busy, setBusy] = useState<"approve" | "reject" | "reprocess" | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  async function callApi(url: string, body: object) {
-    return fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-admin-email": adminEmail,
+  async function run(
+    kind: NonNullable<typeof busy>,
+    url: string,
+    body: object,
+    confirmation: string,
+  ) {
+    setBusy(kind);
+    setError(null);
+    const problem = await postAdmin(url, body);
+    if (problem) {
+      setBusy(null);
+      setError(problem);
+      toast.error("That didn't go through", problem);
+      return;
+    }
+    toast.success(confirmation);
+    await onAction();
+    setBusy(null);
+  }
+
+  const handleApprove = () =>
+    run(
+      "approve",
+      "/api/admin/publish-job",
+      {
+        jobId: job.id,
+        structured_description: editing ? editedSd : job.structured_description,
       },
-      body: JSON.stringify(body),
-    });
-  }
+      `Published “${job.title}”.`,
+    );
 
-  async function handleApprove() {
-    setProcessing(true);
-    await callApi("/api/admin/publish-job", {
-      jobId: job.id,
-      structured_description: editing ? editedSd : job.structured_description,
-    });
-    onAction();
-  }
+  const handleReject = () =>
+    run("reject", "/api/admin/reject-job", { jobId: job.id }, `Rejected “${job.title}”.`);
 
-  async function handleReject() {
-    setProcessing(true);
-    await callApi("/api/admin/reject-job", { jobId: job.id });
-    onAction();
-  }
-
-  async function handleReprocess() {
-    setReprocessing(true);
-    await callApi("/api/admin/process-job", { jobId: job.id });
-    setReprocessing(false);
-    onAction();
-  }
+  const handleReprocess = () =>
+    run(
+      "reprocess",
+      "/api/admin/process-job",
+      { jobId: job.id },
+      `Re-ran the AI review for “${job.title}”.`,
+    );
 
   const isLow = job.agent_confidence === "low";
+  const working = busy !== null;
+  const headingId = `review-${job.id}`;
 
   return (
-    <div
-      className={`border ${isLow ? "border-yellow-400" : "border-[#CFC8BC]"} bg-white`}
+    <article
+      aria-labelledby={headingId}
+      className={cn("border bg-raised", isLow ? "border-ink" : "border-rule")}
     >
       {/* Header */}
-      <div
-        className={`px-5 py-4 border-b ${isLow ? "border-yellow-400 bg-yellow-50" : "border-[#CFC8BC] bg-[#EDE8DF]"}`}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              {isLow && (
-                <span className="font-mono text-[10px] tracking-widest uppercase bg-yellow-400 text-stone-900 px-2 py-0.5">
-                  Review carefully
-                </span>
-              )}
-              <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400 border border-[#CFC8BC] px-2 py-0.5">
-                {job.category}
-              </span>
-            </div>
-            <h3 className="font-mono text-sm font-bold text-stone-900">
-              {job.title}
-            </h3>
-            <p className="font-mono text-xs text-stone-500 mt-0.5">
-              {job.company_id} · {job.location}
-            </p>
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3 border-b border-rule px-5 py-4">
+        <div className="min-w-0">
+          <div className="mb-2 flex flex-wrap items-center gap-1.5">
+            {isLow && <Badge className="border-ink text-ink">Flagged · review carefully</Badge>}
+            <Badge>{job.category}</Badge>
           </div>
-          <button
-            onClick={handleReprocess}
-            disabled={reprocessing || processing}
-            className="font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-900 border border-[#CFC8BC] px-2 py-1 disabled:opacity-40 whitespace-nowrap"
-          >
-            {reprocessing ? "Running…" : "Re-run AI"}
-          </button>
+          <h2 id={headingId} className="font-sans text-base font-semibold text-ink">
+            {job.title}
+          </h2>
+          <p className="mt-0.5 font-sans text-sm text-secondary">
+            {job.company_id} · {job.location}
+          </p>
         </div>
-
-        {job.review_notes && (
-          <div className="mt-3 font-mono text-xs text-stone-500 bg-white border border-[#CFC8BC] px-3 py-2">
-            <span className="text-stone-400 uppercase tracking-widest text-[10px]">
-              Agent notes:{" "}
-            </span>
-            {job.review_notes}
-          </div>
-        )}
+        <Button variant="quiet" size="compact" onClick={handleReprocess} disabled={working}>
+          {busy === "reprocess" ? "Running…" : "Re-run AI"}
+        </Button>
       </div>
+
+      {job.review_notes && (
+        <div className="border-b border-rule bg-surface px-5 py-3">
+          <p className="font-mono text-xs uppercase tracking-widest text-secondary">Agent notes</p>
+          <p className="mt-1 max-w-prose font-sans text-sm leading-relaxed text-ink">{job.review_notes}</p>
+        </div>
+      )}
 
       {/* Description */}
       <div className="px-5 py-5">
         {job.structured_description ? (
           editing ? (
-            <EditableDescription sd={editedSd} onChange={setEditedSd} />
+            <EditableDescription jobId={job.id} sd={editedSd} onChange={setEditedSd} />
           ) : (
             <DescriptionPreview sd={job.structured_description} />
           )
         ) : (
-          <p className="font-mono text-xs text-stone-400 italic">
-            No structured description — click Re-run AI to process.
+          <p className="font-sans text-sm text-secondary">
+            No structured description yet. Re-run AI to process it.
           </p>
         )}
       </div>
 
       {/* Actions */}
-      <div className="px-5 py-4 border-t border-[#CFC8BC] flex items-center gap-3">
-        <button
-          onClick={handleApprove}
-          disabled={processing}
-          className="font-mono text-xs tracking-widest uppercase px-4 py-2 bg-stone-900 hover:bg-stone-900/80 text-white font-bold transition-colors disabled:opacity-40"
-        >
-          {processing ? "Saving…" : "Approve"}
-        </button>
-        <button
-          onClick={() => {
-            setEditing((e) => !e);
-            setEditedSd(job.structured_description || {});
-          }}
-          disabled={processing}
-          className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-[#CFC8BC] hover:bg-[#E5DFD5] text-stone-900 transition-colors disabled:opacity-40"
-        >
-          {editing ? "Cancel edit" : "Edit"}
-        </button>
-        <button
+      <div className="flex flex-wrap items-center gap-2 border-t border-rule px-5 py-4">
+        <Button size="compact" onClick={handleApprove} disabled={working}>
+          {busy === "approve" ? "Publishing…" : editing ? "Approve with edits" : "Approve"}
+        </Button>
+        {job.structured_description && (
+          <Button
+            variant="quiet"
+            size="compact"
+            onClick={() => {
+              setEditing((e) => !e);
+              setEditedSd(job.structured_description || {});
+            }}
+            disabled={working}
+          >
+            {editing ? "Cancel edit" : "Edit"}
+          </Button>
+        )}
+        <Button
+          variant="quiet"
+          size="compact"
+          className="text-danger hover:text-danger"
           onClick={handleReject}
-          disabled={processing}
-          className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-red-200 hover:bg-red-50 text-red-600 transition-colors disabled:opacity-40"
+          disabled={working}
         >
-          Reject
-        </button>
-        <Link
-          href={`/job/${job.id}`}
-          target="_blank"
-          className="ml-auto font-mono text-[10px] tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors"
-        >
-          Preview →
-        </Link>
+          {busy === "reject" ? "Rejecting…" : "Reject"}
+        </Button>
+        {/* Pending jobs aren't on the public site yet, so check against the source. */}
+        {job.url && (
+          <a
+            href={job.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-auto inline-flex min-h-10 items-center font-sans text-sm text-secondary underline-offset-2 hover:text-ink hover:underline"
+          >
+            Original posting
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        )}
+        {error && <FieldError className="basis-full">{error}</FieldError>}
       </div>
-    </div>
+    </article>
   );
 }
 
 export default function ReviewQueuePage() {
+  const toast = useToast();
   const [jobs, setJobs] = useState<ReviewJob[]>([]);
   const [loading, setLoading] = useState(true);
-  const [bulkBusy, setBulkBusy] = useState<"approve" | "reject" | null>(null);
-  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "";
+  const [loadError, setLoadError] = useState(false);
+  const [bulkKind, setBulkKind] = useState<"approve" | "reject">("approve");
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    const res = await fetch("/api/admin/review-queue");
-    if (res.ok) {
+    try {
+      const res = await fetch("/api/admin/review-queue");
+      if (!res.ok) throw new Error(`Review queue returned ${res.status}`);
       const data = await res.json();
       setJobs(data.jobs);
+      setLoadError(false);
+    } catch {
+      setLoadError(true);
     }
     setLoading(false);
   }, []);
 
   // Fetch the queue once on mount (and after actions via load()).
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
@@ -320,113 +342,138 @@ export default function ReviewQueuePage() {
   const lowConf = pending.filter((j) => j.agent_confidence === "low");
   const highConf = pending.filter((j) => j.agent_confidence !== "low");
   const sorted = [...lowConf, ...highConf];
+  const bulkJobs = bulkKind === "approve" ? highConf : lowConf;
 
-  async function runBulk(kind: "approve" | "reject", ids: string[]) {
+  function askBulk(kind: "approve" | "reject") {
+    setBulkKind(kind);
+    setBulkError(null);
+    setBulkOpen(true);
+  }
+
+  async function runBulk() {
+    const ids = bulkJobs.map((j) => j.id);
     if (ids.length === 0) return;
-    const verb = kind === "approve" ? "Approve" : "Reject";
-    if (
-      !confirm(
-        `${verb} ${ids.length} job${ids.length === 1 ? "" : "s"}? You can change this later from Manage Jobs.`,
-      )
-    )
-      return;
-    setBulkBusy(kind);
-    await fetch(
-      kind === "approve" ? "/api/admin/publish-jobs" : "/api/admin/reject-jobs",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-email": adminEmail,
-        },
-        body: JSON.stringify({ jobIds: ids }),
-      },
+    setBulkBusy(true);
+    setBulkError(null);
+    const problem = await postAdmin(
+      bulkKind === "approve" ? "/api/admin/publish-jobs" : "/api/admin/reject-jobs",
+      { jobIds: ids },
     );
-    setBulkBusy(null);
+    setBulkBusy(false);
+    if (problem) {
+      setBulkError(problem);
+      return;
+    }
+    toast.success(bulkKind === "approve" ? `Published ${plural(ids.length)}.` : `Rejected ${plural(ids.length)}.`);
+    setBulkOpen(false);
     await load();
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
-      <div className="mb-6">
-        <Link
-          href="/dashboard/admin"
-          className="font-mono text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900"
-        >
-          ← Operations
-        </Link>
-        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mt-3">
-          Content Review Pipeline
-        </h1>
-        <p className="font-mono text-xs text-stone-500 mt-1">
-          {pending.length} job{pending.length !== 1 ? "s" : ""} pending review
-          {lowConf.length > 0 &&
-            ` · ${lowConf.length} flagged for closer attention`}
-        </p>
-      </div>
+    <>
+      <DashboardPageHeader
+        title="Review queue"
+        back={{ href: "/dashboard/admin", label: "Operations" }}
+        description={
+          loading
+            ? "Loading the queue…"
+            : pending.length === 0
+              ? "Crawled jobs wait here for approval before they go live."
+              : `${plural(pending.length)} pending${
+                  lowConf.length > 0 ? ` · ${lowConf.length} flagged and shown first` : ""
+                }. Scan flagged jobs before bulk-approving.`
+        }
+        action={
+          pending.length > 0 ? (
+            <>
+              <Button size="compact" disabled={lowConf.length === 0} onClick={() => askBulk("reject")}>
+                Reject {lowConf.length} flagged
+              </Button>
+              <Button
+                variant="primary"
+                size="compact"
+                disabled={highConf.length === 0}
+                onClick={() => askBulk("approve")}
+              >
+                Approve {highConf.length} high-confidence
+              </Button>
+            </>
+          ) : null
+        }
+      />
 
-      {pending.length > 0 && (
-        <div className="mb-8 flex flex-wrap items-center gap-3 border border-[#CFC8BC] bg-[#EDE8DF] px-4 py-3">
-          <span className="font-mono text-[10px] tracking-widest uppercase text-stone-400">
-            Bulk
-          </span>
-          <button
-            onClick={() =>
-              runBulk(
-                "approve",
-                highConf.map((j) => j.id),
-              )
-            }
-            disabled={bulkBusy !== null || highConf.length === 0}
-            className="font-mono text-xs tracking-widest uppercase px-4 py-2 bg-stone-900 hover:bg-stone-900/80 text-white font-bold transition-colors disabled:opacity-40"
-          >
-            {bulkBusy === "approve"
-              ? "Approving…"
-              : `Approve all high-confidence (${highConf.length})`}
-          </button>
-          <button
-            onClick={() =>
-              runBulk(
-                "reject",
-                lowConf.map((j) => j.id),
-              )
-            }
-            disabled={bulkBusy !== null || lowConf.length === 0}
-            className="font-mono text-xs tracking-widest uppercase px-4 py-2 border border-red-200 hover:bg-red-50 text-red-600 transition-colors disabled:opacity-40"
-          >
-            {bulkBusy === "reject"
-              ? "Rejecting…"
-              : `Reject all flagged (${lowConf.length})`}
-          </button>
-          <span className="font-mono text-[10px] text-stone-400 normal-case tracking-normal ml-auto max-w-[16rem]">
-            Low-confidence shown first — scan those before bulk-approving.
-          </span>
-        </div>
-      )}
+      <DashboardBody>
+        {loadError && (
+          <div className="mb-6">
+            <DashboardAlert tone="error">
+              We couldn&apos;t load the review queue. Refresh to try again.
+            </DashboardAlert>
+          </div>
+        )}
 
-      {loading ? (
-        <p className="font-mono text-xs text-stone-400">Loading…</p>
-      ) : sorted.length === 0 ? (
-        <div className="border border-[#CFC8BC] bg-white px-6 py-10 text-center">
-          <p className="font-mono text-sm text-stone-500">
-            No jobs pending review.
-          </p>
-          <p className="font-mono text-xs text-stone-400 mt-2">
-            Run the scraper to add new jobs to the queue.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {sorted.map((job) => (
-            <JobCard
-              key={job.id}
-              job={job}
-              adminEmail={adminEmail}
-              onAction={load}
+        {loading ? (
+          <FormStatus>Loading…</FormStatus>
+        ) : sorted.length === 0 ? (
+          loadError ? null : (
+            <DashboardEmptyState
+              title="Nothing waiting for review"
+              description="Run the scraper to add new jobs to the queue."
+              action={
+                <LinkButton href="/dashboard/admin/scrape" size="compact">
+                  Open the scraper
+                </LinkButton>
+              }
             />
-          ))}
+          )
+        ) : (
+          <div className="space-y-6">
+            {sorted.map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                onAction={load}
+              />
+            ))}
+          </div>
+        )}
+      </DashboardBody>
+
+      <Modal
+        open={bulkOpen}
+        onOpenChange={setBulkOpen}
+        title={
+          bulkKind === "approve"
+            ? `Approve ${plural(highConf.length)}?`
+            : `Reject ${plural(lowConf.length)}?`
+        }
+        description={
+          bulkKind === "approve"
+            ? "They go live on the board straight away. Flagged jobs stay in the queue."
+            : "Only the flagged jobs are rejected. They leave the queue and won't go live."
+        }
+      >
+        <div className="space-y-4">
+          {bulkError && <FieldError>{bulkError}</FieldError>}
+          <div className="flex justify-end gap-3">
+            <Button variant="secondary" onClick={() => setBulkOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant={bulkKind === "approve" ? "primary" : "danger"}
+              disabled={bulkBusy || bulkJobs.length === 0}
+              onClick={runBulk}
+            >
+              {bulkBusy
+                ? bulkKind === "approve"
+                  ? "Publishing…"
+                  : "Rejecting…"
+                : bulkKind === "approve"
+                  ? `Publish ${plural(highConf.length)}`
+                  : `Reject ${plural(lowConf.length)}`}
+            </Button>
+          </div>
         </div>
-      )}
-    </div>
+      </Modal>
+    </>
   );
 }

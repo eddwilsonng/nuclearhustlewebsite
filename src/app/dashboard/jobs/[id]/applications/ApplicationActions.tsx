@@ -2,12 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { getApplicationCvUrl, updateApplicationStatus } from "@/lib/auth/actions";
-import { Button } from "@/components/ui/Button";
+import { updateApplicationStatus } from "@/lib/auth/actions";
 import { Select } from "@/components/ui/Field";
+import { useToast } from "@/components/ui/Toast";
 import type { ApplicationStatus } from "@/lib/types";
 
-const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
+export const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
   { value: "new", label: "New" },
   { value: "reviewed", label: "Reviewed" },
   { value: "shortlisted", label: "Shortlisted" },
@@ -17,18 +17,27 @@ const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
 export function StatusSelect({
   applicationId,
   status,
+  applicantName,
 }: {
   applicationId: string;
   status: ApplicationStatus;
+  applicantName: string;
 }) {
   const [isPending, startTransition] = useTransition();
   const [current, setCurrent] = useState<ApplicationStatus>(status);
   const router = useRouter();
+  const toast = useToast();
 
   const handleChange = (next: ApplicationStatus) => {
+    const previous = current;
     setCurrent(next);
     startTransition(async () => {
-      await updateApplicationStatus(applicationId, next);
+      const result = await updateApplicationStatus(applicationId, next);
+      if (result.error) {
+        setCurrent(previous);
+        toast.error("Status not changed", result.error);
+        return;
+      }
       router.refresh();
     });
   };
@@ -37,7 +46,7 @@ export function StatusSelect({
     <Select
       value={current}
       disabled={isPending}
-      aria-label="Application status"
+      aria-label={`Application status for ${applicantName}`}
       onChange={(e) => handleChange(e.target.value as ApplicationStatus)}
       className="w-auto min-w-36"
     >
@@ -47,48 +56,5 @@ export function StatusSelect({
         </option>
       ))}
     </Select>
-  );
-}
-
-export function DownloadCvButton({
-  applicationId,
-  hasCv,
-}: {
-  applicationId: string;
-  hasCv: boolean;
-}) {
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-
-  if (!hasCv) {
-    return <span className="font-mono text-xs text-secondary">No CV</span>;
-  }
-
-  return (
-    <div className="flex flex-col items-start gap-1">
-      <Button
-        variant="secondary"
-        size="compact"
-        disabled={isPending}
-        onClick={() => {
-          setError(null);
-          startTransition(async () => {
-            const result = await getApplicationCvUrl(applicationId);
-            if (result.url) {
-              window.open(result.url, "_blank", "noopener,noreferrer");
-            } else {
-              setError(result.error ?? "Could not open CV");
-            }
-          });
-        }}
-      >
-        {isPending ? "Opening…" : "Download CV"}
-      </Button>
-      {error && (
-        <span className="font-sans text-sm text-danger" role="alert">
-          {error}
-        </span>
-      )}
-    </div>
   );
 }

@@ -1,4 +1,6 @@
 import type { AgentRun } from '@/lib/ops/runLog';
+import { Badge } from '@/components/ui/Badge';
+import { DashboardSection } from '@/components/dashboard/DashboardChrome';
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -13,7 +15,7 @@ function timeAgo(iso: string): string {
 
 const TYPE_LABEL: Record<string, string> = {
   scrape: 'Scrape',
-  'ai-review': 'AI Review',
+  'ai-review': 'AI review',
   'review-action': 'Review',
 };
 
@@ -26,40 +28,32 @@ function statsSummary(stats: Record<string, number>): string {
 /** Generic "recent agent runs" timeline — any process that calls recordAgentRun appears here. */
 export function AgentRunsPanel({ runs }: { runs: AgentRun[] }) {
   return (
-    <section className="border border-[#CFC8BC] bg-white">
-      <div className="border-b border-[#CFC8BC] bg-[#EDE8DF] px-5 py-3">
-        <p className="font-mono text-[10px] tracking-widest uppercase text-stone-400">Activity</p>
-        <h2 className="font-mono text-sm font-bold text-stone-900">Recent agent runs</h2>
-      </div>
-
+    <DashboardSection title="Recent agent runs" className="mt-0">
       {runs.length === 0 ? (
-        <p className="font-mono text-xs text-stone-400 px-5 py-8 text-center">
+        <p className="border border-dashed border-rule px-5 py-8 text-center font-sans text-sm text-secondary">
           No agent runs recorded yet. Run the scraper or content review to see activity here.
         </p>
       ) : (
-        <div className="divide-y divide-[#CFC8BC]">
-          {runs.map((run) => (
-            <div key={run.id} className="flex items-center gap-3 px-5 py-3">
-              <span
-                className={`font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 border ${
-                  run.status === 'error'
-                    ? 'border-red-200 text-red-600 bg-red-50'
-                    : 'border-[#CFC8BC] text-stone-500 bg-[#EDE8DF]'
-                }`}
-              >
-                {TYPE_LABEL[run.type] ?? run.type}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="font-mono text-xs text-stone-900 truncate">{run.label}</p>
-                <p className="font-mono text-[10px] text-stone-400 truncate">
-                  {run.status === 'error' ? (run.note || 'failed') : statsSummary(run.stats)}
-                </p>
-              </div>
-              <span className="font-mono text-[10px] text-stone-400 whitespace-nowrap">{timeAgo(run.finishedAt)}</span>
-            </div>
-          ))}
-        </div>
+        <ul className="divide-y divide-rule border-y border-rule">
+          {runs.map((run) => {
+            const failed = run.status === 'error';
+            return (
+              <li key={run.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 py-3">
+                <Badge tone={failed ? 'danger' : 'neutral'}>{TYPE_LABEL[run.type] ?? run.type}</Badge>
+                <div className="min-w-0">
+                  <p className="truncate font-sans text-sm text-ink">{run.label}</p>
+                  <p className="truncate font-mono text-xs text-secondary">
+                    {failed ? `Failed: ${run.note || 'no details recorded'}` : statsSummary(run.stats)}
+                  </p>
+                </div>
+                <time dateTime={run.finishedAt} className="whitespace-nowrap font-mono text-xs text-secondary">
+                  {timeAgo(run.finishedAt)}
+                </time>
+              </li>
+            );
+          })}
+        </ul>
       )}
-    </section>
+    </DashboardSection>
   );
 }

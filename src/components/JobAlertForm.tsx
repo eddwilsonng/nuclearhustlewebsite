@@ -64,7 +64,7 @@ export function JobAlertForm({
             >
               You&apos;re on the Monday list.{" "}
               <Link
-                href="/signup"
+                href="/signup/job-seeker"
                 className="underline underline-offset-2"
               >
                 Create a free account
@@ -92,7 +92,7 @@ export function JobAlertForm({
       <FormStatus>
         You&apos;re on the Monday list.{" "}
         <Link
-          href="/signup"
+          href="/signup/job-seeker"
           className="font-medium text-ink underline underline-offset-2"
         >
           Create a free account

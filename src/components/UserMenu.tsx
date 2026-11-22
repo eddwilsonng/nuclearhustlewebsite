@@ -46,50 +46,34 @@ export function UserMenu({ profile }: UserMenuProps) {
                 {profile.role === "employer" ? "Employer" : "Job seeker"}
               </p>
             </div>
-            <Menu.Item
-              render={
-                <Link
-                  href="/dashboard"
-                  className="block px-4 py-3 font-sans text-sm text-ink no-underline outline-none data-highlighted:bg-surface"
-                />
-              }
-            >
-              Dashboard
-            </Menu.Item>
-            <Menu.Item
-              render={
-                <Link
-                  href="/dashboard/profile"
-                  className="block px-4 py-3 font-sans text-sm text-ink no-underline outline-none data-highlighted:bg-surface"
-                />
-              }
-            >
-              Profile
-            </Menu.Item>
-            {profile.role === "job_seeker" && (
+            {(profile.role === "employer"
+              ? [
+                  { href: "/dashboard", label: "Overview" },
+                  { href: "/dashboard/jobs", label: "Jobs" },
+                  { href: "/dashboard/applicants", label: "Applicants" },
+                  { href: "/dashboard/profile", label: "Company" },
+                  { href: "/dashboard/settings", label: "Settings" },
+                ]
+              : [
+                  { href: "/dashboard", label: "Overview" },
+                  { href: "/dashboard/applications", label: "Applications" },
+                  { href: "/dashboard/saved", label: "Saved jobs" },
+                  { href: "/dashboard/profile", label: "Profile" },
+                  { href: "/dashboard/settings", label: "Settings" },
+                ]
+            ).map((item) => (
               <Menu.Item
+                key={item.href}
                 render={
                   <Link
-                    href="/dashboard/saved"
+                    href={item.href}
                     className="block px-4 py-3 font-sans text-sm text-ink no-underline outline-none data-highlighted:bg-surface"
                   />
                 }
               >
-                Saved jobs
+                {item.label}
               </Menu.Item>
-            )}
-            {profile.role === "employer" && (
-              <Menu.Item
-                render={
-                  <Link
-                    href="/dashboard/jobs"
-                    className="block px-4 py-3 font-sans text-sm text-ink no-underline outline-none data-highlighted:bg-surface"
-                  />
-                }
-              >
-                Manage jobs
-              </Menu.Item>
-            )}
+            ))}
             <div className="border-t border-rule">
               <form action={signOut}>
                 <button

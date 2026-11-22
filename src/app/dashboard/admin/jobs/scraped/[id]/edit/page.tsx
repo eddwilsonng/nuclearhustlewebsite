@@ -1,9 +1,10 @@
 import { notFound, redirect } from 'next/navigation';
-import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { isAdmin } from '@/lib/admin';
 import { getJobById } from '@/lib/data/jobs-full';
 import { ScrapedJobForm } from '@/components/admin/ScrapedJobForm';
+import { ExternalLinkButton, LinkButton } from '@/components/ui/LinkButton';
+import { DashboardBody, DashboardPageHeader } from '@/components/dashboard/DashboardChrome';
 
 export const metadata = {
   title: 'Admin Edit Scraped Job - Nuclear Hustle',
@@ -30,36 +31,32 @@ export default async function AdminEditScrapedJobPage({
     notFound();
   }
 
-  return (
-    <div className="max-w-3xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Link
-          href="/dashboard/admin/jobs"
-          className="text-stone-500 hover:text-stone-900"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </Link>
-        <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900">
-          Edit Scraped Job
-          <span className="ml-2 text-xs font-mono text-stone-500 bg-[#E5DFD5] px-2 py-0.5">
-            scraped
-          </span>
-        </h1>
-      </div>
+  // The public job page only serves published scraped jobs.
+  const published = !job.status || job.status === 'published';
 
-      <div className="bg-white border border-[#CFC8BC] p-6">
+  return (
+    <>
+      <DashboardPageHeader
+        title={job.title}
+        description={`${job.company?.name ?? job.company_id} · scraped listing. Manual edits are kept when the scraper runs again.`}
+        back={{ href: '/dashboard/admin/jobs', label: 'All jobs' }}
+        action={
+          <>
+            {published ? (
+              <LinkButton href={`/job/${job.slug}`} variant="secondary" size="compact">
+                View listing
+              </LinkButton>
+            ) : null}
+            {job.url ? (
+              <ExternalLinkButton href={job.url} target="_blank" variant="secondary" size="compact">
+                Original posting
+                <span className="sr-only"> (opens in a new tab)</span>
+              </ExternalLinkButton>
+            ) : null}
+          </>
+        }
+      />
+      <DashboardBody width="form">
         <ScrapedJobForm
           job={{
             id: job.id,
@@ -70,7 +67,7 @@ export default async function AdminEditScrapedJobPage({
             description: job.description,
           }}
         />
-      </div>
-    </div>
+      </DashboardBody>
+    </>
   );
 }

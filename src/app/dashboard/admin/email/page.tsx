@@ -2,16 +2,16 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { isAdmin } from '@/lib/admin';
 import { getEmailHealth } from '@/lib/data/emailHealth';
+import { StatRow } from '@/components/ui/StatRow';
+import {
+  DashboardBody,
+  DashboardPageHeader,
+  DashboardSection,
+} from '@/components/dashboard/DashboardChrome';
 
-function StatCard({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
-  return (
-    <div className="bg-white border border-[#CFC8BC] p-4">
-      <p className="text-xs font-mono tracking-widest uppercase text-stone-400 mb-1">{label}</p>
-      <p className="text-2xl font-bold text-stone-900">{value}</p>
-      {hint && <p className="text-xs text-stone-400 font-mono mt-1">{hint}</p>}
-    </div>
-  );
-}
+export const metadata = {
+  title: 'Email health - Nuclear Hustle',
+};
 
 export default async function AdminEmailPage() {
   const supabase = await createClient();
@@ -24,65 +24,73 @@ export default async function AdminEmailPage() {
   }
 
   const { subscribers, events } = await getEmailHealth();
+  const count = (n: number) => n.toLocaleString('en-US');
 
   return (
-    <div>
-      <h1 className="font-mono text-3xl md:text-4xl font-bold leading-tight text-stone-900 mb-1">Email Health</h1>
-      <p className="text-sm text-stone-500 mb-8 font-mono">
-        Subscriber list and Resend deliverability — no Pro plan required
-      </p>
+    <>
+      <DashboardPageHeader
+        title="Email health"
+        description="Subscriber list and Resend deliverability, without the Pro plan."
+      />
+      <DashboardBody>
+        <DashboardSection title="Subscribers">
+          <StatRow
+            stats={[
+              { label: 'Total', value: count(subscribers.total) },
+              { label: 'Active', value: count(subscribers.active) },
+              { label: 'Unsubscribed', value: count(subscribers.unsubscribed) },
+            ]}
+          />
+        </DashboardSection>
 
-      <h2 className="text-sm font-mono tracking-widest uppercase text-stone-500 mb-3">Subscribers</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-        <StatCard label="Total" value={subscribers.total} />
-        <StatCard label="Active" value={subscribers.active} />
-        <StatCard label="Unsubscribed" value={subscribers.unsubscribed} />
-      </div>
-
-      <h2 className="text-sm font-mono tracking-widest uppercase text-stone-500 mb-3">
-        Deliverability {events ? `(last ${events.windowDays}d)` : ''}
-      </h2>
-
-      {events === null ? (
-        <div className="bg-white border border-[#CFC8BC] p-6">
-          <p className="text-sm text-stone-500 font-mono leading-relaxed">
-            No event data yet. To capture delivery, bounce, and complaint events for free:
-          </p>
-          <ol className="text-sm text-stone-500 font-mono leading-relaxed list-decimal pl-5 mt-3 space-y-1">
-            <li>
-              Run <code className="text-stone-900">supabase/email-events-migration.sql</code> in the
-              Supabase SQL editor.
-            </li>
-            <li>
-              Add a webhook in Resend pointing at{' '}
-              <code className="text-stone-900">/api/webhooks/resend</code> and set{' '}
-              <code className="text-stone-900">RESEND_WEBHOOK_SECRET</code>.
-            </li>
-          </ol>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <StatCard label="Sent" value={events.sent} />
-            <StatCard label="Delivered" value={events.delivered} />
-            <StatCard label="Bounced" value={events.bounced} />
-            <StatCard label="Complaints" value={events.complained} />
-            <StatCard label="Delayed" value={events.delayed} />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <StatCard
-              label="Bounce Rate"
-              value={`${events.bounceRate}%`}
-              hint={events.bounceRate >= 2 ? 'Above 2% — investigate' : 'Healthy (keep under 2%)'}
-            />
-            <StatCard
-              label="Complaint Rate"
-              value={`${events.complaintRate}%`}
-              hint={events.complaintRate >= 0.1 ? 'Above 0.1% — investigate' : 'Healthy (keep under 0.1%)'}
-            />
-          </div>
-        </>
-      )}
-    </div>
+        <DashboardSection title={events ? `Deliverability, last ${events.windowDays} days` : 'Deliverability'}>
+          {events === null ? (
+            <div className="border border-dashed border-rule px-5 py-6">
+              <p className="max-w-prose font-sans text-sm leading-relaxed text-secondary">
+                No event data yet. To record delivery, bounce and complaint events for free:
+              </p>
+              <ol className="mt-3 max-w-prose list-decimal space-y-1 pl-5 font-sans text-sm leading-relaxed text-secondary">
+                <li>
+                  Run <code className="font-mono text-xs text-ink">supabase/email-events-migration.sql</code> in
+                  the Supabase SQL editor.
+                </li>
+                <li>
+                  Add a webhook in Resend pointing at{' '}
+                  <code className="font-mono text-xs text-ink">/api/webhooks/resend</code> and set{' '}
+                  <code className="font-mono text-xs text-ink">RESEND_WEBHOOK_SECRET</code>.
+                </li>
+              </ol>
+            </div>
+          ) : (
+            <>
+              <StatRow
+                stats={[
+                  { label: 'Sent', value: count(events.sent) },
+                  { label: 'Delivered', value: count(events.delivered) },
+                  { label: 'Bounced', value: count(events.bounced) },
+                  { label: 'Complaints', value: count(events.complained) },
+                  { label: 'Delayed', value: count(events.delayed) },
+                ]}
+              />
+              <StatRow
+                className="mt-6"
+                stats={[
+                  {
+                    label: 'Bounce rate',
+                    value: `${events.bounceRate}%`,
+                    detail: events.bounceRate >= 2 ? 'Above 2%: investigate' : 'Healthy, keep under 2%',
+                  },
+                  {
+                    label: 'Complaint rate',
+                    value: `${events.complaintRate}%`,
+                    detail: events.complaintRate >= 0.1 ? 'Above 0.1%: investigate' : 'Healthy, keep under 0.1%',
+                  },
+                ]}
+              />
+            </>
+          )}
+        </DashboardSection>
+      </DashboardBody>
+    </>
   );
 }

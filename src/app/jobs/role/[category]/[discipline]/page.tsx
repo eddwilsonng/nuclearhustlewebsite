@@ -28,6 +28,7 @@ import {
 import { generateCategoryPageSchema } from '@/lib/seo/schema';
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
+import { JOB_ALERTS_HREF, POST_JOB_HREF } from "@/components/site-nav";
 
 interface PageProps {
   params: Promise<{ category: string; discipline: string }>;
@@ -152,7 +153,7 @@ export default async function DisciplinePage({ params, searchParams }: PageProps
             )}
           </BrowseMeta>
           {jobs.length > 0 && (
-            <BrowseAlertLink href="/signup">
+            <BrowseAlertLink href={JOB_ALERTS_HREF}>
               ★ Get {info.name} engineering job alerts →
             </BrowseAlertLink>
           )}
@@ -190,7 +191,7 @@ export default async function DisciplinePage({ params, searchParams }: PageProps
                   New roles are added daily — set up an alert so you don&apos;t miss one.
                 </p>
                 <div className="flex flex-col justify-center gap-3 sm:flex-row">
-                  <LinkButton href="/signup" variant="primary">
+                  <LinkButton href={JOB_ALERTS_HREF} variant="primary">
                     Get job alerts →
                   </LinkButton>
                   <LinkButton href="/jobs/role/engineering" variant="secondary">
@@ -220,7 +221,7 @@ export default async function DisciplinePage({ params, searchParams }: PageProps
             <SidebarCTA
               label="Hiring?"
               body={`Post a ${info.name.toLowerCase()} engineering role and reach qualified nuclear professionals.`}
-              href="/signup/employer"
+              href={POST_JOB_HREF}
             />
           </Sidebar>
         </div>

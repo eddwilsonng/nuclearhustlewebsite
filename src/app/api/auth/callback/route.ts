@@ -1,24 +1,24 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-
-function getSafeRedirectPath(value: string | null, fallback: string): string {
-  if (!value) return fallback;
-  // Must start with / and not contain protocol-relative or backslash tricks
-  if (!value.startsWith("/") || value.startsWith("//") || value.includes("\\")) {
-    return fallback;
-  }
-  return value;
-}
+import { safeInternalPath, withRedirect } from "@/lib/redirects";
+import { provisionAccount } from "@/lib/auth/provision";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const role = searchParams.get("role");
-  const next = getSafeRedirectPath(searchParams.get("next"), "/dashboard");
+  const nextParam = safeInternalPath(searchParams.get("next"));
+  const next = nextParam ?? "/dashboard";
 
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    // Password recovery lands here too. Send it straight on, before any
+    // onboarding check can divert it.
+    if (!error && next === "/reset-password") {
+      return NextResponse.redirect(`${origin}/reset-password`);
+    }
 
     if (!error) {
       const {
@@ -26,55 +26,24 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
 
       if (user) {
-        // Check if profile already exists
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("id, role")
-          .eq("id", user.id)
-          .single();
+        // `role` is only set when the person came from a signup page, where
+        // the Google button stays disabled until the terms box is ticked.
+        const result = await provisionAccount(user, {
+          role: role === "employer" || role === "job_seeker" ? role : undefined,
+          acceptedTerms: role === "employer" || role === "job_seeker",
+        });
 
-        if (!profile) {
-          // New Google user — create profile based on role param
-          const fullName =
-            user.user_metadata?.full_name ||
-            user.email!.split("@")[0];
-
-          if (role === "job_seeker") {
-            await supabase.from("profiles").insert({
-              id: user.id,
-              email: user.email!,
-              full_name: fullName,
-              role: "job_seeker",
-            });
-            await supabase.from("job_seeker_profiles").insert({
-              user_id: user.id,
-            });
-            return NextResponse.redirect(`${origin}/dashboard`);
-          } else if (role === "employer") {
-            await supabase.from("profiles").insert({
-              id: user.id,
-              email: user.email!,
-              full_name: fullName,
-              role: "employer",
-            });
-            return NextResponse.redirect(`${origin}/onboarding/employer`);
-          } else {
-            // No role — send to onboarding to pick
-            return NextResponse.redirect(`${origin}/onboarding`);
-          }
+        if (result.error) {
+          return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent("We couldn't finish setting up your account. Try again.")}`);
         }
-
-        // Existing user — check if employer needs to complete company profile
-        if (profile.role === "employer") {
-          const { data: employerProfile } = await supabase
-            .from("employer_profiles")
-            .select("id")
-            .eq("user_id", user.id)
-            .single();
-
-          if (!employerProfile) {
-            return NextResponse.redirect(`${origin}/onboarding/employer`);
-          }
+        if (!result.role) {
+          return NextResponse.redirect(`${origin}${withRedirect("/onboarding", nextParam)}`);
+        }
+        if (result.role === "employer" && !result.hasCompany) {
+          return NextResponse.redirect(`${origin}${withRedirect("/onboarding/company", nextParam ?? "/dashboard/jobs/new")}`);
+        }
+        if (result.role === "job_seeker" && result.created) {
+          return NextResponse.redirect(`${origin}${withRedirect("/onboarding/profile", nextParam)}`);
         }
 
         return NextResponse.redirect(`${origin}${next}`);

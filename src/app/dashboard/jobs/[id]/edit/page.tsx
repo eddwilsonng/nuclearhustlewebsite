@@ -51,10 +51,11 @@ export default async function EditJobPage({
     <>
       <DashboardPageHeader
         title={typedJob.title}
-        description="Edit posting"
+        description="Changes go live on the public listing as soon as you save."
+        back={{ href: "/dashboard/jobs", label: "Jobs" }}
         action={
-          <LinkButton href="/dashboard/jobs" variant="quiet" size="compact">
-            Back
+          <LinkButton href={`/dashboard/jobs/${typedJob.id}/applications`} variant="secondary" size="compact">
+            Applications
           </LinkButton>
         }
       />

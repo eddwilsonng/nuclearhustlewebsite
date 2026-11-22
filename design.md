@@ -222,6 +222,71 @@ Missing facts are omitted, never guessed.
 - Every navigation landmark has a unique accessible name.
 - Active state uses `aria-current`; toggles expose their state.
 
+## Workspace (signed-in) surfaces
+
+The dashboard, onboarding and account pages are a working tool, not a
+marketing page. They use the same tokens, type and sharp geometry at a denser
+setting. BoardUI was evaluated as a kit and kept as a structural reference
+only: its patterns are rebuilt here on Base UI and these tokens.
+
+- Page title: Sans `24px` semibold, one `h1` in `DashboardPageHeader`. Sections
+  are `h2` at `16px`. Body and controls stay `14px` / `16px` inputs.
+- Content sits in the `72rem` column beside a `14rem` sidebar. Forms keep a
+  `48rem` measure inside it.
+- The dashboard renders its own `main` beside the sidebar, so account
+  navigation sits outside the main landmark.
+- One yellow action per page header (Post a job, Browse jobs). The sidebar's
+  shortcut uses the secondary treatment.
+- Below `md`, lists are stacked rows, never wide tables that scroll sideways.
+- Destructive actions confirm in a `Modal` that names what is lost.
+
+### Setup checklist
+
+- `SetupChecklist`: numbered steps, status printed as `Done` / `To do`, a
+  decorative `aria-hidden` track. Only the next unfinished step carries an
+  action, and it uses the secondary treatment. Hidden once every step is done.
+- `OnboardingSteps`: "Step 2 of 4 · Confirm email" above multi-step onboarding,
+  with each step's name in the accessible list.
+
+### Stat row
+
+- `StatRow`: a `dl` of headline numbers between rules. Values are text; a tile
+  with a destination is a stretched link on the number.
+
+### Settings section and row
+
+- `SettingsSection` (titled `h2` group) and `SettingsRow` (label and help on
+  the left, control on the right, stacked below `sm`).
+
+### Choice group
+
+- `ChoiceGroup` (Base UI radio group). `cards` for options that need a
+  description, `segmented` for two or three short words. Arrow keys move the
+  selection; the group submits under its `name`. Circles are allowed here
+  because radios are genuinely circular controls.
+
+### File dropzone and code field
+
+- `FileDropzone`: dashed drop target over a native file input, file name and
+  size once chosen, Remove outside the label so controls never nest. Checks
+  size in the browser before upload.
+- `CodeField` (Base UI OTP field): one Mono box per digit, pasting fills all,
+  `autocomplete="one-time-code"`.
+
+### Toast
+
+- `ToastProvider` / `useToast` (Base UI toast) inside the dashboard. Confirms
+  an action that just happened ("Profile saved."). Bottom right, fades in
+  `150ms`, ink left edge (`danger` for errors). A toast is never the only
+  record of an error: the form keeps its inline message.
+
+### Fields
+
+- `TextField`, `SelectField`, `TextareaField` wire label, description and
+  error to the control (`aria-describedby`, `aria-invalid`). Server actions
+  return one error per field and echo submitted values, so a failed submit
+  keeps what the user typed. The first invalid field takes focus.
+
 ## Accessibility baseline
 
 - Exactly one `main` landmark and one descriptive `h1` per page.

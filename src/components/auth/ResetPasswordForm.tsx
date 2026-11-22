@@ -13,7 +13,7 @@ export function ResetPasswordForm() {
   );
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-4" noValidate>
       {state.error && <AuthError>{state.error}</AuthError>}
 
       <PasswordField
@@ -21,13 +21,15 @@ export function ResetPasswordForm() {
         name="password"
         label="New password"
         autoComplete="new-password"
-        description="Minimum 8 characters."
+        description="At least 8 characters."
+        error={state.fieldErrors?.password}
       />
       <PasswordField
         id="confirmPassword"
         name="confirmPassword"
         label="Confirm password"
         autoComplete="new-password"
+        error={state.fieldErrors?.confirmPassword}
       />
 
       <Button type="submit" variant="primary" fullWidth disabled={isPending}>
