@@ -68,6 +68,26 @@ SECTION_MAP.sort((a, b) => b.match.length - a.match.length);
 const MARKETING =
   /join (our|the) team|more than a career|make a difference|friendly work environment|who we are|total rewards|powered by passion|thanks for your interest|you'll find a friendly|build an exciting|build the future of nuclear|we're creating healthier|cultivating a workplace|11:59|job posting expire|submit your application|important application/i;
 
+/** Company brochure copy that must not become "About this role". */
+const BROCHURE =
+  /raise living standards|pioneers in nuclear|largest wholesale electricity|one of america.s largest|about the callaway energy center|requisition id:|ready to make a lasting impact|at its core, the company|global nuclear energy industry.s first choice|we are committed to transparency and equity/i;
+
+const BENEFIT_NOISE =
+  /comprehensive medical|401\(k\)|health savings account|wellness program|employee referral program|value system:|why westinghouse|paid vacations and company holidays|educational reimbursement|click here to learn more|welcome with your application|we interview candidates on a continuous basis|for more information about the role|get connected with|without regard to race|our global headquarters are located|equal opportunity employer|what we offer|employee assistance|company holidays|work-life balance|flexible work arrangements|designed to support employees|support employees' retirement|flexible work/i;
+
+/** Common words that are only section headers with a colon or on their own line. */
+const AMBIGUOUS_HEADERS = new Set([
+  'summary',
+  'experience',
+  'education',
+  'duties',
+  'travel',
+  'preferred',
+  'requirements',
+  'qualifications',
+  'responsibilities',
+]);
+
 const ABOUT_SKIP =
   /benefits offered for this position|\.pdf\b|total compensation and benefits|nyse:\s*so\b|net-zero greenhouse|facebook\.com\/southernnuclear|in one or two sentences, provide a brief overview/i;
 
@@ -103,57 +123,6 @@ const STRIP: RegExp[] = [
   /Southern Company \(NYSE:\s*SO\s*\)[\s\S]*?visit www\.southerncompany\.com\s*\.?/gi,
   /Southern Nuclear\s*, a subsidiary of Southern Company[\s\S]*?www\.southernnuclear\.com/gi,
 ];
-
-const UNIQUE_HEADERS = new Set(
-  [
-    'Duties & Responsibilities',
-    'Duties and Responsibilities',
-    'Specific responsibilities may include',
-    'Bonus Qualifications',
-    'Primary Duties and Accountabilities',
-    'Principal Accountabilities',
-    'Responsibilities and Duties',
-    'Required Education and Experience',
-    'General Summary',
-    'Summary of Position Duties',
-    'Summary of Job Duties',
-    'Summary',
-    'Job Requirements',
-    'Educational Requirements',
-    'Knowledge, Skills and Abilities',
-    'Primary Duties and Accountabilities',
-    'Job Duties/Responsibilities',
-    'Job Summary/Purpose',
-    'Job Duties / Responsibilities',
-    'Primary Purpose of Position',
-    'Primary Purpose of the Role',
-    'Additional Preferred Qualifications',
-    'Required/Basic Qualifications',
-    'Required Basic Qualifications',
-    'Minimum Requirements',
-    'Minimum Qualifications',
-    'Required Qualifications',
-    'Basic Qualifications',
-    'Preferred Qualifications',
-    'Desired Qualifications',
-    "What You'll Do",
-    'What You Will Do',
-    'Key Accountabilities',
-    'Key Responsibilities',
-    'Job Responsibilities',
-    'Primary Responsibilities',
-    'Job Duties',
-    'Primary Duties',
-    'Position Description',
-    'Position Summary',
-    'Job Summary / Purpose',
-    'Job Summary',
-    'Primary Purpose',
-    'Travel Requirements',
-    'Working Conditions',
-    'Specific Requirements',
-  ].map((s) => s.toLowerCase()),
-);
 
 const ACTION_SPLIT =
   /\b(Ability|Analyze|Apply|Assist|Assure|Build|Collaborate|Communicate|Complete|Conduct|Contribute|Coordinate|Create|Deliver|Demonstrate|Design|Develop|Direct|Drive|Ensure|Establish|Evaluate|Execute|Facilitate|Identify|Implement|Lead|Maintain|Manage|Monitor|Operate|Oversee|Participate|Perform|Plan|Prepare|Provide|Review|Support|Verify|Work)(?:s|es|ed|ing)?\b/;
@@ -201,9 +170,10 @@ export function normalizeAtsText(raw: string): string {
   t = t.replace(/&quot;|&#34;/g, '"');
   t = t.replace(/&#\d+;/g, ' ');
   t = t.replace(/[“”]/g, '"');
+  t = t.replace(/[\u200b\u200c\u200d\ufeff]+/g, '');
   t = t.replace(/([a-z])([A-Z])/g, '$1 $2');
-  t = t.replace(/([a-zA-Z])(\d)/g, '$1 $2');
-  t = t.replace(/(\d)([A-Z])/g, '$1 $2');
+  t = t.replace(/([a-z])(\d)/g, '$1 $2');
+  t = t.replace(/(\d)([A-Za-z])/g, '$1 $2');
   t = t.replace(/([a-z])\.([A-Z])/g, '$1. $2');
   t = t.replace(/([a-z]):([A-Z])/g, '$1: $2');
   t = t.replace(/([a-z)])([A-Z])/g, '$1 $2');
@@ -251,22 +221,38 @@ function dropDuplicatedPosting(text: string): string {
   return text.slice(0, cut).trim();
 }
 
+/** Case-insensitive literal that does not turn [A-Z] lookaheads into lowercase matches. */
+function ciLiteral(s: string): string {
+  return s
+    .split(/\s+/)
+    .map((part) =>
+      part
+        .split('')
+        .map((ch) => {
+          if (!/[A-Za-z]/.test(ch)) return escapeRe(ch);
+          return `[${ch.toUpperCase()}${ch.toLowerCase()}]`;
+        })
+        .join(''),
+    )
+    .join('\\s+');
+}
+
 function insertSectionBreaks(text: string): string {
   let t = text;
   const tokens: string[] = [];
   for (const { match } of SECTION_MAP) {
-    const unique = UNIQUE_HEADERS.has(match.toLowerCase());
     const token = `<<HDR:${tokens.length}>>`;
     tokens.push(match);
-    // Do not treat "A summary of the benefits" as a section header — only
-    // "Summary:" / "Summary We have openings" / "Summary of Job Duties".
-    const re = unique
-      ? new RegExp(`\\b${escapeRe(match)}(?=\\s*[:–—-]|\\s+[A-Z]|$)\\s*[:–—-]?`, 'gi')
-      : new RegExp(
-          `(^|[.!?])\\s*${escapeRe(match)}(?=\\s*:|\\s+[A-Z]|$)\\s*:?`,
-          'gi',
-        );
-    t = t.replace(re, unique ? `\n\n${token}\n` : `$1\n\n${token}\n`);
+    const word = ciLiteral(match);
+    // Short headers ("Experience", "Summary") are only headers with a colon
+    // or on their own line. The old /i flag made [A-Z] match "with", so
+    // "Experience with EDMS" lost its first word and glued onto the bullet above.
+    const ambiguous = AMBIGUOUS_HEADERS.has(match.toLowerCase());
+    // "Experience with EDMS" is a bullet, not a header. "Qualifications:" mid-line is.
+    const re = ambiguous
+      ? new RegExp(`(?:^|\\n)\\s*${word}\\s*(?:\\n|$)|\\b${word}\\s*:\\s*`, 'g')
+      : new RegExp(`(?:^|[\\n.!?])\\s*${word}\\s*:?\\s*(?=\\n|[A-Z]|$)`, 'g');
+    t = t.replace(re, `\n\n${token}\n`);
   }
   for (let i = tokens.length - 1; i >= 0; i--) {
     t = t.replaceAll(`<<HDR:${i}>>`, `@@${tokens[i]}@@`);
@@ -287,30 +273,88 @@ function fieldForHeader(header: string): Field | null {
 }
 
 const DUTY_VERB =
-  'Act|Acquire|Analyze|Apply|Assist|Assign|Build|Collaborate|Collect|Communicate|Complete|Conduct|Coordinate|Create|Demonstrate|Develop|Direct|Ensure|Evaluate|Guide|Identify|Implement|Lead|Maintain|Manage|Monitor|Obtain|Order|Oversee|Perform|Plan|Prepare|Process|Provide|Retrieve|Review|Schedule|Serve|Supervise|Support|Verify';
+  'Act|Acquire|Administer|Analyze|Apply|Assist|Assign|Build|Clean|Collaborate|Collect|Communicate|Complete|Conduct|Coordinate|Create|Demonstrate|Develop|Direct|Ensure|Evaluate|Foster|Guide|Handle|Housekeep|Identify|Implement|Inspect|Issue|Keep|Lead|Maintain|Manage|Meet|Monitor|Obtain|Operate|Order|Oversee|Participate|Pass|Perform|Plan|Prepare|Prioritize|Process|Provide|Requisition|Respond|Retrieve|Review|Schedule|Segregate|Serve|Stock|Supervise|Support|Survey|Train|Understand|Use|Verify';
+
+const DUTY_START = new RegExp(`^(?:${DUTY_VERB})(?:s|es|ed|ing)?\\b`, 'i');
+
+function isDutyItem(item: string): boolean {
+  return DUTY_START.test(item);
+}
+
+function isRequirementItem(item: string): boolean {
+  return /^(?:high school|bachelor|master|associate|ged\b|juris|proficient|ability to|knowledge of|deep knowledge|demonstrated\b|\d+\+?\s*years|experience\b)/i.test(item)
+    || /\b(degree|diploma|\bged\b|years of (?:experience|related)|licen[sc]ure|licensed|clearance|accredited|security screening)\b/i.test(item)
+    || (/\brequired\b/i.test(item) && !/\bas required\b/i.test(item) && item.length < 140);
+}
+
+function isPreferredItem(item: string): boolean {
+  return (/\bpreferred\b|\bmeritorious\b|\ban advantage\b|\ba plus\b/i.test(item) && !/\brequired\b/i.test(item));
+}
+
+function isIntroFluff(item: string): boolean {
+  return BROCHURE.test(item)
+    || BENEFIT_NOISE.test(item)
+    || /^(?:job duties|facility duties|general maintenance duties|position specific description|job overview|about the position|about the role|key responsibilities)\b/i.test(item)
+    || /\b(take the next step|tailored energy solutions|employees and contractors|you can learn more by visiting|highly efficient, low-cost|offers a wide range of benefits)\b/i.test(item);
+}
+
+function roleIntro(text: string): string | undefined {
+  const seeking = text.match(
+    /\b([A-Z][\w'’.&-]*(?:\s+[A-Z][\w'’.&-]*){0,8}\s+is seeking\b[\s\S]{40,700}?)(?=\s+As\s+[A-Z]|\s+Key\s+[A-Z]|\n\n|$)/,
+  );
+  if (seeking) {
+    const intro = sentences(seeking[1], 2, 420);
+    if (intro && !BROCHURE.test(intro)) return intro;
+  }
+  const marked = text.match(
+    /(?:About the role|Position Specific Description|About The Position|About the Position|Job Overview)\s*:?\s*([\s\S]{60,900}?)(?=(?:Key Responsibilities|Job Duties|Qualifications|Minimum Qualifications|Requirements|You will report)\b|$)/i,
+  );
+  if (!marked) return undefined;
+  const intro = sentences(marked[1], 2, 420);
+  return intro && !BROCHURE.test(intro) ? intro : undefined;
+}
 
 function splitIntoItems(text: string): string[] {
   let remaining = text.replace(/[•●·∙]/g, '\n- ');
   remaining = remaining.replace(/;\s+(?=[A-Z])/g, '.\n');
   remaining = remaining.replace(/([.!?])\s+(?=[A-Z])/g, '$1\n');
-  // Career sites often flatten bullets into one line and drop the period:
-  // "responsibility Plan, organize, and monitor"
+  remaining = remaining.replace(/([.!?])\s+(?=\d)/g, '$1\n');
+  // Flattened ATS bullets: "supplies Operates decontamination equipment"
   remaining = remaining.replace(
     new RegExp(
-      `(?<=[a-z)])\\s+(?=(?:${DUTY_VERB})(?:s|es|ed|ing)?\\s+(?:to|the|a|an|in|for|with|all|our|their|new|any)\\b)`,
+      `(?<=[a-z0-9),:])\\s+(?=(?:${DUTY_VERB})(?:s|es|ed|ing)?\\b)`,
       'g',
     ),
     '\n',
   );
   remaining = remaining.replace(
-    /(?<=[a-z.])\s+(?=(?:Education|Experience)\s*:|(?:Knowledge(?:,| and Skills)|KEY)\b)/g,
+    /(?<=[a-z.)])\s+(?=(?:Education|Experience|Qualifications|Requirements|Working Conditions|Additional Information|Preferred Qualifications|Special Requirements)\s*:?)/g,
+    '\n',
+  );
+  remaining = remaining.replace(
+    /(?<=[a-z.)])\s+(?=(?:Special Requirements|Preferred Qualifications|NextEra Energy offers|We are committed)\b)/g,
     '\n',
   );
   remaining = remaining.replace(/\s+(?=\d+\.\s+)/g, '\n');
   remaining = remaining.replace(
-    /(?<=[a-z/)])\s+(?=(?:Ability to|Excellent|Associates degree|High School Diploma|And one of the following|Valid Driver)\b)/g,
+    /(?<=[a-z0-9.)])\s+(?=(?:Ability to|Excellent|Associates degree|High School Diploma|Bachelor(?:'|’)s|Master(?:'|’)s|And one of the following|Valid Driver|\d+\+?\s+years)\b)/g,
     '\n',
   );
+  // "CNC operator experience preferred Production welding experience preferred"
+  // Do not split "level I" — the next token has to be a word, not a single capital.
+  remaining = remaining.replace(
+    /\s+(?=(?:[A-Z]{2,}|[A-Z][a-z]{2,})(?:\s+\S+){0,6}\s+experience preferred\b)/g,
+    '\n',
+  );
+  // Noun-phrase lists with no periods: "Small assembly builds Large assembly builds".
+  // Only on unpunctuated lines so a normal sentence is left intact.
+  remaining = remaining
+    .split('\n')
+    .map((line) => {
+      if (/[.!?]/.test(line) || line.length < 80) return line;
+      return line.replace(/(?<=\b[a-z]{3,})\s+(?=[A-Z][a-z]+\s+[a-z])/g, '\n');
+    })
+    .join('\n');
   remaining = remaining.replace(/\s+(?=OR\s+[A-Z])/g, '\n');
 
   const lines = remaining.split('\n').map((l) => l.trim()).filter(Boolean);
@@ -320,13 +364,20 @@ function splitIntoItems(text: string): string[] {
     const cleaned = line
       .replace(/^[-–—*•●]\s*/, '')
       .replace(/^\d+[.)]\s*/, '')
+      .replace(/^(?:qualifications|requirements|preferred qualifications|education|experience)\s*:\s*/i, '')
+      .replace(/^(?:qualifications|requirements)\s+(?=[A-Z])/i, '')
       .replace(/^and accountabilities\s+/i, '')
       .replace(/you.ll do more than contribute[\s\S]*?by:\s*/i, '')
       .trim();
-    if (cleaned.length < 20) continue;
+    if (cleaned.length < 12) continue;
+    if (cleaned.length < 20 && !isDutyItem(cleaned) && !isRequirementItem(cleaned)) continue;
+    if (/:\s*$/.test(cleaned) && cleaned.length < 80) continue;
+    if (/^(?:qualifications and skills|key qualifications and skills)$/i.test(cleaned)) continue;
+    if (/safely lift|repetitive work|special senses|work conditions:|motor abilities|typing\/keyboard|disclosed their own pay|medical or religious documentation/i.test(cleaned)) continue;
     if (/^job requirements:/i.test(cleaned)) continue;
     if (/\(\s*i\.e\.?\s*$/i.test(cleaned)) continue;
-    if (/\b(and|or|the|of|including|with)\s*$/i.test(cleaned)) continue;
+    if (cleaned.length < 45 && /\b(and|or|the|of|including|with)\s*$/i.test(cleaned)) continue;
+    if (isIntroFluff(cleaned)) continue;
     if (/privacy|cookie|do not sell|terms of use|§§|@@/i.test(cleaned)) continue;
     if (/\b(equal employment opportunit|this policy applies to all terms|expressly prohibits any form|complies with applicable state and local laws governing non-discrimination|improper interference with the ability)\b/i.test(cleaned)) continue;
     if (/job posting end date|if you have what it takes|exciting employment opportunities/i.test(cleaned)) continue;
@@ -365,7 +416,7 @@ function sentences(text: string, max: number, maxChars: number): string {
     .replace(/([.!?])\s+/g, '$1\n')
     .split('\n')
     .map((s) => s.trim().replace(/^["'\s]+/, ''))
-    .filter((s) => s.length > 25 && !MARKETING.test(s) && !ABOUT_SKIP.test(s));
+    .filter((s) => s.length > 25 && !MARKETING.test(s) && !ABOUT_SKIP.test(s) && !BROCHURE.test(s));
 
   let out = '';
   for (const s of parts.slice(0, max)) {
@@ -402,11 +453,20 @@ export function extractLegalNotices(text: string): { notices?: string; body: str
     else kept.push(chunk);
   }
 
-  const unique = [...new Set(notices)];
+  const unique = [...new Set(notices.map(tidyNotice).filter((n) => n.length > 20))];
   return {
     notices: unique.length > 0 ? unique.join("\n") : undefined,
     body: kept.join("\n"),
   };
+}
+
+function tidyNotice(chunk: string): string {
+  return chunk
+    .replace(/\s*#LI-[\w-]+[\s\S]*$/i, '')
+    .replace(/\s*Why Westinghouse\?[\s\S]*$/i, '')
+    .replace(/\s*Get connected with[\s\S]*$/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /**
@@ -459,8 +519,8 @@ export function formatJobDescriptionLocal(
     buckets.responsibilities.unshift(typicalSplit.slice(1).join(' '));
   }
 
-  const aboutSource = [...buckets.about, ...preamble].join(' ');
-  let about = sentences(aboutSource, 3, 420);
+  const aboutSource = [...buckets.about, ...preamble].join('\n');
+  let about = roleIntro(cleaned) || sentences(aboutSource, 3, 420);
   about = about
     .replace(/^(of\s+)?(position\s+)?duties:\s*/i, '')
     .replace(/^job description\s+/i, '')
@@ -470,48 +530,79 @@ export function formatJobDescriptionLocal(
     .trim();
 
   if (!buckets.responsibilities.length) {
-    if (preamble.length) buckets.responsibilities.push(preamble.join(' '));
-    else if (buckets.about.length) buckets.responsibilities.push(buckets.about.join(' '));
+    if (preamble.length) buckets.responsibilities.push(preamble.join('\n'));
+    else if (buckets.about.length) buckets.responsibilities.push(buckets.about.join('\n'));
   }
 
-  let respItems = splitIntoItems(buckets.responsibilities.join(' ')).filter(
-    (i) => ACTION_SPLIT.test(i) || i.length > 40,
+  let respItems = splitIntoItems(buckets.responsibilities.join('\n')).filter(
+    (i) => isDutyItem(i) || ACTION_SPLIT.test(i) || i.length > 18,
   );
   if (!respItems.length && buckets.about.length) {
-    respItems = splitIntoItems(buckets.about.join(' ')).filter(
-      (i) => ACTION_SPLIT.test(i) || i.length > 40,
+    respItems = splitIntoItems(buckets.about.join('\n')).filter(
+      (i) => isDutyItem(i) || ACTION_SPLIT.test(i) || i.length > 18,
     );
   }
   const qualFromDuties: string[] = [];
+  const preferredFromDuties: string[] = [];
   respItems = respItems
     .map((i) => i.replace(/^job description\s+/i, ''))
     .filter((i) => {
       if (/education, experience, & skills required/i.test(i)) return false;
-      if (/^(high school diploma|bachelor(?:'|’)s degree|juris doctor)\b/i.test(i)) {
+      if (isPreferredItem(i)) {
+        preferredFromDuties.push(i);
+        return false;
+      }
+      if (isRequirementItem(i) && !isDutyItem(i)) {
         qualFromDuties.push(i);
         return false;
       }
       return true;
     });
-  if (qualFromDuties.length) buckets.qualifications.push(qualFromDuties.join(' '));
-  const responsibilities = toBullets(respItems, 10);
-  const qualifications = toBullets(splitIntoItems(buckets.qualifications.join(' ')), 8);
-  const desired = toBullets(splitIntoItems(buckets.desired.join(' ')), 6);
+  if (qualFromDuties.length) buckets.qualifications.push(qualFromDuties.join('\n'));
+  if (preferredFromDuties.length) buckets.desired.push(preferredFromDuties.join('\n'));
 
-  if (!about || (jobTitle && about.replace(/\.$/, '') === jobTitle)) {
+  let qualItems = splitIntoItems(buckets.qualifications.join('\n'));
+  const dutiesFromQuals: string[] = [];
+  const preferredFromQuals: string[] = [];
+  qualItems = qualItems.filter((i) => {
+    if (isPreferredItem(i)) {
+      preferredFromQuals.push(i);
+      return false;
+    }
+    if (isDutyItem(i) && !isRequirementItem(i)) {
+      dutiesFromQuals.push(i);
+      return false;
+    }
+    return true;
+  });
+  respItems.push(...dutiesFromQuals);
+  respItems = respItems.filter((i) => !isIntroFluff(i));
+  const dutyCount = respItems.filter(isDutyItem).length;
+  if (dutyCount >= 3) {
+    respItems = respItems.filter((i) => isDutyItem(i) || i.length <= 160);
+  }
+  if (preferredFromQuals.length) buckets.desired.push(preferredFromQuals.join('\n'));
+
+  const responsibilities = toBullets(respItems, 12);
+  const qualifications = toBullets(qualItems, 12);
+  const desired = toBullets(splitIntoItems(buckets.desired.join('\n')), 6);
+
+  if (!about || BROCHURE.test(about) || (jobTitle && about.replace(/\.$/, '') === jobTitle)) {
     const fromResp = respItems.slice(0, 2).join(' ');
-    about = sentences(aboutSource, 3, 420) || sentences(fromResp, 3, 420);
+    about = roleIntro(cleaned) || sentences(aboutSource, 3, 420) || sentences(fromResp, 3, 420);
   }
 
-  const locRaw = buckets.location_details.join(' ').replace(/\s+/g, ' ').trim();
+  const locRaw = buckets.location_details.join('\n').replace(/[ \t]+/g, ' ').trim();
   const locClean = locRaw
     .replace(/Relocation Assistance[\s\S]*/i, '')
     .replace(/Visa Sponsored Position.*$/i, '')
     .replace(/Represented\/Union Position.*$/i, '')
     .trim();
-  const location_details = locClean
-    ? sentences(locClean, 2, 320)
-    : extractLocationLine(cleaned);
+  const locationBad = /essential functions|reasonable accommodation|motor abilities|physical exertion/i;
+  const location_details =
+    locClean && !locationBad.test(locClean)
+      ? sentences(locClean, 2, 320)
+      : extractLocationLine(cleaned);
 
   const sd: StructuredDescription = {};
   if (about) sd.about = about;
@@ -529,10 +620,23 @@ export function formatJobDescriptionLocal(
 }
 
 function extractLocationLine(text: string): string | undefined {
-  const m = text.match(
-    /\b(Hybrid[^.]*\.|Onsite(?!\s+walk)[^.]*\.|On-site(?!\s+walk)[^.]*\.|This (?:position|role) is (?:hybrid|remote|onsite)[^.]*\.|Must live within[^.]*\.|\d+%\s*travel[^.]*\.)/i,
+  const labeled = text.match(
+    /\b(?:model of work|work place flexibility)\s*:\s*(hybrid|remote|on-?site|onsite)\b/i,
   );
-  return m?.[0]?.trim();
+  if (labeled) {
+    const mode = labeled[1].toLowerCase();
+    if (mode.startsWith('on')) return 'On-site.';
+    return mode.charAt(0).toUpperCase() + mode.slice(1) + '.';
+  }
+  if (/\b100%\s*on-?site\b/i.test(text) || /\byou will be\s+100%\s*on-?site\b/i.test(text)) {
+    return 'On-site.';
+  }
+  const travel = text.match(/\btravels?\s*:\s*(\d+\s*(?:-|–|to)\s*\d+\s*%)/i)
+    || text.match(/\b(\d+\s*(?:-|–|to)\s*\d+\s*%)\s*(?:of (?:your|the) time|travel)/i);
+  if (travel) return `${travel[1].replace(/\s+/g, ' ')} travel.`;
+  const shift = text.match(/\b(standard day shift|rotating shifts?|night shifts?)[^.]{0,80}/i);
+  if (shift) return shift[0].trim().replace(/\.$/, '') + '.';
+  return undefined;
 }
 
 /** Mixed-fleet I&C / PMC generation roles that slipped past title matching. */
