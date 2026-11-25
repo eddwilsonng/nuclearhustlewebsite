@@ -140,6 +140,176 @@
     "category": "administrative"
   },
   {
+    "slug": "summer-2027-reactor-engineering-intern-morris-il-morris-illinois-5125",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "ic-electrical-engineer-byron-illinois-2829",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "senior-mechanical-engineer-braceville-illinois-2031",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "senior-financial-analyst-clinton-illinois-5196",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "2027-summer-origination-intern-baltimore-md-baltimore-maryland-5215",
+    "state": "maryland",
+    "category": "other"
+  },
+  {
+    "slug": "2027-summer-mid-marketing-intern-baltimore-md-baltimore-maryland-5230",
+    "state": "maryland",
+    "category": "other"
+  },
+  {
+    "slug": "electrical-engineer-braceville-illinois-2029",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "nuclear-electrical-technician-ontario-new-york-6577",
+    "state": "new-york",
+    "category": "maintenance"
+  },
+  {
+    "slug": "maintenance-planner-mechanical-lusby-maryland-5838",
+    "state": "maryland",
+    "category": "maintenance"
+  },
+  {
+    "slug": "mechanical-engineer-byron-illinois-825",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "sr-mgr-maintenance-execution-cordova-illinois-1997",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "supv-fuel-handling-delta-pennsylvania-5824",
+    "state": "pennsylvania",
+    "category": "operations"
+  },
+  {
+    "slug": "supv-fuel-handling-oswego-new-york-4230",
+    "state": "new-york",
+    "category": "operations"
+  },
+  {
+    "slug": "engineer-mechanical-or-electrical-warrenville-illinois-2600",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-mechanical-or-electrical-morris-illinois-15",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "mt-instructor-byron-illinois-3828",
+    "state": "illinois",
+    "category": "training"
+  },
+  {
+    "slug": "engineering-analyst-marseilles-illinois-5115",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "fire-marshal-marseilles-illinois-6578",
+    "state": "illinois",
+    "category": "other"
+  },
+  {
+    "slug": "engineer-mechanical-lusby-maryland-3206",
+    "state": "maryland",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineering-analyst-lusby-maryland-3872",
+    "state": "maryland",
+    "category": "engineering"
+  },
+  {
+    "slug": "engineer-sr-cyber-security-pottstown-pennsylvan-5127",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "sr-outage-scheduler-lusby-maryland-5842",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-rxs-specialist-lusby-maryland-3840",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "cycle-manager-cordova-illinois-5843",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-performance-specialist-middletown-pennsylva-3841",
+    "state": "pennsylvania",
+    "category": "administrative"
+  },
+  {
+    "slug": "manager-site-ep-marseilles-illinois-6585",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-project-manager-lusby-maryland-128",
+    "state": "maryland",
+    "category": "administrative"
+  },
+  {
+    "slug": "supervisor-rad-protection-marseilles-illinois-5162",
+    "state": "illinois",
+    "category": "health-physics"
+  },
+  {
+    "slug": "sr-work-week-manager-cordova-illinois-5854",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
+    "slug": "senior-financial-analystfinancial-analyst-middletown-pennsylva-5199",
+    "state": "pennsylvania",
+    "category": "administrative"
+  },
+  {
+    "slug": "sr-turbine-equipment-specialist-lusby-maryland-potts-5185",
+    "state": "maryland",
+    "category": "maintenance"
+  },
+  {
+    "slug": "engineer-electrical-charlestown-massachu-3255",
+    "state": "massachusetts",
+    "category": "engineering"
+  },
+  {
+    "slug": "mechanical-engineer-marseilles-illinois-3277",
+    "state": "illinois",
+    "category": "engineering"
+  },
+  {
+    "slug": "rxs-project-manager-dryer-replacement-marseilles-illinois-6237",
+    "state": "illinois",
+    "category": "administrative"
+  },
+  {
     "slug": "nuclear-electrical-technician-pottstown-pennsylvan-6220",
     "state": "pennsylvania",
     "category": "maintenance"
@@ -151,11 +321,6 @@
   },
   {
     "slug": "strategic-electrical-engineer-cordova-illinois-3821",
-    "state": "illinois",
-    "category": "engineering"
-  },
-  {
-    "slug": "manager-engineering-marseilles-illinois-56",
     "state": "illinois",
     "category": "engineering"
   },
@@ -220,11 +385,6 @@
     "category": "maintenance"
   },
   {
-    "slug": "cycle-manager-lusby-maryland-3874",
-    "state": "maryland",
-    "category": "administrative"
-  },
-  {
     "slug": "prin-business-analyst-ira-compliance-middletown-pennsylva-6233",
     "state": "pennsylvania",
     "category": "administrative"
@@ -258,11 +418,6 @@
     "slug": "ic-technician-trainee-oswego-new-york-6242",
     "state": "new-york",
     "category": "maintenance"
-  },
-  {
-    "slug": "sr-radwaste-shipper-morris-illinois-4240",
-    "state": "illinois",
-    "category": "health-physics"
   },
   {
     "slug": "assoc-rad-protection-spclst-morris-illinois-6243",
@@ -305,22 +460,7 @@
     "category": "maintenance"
   },
   {
-    "slug": "sr-turbine-equip-specialist-lusby-maryland-2820",
-    "state": "maryland",
-    "category": "maintenance"
-  },
-  {
     "slug": "sr-ops-training-instructor-lusby-maryland-6",
-    "state": "maryland",
-    "category": "training"
-  },
-  {
-    "slug": "sr-operations-instructor-ops-instructor-byron-illinois-2565",
-    "state": "illinois",
-    "category": "training"
-  },
-  {
-    "slug": "operations-instructor-lusby-maryland-5087",
     "state": "maryland",
     "category": "training"
   },
@@ -853,11 +993,6 @@
     "slug": "engineer-manager-oswego-new-york-2006",
     "state": "new-york",
     "category": "engineering"
-  },
-  {
-    "slug": "nuclear-reactor-operator-ontario-new-york-4",
-    "state": "new-york",
-    "category": "operations"
   },
   {
     "slug": "manager-it-nuclear-cyber-mid-atlantic-delta-pennsylvania-p-3817",
@@ -2088,6 +2223,36 @@
     "slug": "senior-rpo-technician-newport-mi-873",
     "state": "michigan",
     "category": "maintenance"
+  },
+  {
+    "slug": "mechanical-maintenance-technician-eunice-new-mexico-5436",
+    "state": "new-mexico",
+    "category": "maintenance"
+  },
+  {
+    "slug": "2027-uusa-projects-engineer-intern-eunice-new-mexico-5439",
+    "state": "new-mexico",
+    "category": "engineering"
+  },
+  {
+    "slug": "2027-uusa-chemistry-intern-eunice-new-mexico-5440",
+    "state": "new-mexico",
+    "category": "health-physics"
+  },
+  {
+    "slug": "2027-uusa-operations-intern-eunice-new-mexico-5445",
+    "state": "new-mexico",
+    "category": "other"
+  },
+  {
+    "slug": "2027-uusa-systems-engineer-intern-eunice-new-mexico-5447",
+    "state": "new-mexico",
+    "category": "engineering"
+  },
+  {
+    "slug": "2027-uusa-design-safety-basis-intern-eunice-new-mexico-5449",
+    "state": "new-mexico",
+    "category": "other"
   },
   {
     "slug": "project-director-eunice-new-mexico-3986",
