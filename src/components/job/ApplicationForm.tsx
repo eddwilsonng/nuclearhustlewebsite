@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { Facebook, Linkedin } from "lucide-react";
+import { ExternalLinkButton } from "@/components/ui/LinkButton";
 import { ChoiceGroup } from "@/components/ui/ChoiceGroup";
 import {
   FieldError,
@@ -71,7 +72,7 @@ export function ApplicationForm({
 
   if (status === "success") {
     return (
-      <div className="space-y-3 border border-rule p-6">
+      <div className="space-y-4 border border-rule p-6">
         <FormStatus className="text-ink">
           Application sent. {companyName} has it, along with your CV, and will reply by
           email if it&apos;s a match. We&apos;ve emailed you a copy.
@@ -95,6 +96,31 @@ export function ApplicationForm({
             to store your resume and keep a record of each application.
           </p>
         )}
+        <div className="border-t border-rule pt-4">
+          <p className="mb-3 font-sans text-sm text-secondary">
+            Looking for more roles? Join our community:
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <ExternalLinkButton
+              href="https://www.facebook.com/groups/1086918477294291?utm_source=site&utm_medium=apply_confirmation&utm_campaign=community"
+              variant="primary"
+              size="compact"
+              target="_blank"
+            >
+              <Facebook className="h-4 w-4" />
+              Join Facebook group
+            </ExternalLinkButton>
+            <ExternalLinkButton
+              href="https://www.linkedin.com/showcase/129954376?utm_source=site&utm_medium=apply_confirmation&utm_campaign=community"
+              variant="secondary"
+              size="compact"
+              target="_blank"
+            >
+              <Linkedin className="h-4 w-4" />
+              Follow on LinkedIn
+            </ExternalLinkButton>
+          </div>
+        </div>
       </div>
     );
   }

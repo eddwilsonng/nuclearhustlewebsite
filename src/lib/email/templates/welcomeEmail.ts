@@ -1,6 +1,7 @@
 import { legalSenderLines } from '@/lib/legal';
 import { EMAIL_SANS, emailBodyOnly, emailPreheader, emailPrimaryCta } from '../emailShell';
 import { unsubscribeUrl } from '../unsubscribe';
+import { communityEmailFooter } from '../communityFooter';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.nuclearhustle.com';
 
@@ -16,6 +17,7 @@ export function buildWelcomeEmailHtml(email: string): string {
       Every Monday we send the roles that went live that week, grouped by region.
     </p>
     ${emailPrimaryCta(`${SITE_URL}/jobs`, 'Browse open roles')}
+    ${communityEmailFooter('welcome')}
   `;
 
   return emailBodyOnly(content, unsub, 'You signed up at nuclearhustle.com.');

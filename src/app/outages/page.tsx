@@ -8,8 +8,10 @@ import {
   BrowseLabel,
   BrowseTitle,
 } from '@/components/BrowsePageHeader';
+import { CommunityBanner } from '@/components/CommunityBanner';
 import { JobAlertForm } from '@/components/JobAlertForm';
 import { SectionIndex } from '@/components/SectionIndex';
+import { ShareOutageButtons } from '@/components/outages/ShareOutageButtons';
 import { FleetSnapshot, type FleetFigure, type FleetSegment } from '@/components/outages/FleetSnapshot';
 import {
   FORECAST_HORIZON_DAYS,
@@ -360,6 +362,8 @@ export default async function OutagesPage() {
           <FleetSnapshot figures={figures} segments={segments} />
         </div>
       </header>
+
+      <CommunityBanner variant="outages" />
 
       <SectionIndex items={SECTIONS} />
 
@@ -714,6 +718,12 @@ export default async function OutagesPage() {
                 The NRC describes the daily status report as unevaluated information. Nuclear Hustle is not the NRC and is not affiliated with any plant operator. A forecast is an estimate from past outages. It is not a date the operator has scheduled.
               </p>
             </MethodBlock>
+          </div>
+          <div className="mt-10 border-t border-rule pt-8">
+            <p className="mb-4 font-mono text-xs uppercase tracking-widest text-secondary">
+              Share this schedule
+            </p>
+            <ShareOutageButtons />
           </div>
         </div>
       </section>

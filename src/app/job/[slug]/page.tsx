@@ -20,7 +20,7 @@ import { ApplicationForm } from "@/components/job/ApplicationForm";
 import { ViewTracker } from "@/components/job/ViewTracker";
 import { SaveJobButton } from "@/components/job/SaveJobButton";
 import { FlagJobButton } from "@/components/job/FlagJobButton";
-import { ShareJobButton } from "@/components/job/ShareJobButton";
+import { ShareButtons } from "@/components/job/ShareButtons";
 import { groupSkills } from "@/lib/skills/taxonomy";
 import { fitMetaDescription, hasUsableFit } from "@/lib/jobs/fit";
 import { formatDigestLocation } from "@/lib/email/digestModel";
@@ -518,8 +518,28 @@ export default async function JobPage({ params }: PageProps) {
                     showLabel
                     completeSaveIntent
                   />
-                  <ShareJobButton title={job.title} />
                 </div>
+                <div className="mt-4 border-t border-rule pt-4">
+                  <p className="text-center font-sans text-sm leading-relaxed text-secondary">
+                    Not the right fit?{" "}
+                    <a
+                      href="https://www.facebook.com/groups/1086918477294291?utm_source=site&utm_medium=job_sidebar&utm_campaign=community"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-ink underline underline-offset-2"
+                    >
+                      Get a new nuclear role every weekday
+                    </a>{" "}
+                    in our Facebook group.
+                  </p>
+                </div>
+              </div>
+
+              <div className="border border-rule p-5">
+                <ShareButtons
+                  url={`${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.nuclearhustle.com'}/job/${job.slug}`}
+                  title={job.title}
+                />
               </div>
 
               <div className="border border-rule p-5">

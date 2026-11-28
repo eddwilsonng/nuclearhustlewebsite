@@ -5,6 +5,7 @@ import { escapeHtml } from '../escapeHtml';
 import { weeklyDigestPreheader } from '../subjectLine';
 import { legalSenderLines } from '@/lib/legal';
 import { unsubscribeUrl } from '../unsubscribe';
+import { communityEmailFooter } from '../communityFooter';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.nuclearhustle.com';
 
@@ -113,6 +114,7 @@ export function buildWeeklyDigestHtml(
   const content = `
     ${renderFeatured(model.featured)}
     ${model.sections.map(renderSection).join('')}
+    ${communityEmailFooter('digest')}
     ${emailPrimaryCta(`${SITE_URL}/jobs`, model.browseLabel)}
   `;
 

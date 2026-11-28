@@ -15,6 +15,7 @@ import {
   BrowseMeta,
 } from '@/components/BrowsePageHeader';
 import { FilterChip } from '@/components/FilterChip';
+import { CommunityBanner } from '@/components/CommunityBanner';
 import { buildJobsPaginationMetadata } from '@/lib/jobs/paginationMetadata';
 import { getTotalPages, parsePageParam, buildJobsPageUrl } from '@/lib/jobs/pagination';
 
@@ -80,6 +81,8 @@ export default async function JobsPage({ searchParams }: PageProps) {
           )}
         </BrowseMeta>
       </BrowsePageHeader>
+
+      <CommunityBanner variant="jobs" />
 
       <div className="border-b border-rule">
         <div className="max-w-6xl mx-auto px-6 py-4">

@@ -40,7 +40,7 @@ export function Footer() {
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
               <a
-                href="https://www.linkedin.com/showcase/nuclearhustle"
+                href="https://www.linkedin.com/showcase/129954376?utm_source=site&utm_medium=footer&utm_campaign=community"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 group"
@@ -52,7 +52,7 @@ export function Footer() {
                 <span className="font-sans text-sm text-secondary group-hover:text-ink">LinkedIn</span>
               </a>
               <a
-                href="https://www.facebook.com/groups/1086918477294291"
+                href="https://www.facebook.com/groups/1086918477294291?utm_source=site&utm_medium=footer&utm_campaign=community"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 group"

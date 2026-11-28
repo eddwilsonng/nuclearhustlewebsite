@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dialog } from "@base-ui/react/dialog";
 import { useState } from "react";
+import { Facebook, Linkedin } from "lucide-react";
 import { signOut } from "@/lib/auth/actions";
 import { LinkButton } from "@/components/ui/LinkButton";
 import {
@@ -151,6 +152,34 @@ export function MobileNav({
                 onNavigate={close}
               />
             ))}
+
+            <div className="pt-6">
+              <p className="pb-1 font-mono text-xs uppercase tracking-widest text-secondary">
+                Community
+              </p>
+              <div className="flex flex-col gap-3 py-3">
+                <a
+                  href="https://www.facebook.com/groups/1086918477294291?utm_source=site&utm_medium=header&utm_campaign=community"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={close}
+                  className="inline-flex items-center gap-2 font-sans text-base text-secondary hover:text-ink"
+                >
+                  <Facebook className="h-5 w-5" />
+                  Join Facebook group
+                </a>
+                <a
+                  href="https://www.linkedin.com/showcase/129954376?utm_source=site&utm_medium=header&utm_campaign=community"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={close}
+                  className="inline-flex items-center gap-2 font-sans text-base text-secondary hover:text-ink"
+                >
+                  <Linkedin className="h-5 w-5" />
+                  Follow on LinkedIn
+                </a>
+              </div>
+            </div>
 
             <div className="mt-8">
               {isAuthed ? (
